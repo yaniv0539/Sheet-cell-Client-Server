@@ -1,5 +1,6 @@
 package engine.api;
 
+import dto.SheetDto;
 import engine.version.manager.api.VersionManagerGetters;
 import sheet.api.SheetGetters;
 import sheet.cell.api.CellGetters;
@@ -18,6 +19,7 @@ public interface Engine {
     void readXMLInitFile(String filename);
     void readXMLInitFile(InputStream inputStream);
     SheetGetters getSheetStatus();
+    SheetDto getSheetDTOStatus();
     CellGetters getCellStatus(SheetGetters sheet, String cellName);
     CellGetters getCellStatus(String cellName);
     CellGetters getCellStatus(int row, int col);

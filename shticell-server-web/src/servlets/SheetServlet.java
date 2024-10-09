@@ -14,7 +14,7 @@ import utils.ServletUtils;
 import java.io.IOException;
 import java.util.Collection;
 
-@WebServlet(name = "SheetServlet", urlPatterns = {"/sheet"})
+@WebServlet(name = "SheetServlet", urlPatterns = "/upload")
 public class SheetServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -59,7 +59,7 @@ public class SheetServlet extends HttpServlet {
             }
 
             response.setStatus(HttpServletResponse.SC_OK);
-            response.getWriter().println(gson.toJson(engine.getSheetStatus()));
+            response.getWriter().println(gson.toJson(engine.getSheetDTOStatus()));
 
         } catch (Exception e) {
             // Todo: Handle correctly with the exception.

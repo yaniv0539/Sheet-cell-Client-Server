@@ -1,5 +1,6 @@
 package engine.impl;
 
+import dto.SheetDto;
 import engine.api.Engine;
 import engine.jaxb.parser.STLSheetToSheet;
 import engine.version.manager.api.VersionManager;
@@ -87,6 +88,11 @@ public class EngineImpl implements Engine, Serializable {
 
     @Override
     public SheetGetters getSheetStatus() { return this.sheet; }
+
+    @Override
+    public SheetDto getSheetDTOStatus() {
+        return new SheetDto(getSheetStatus());
+    }
 
     @Override
     public CellGetters getCellStatus(SheetGetters sheet, String cellName) {
