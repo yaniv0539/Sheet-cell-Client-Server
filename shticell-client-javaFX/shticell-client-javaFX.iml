@@ -10,5 +10,6 @@
     <orderEntry type="library" name="lib" level="project" />
     <orderEntry type="library" name="OKhttp" level="project" />
     <orderEntry type="library" name="Gson" level="project" />
+    <orderEntry type="module" module-name="Engine" />
   </component>
 </module>
