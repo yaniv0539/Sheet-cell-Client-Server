@@ -11,7 +11,7 @@ import java.net.URL;
 
 public class javaFXSheetCellApplication extends Application {
 
-    private static final String APP_FXML_INCLUDE_RESOURCE = "component/app/app.fxml";
+    private static final String APP_FXML_INCLUDE_RESOURCE = "../component/app/app.fxml";
 
     @Override
     public void start(Stage stage) throws Exception {
