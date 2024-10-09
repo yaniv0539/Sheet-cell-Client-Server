@@ -12,7 +12,7 @@ public class Constants {
     private final static String CONTEXT_PATH = "/shticell";
     private final static String FULL_SERVER_PATH = BASE_URL + CONTEXT_PATH;
 
-    public final static String UPLOAD_FILE = FULL_SERVER_PATH + "/upload";
+    public final static String UPLOAD_FILE_URL = FULL_SERVER_PATH + "/upload";
 
 //    public final static String USERS_LIST = FULL_SERVER_PATH + "/userslist";
 //    public final static String LOGOUT = FULL_SERVER_PATH + "/chat/logout";

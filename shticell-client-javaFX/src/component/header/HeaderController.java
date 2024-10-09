@@ -1,6 +1,7 @@
 package component.header;
 
 import component.app.AppController;
+import dto.SheetDto;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -9,10 +10,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttp;
-import okhttp3.Response;
+import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 import utils.http.HttpClientUtil;
 
@@ -20,7 +18,7 @@ import java.io.File;
 import java.io.IOException;
 
 import static utils.Constants.GSON_INSTANCE;
-import static utils.Constants.UPLOAD_FILE;
+import static utils.Constants.UPLOAD_FILE_URL;
 
 public class HeaderController {
 
@@ -155,31 +153,34 @@ public class HeaderController {
                 then the server open the file.
                 */
 
-                String body = GSON_INSTANCE.toJson(selectedFileProperty.get());
-                HttpClientUtil.runAsyncPost(UPLOAD_FILE,body, new Callback() {
+                File f = new File(selectedFile.getAbsolutePath());
+                RequestBody body = new MultipartBody.Builder()
+                        .addFormDataPart("sheet",f.getName(),RequestBody.create(f,MediaType.parse("text/plain")))
+                                .build();
+
+                HttpClientUtil.runAsyncPost(UPLOAD_FILE_URL, body, new Callback() {
                         @Override
-                        public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-
-                                if (response.code() != 200) {
-                                        Platform.runLater(() -> {
-                                           mainController.showAlertPopup(new Exception(response.body().toString()),"loading file");
-                                        });
-                                }
-                                else{
-                                        Platform.runLater(() -> {
-                                           //mainController.
-                                        });
-                                }
-
+                        public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                                System.err.println("Failed to upload file: " + e.getMessage());
                         }
 
                         @Override
-                        public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                                Platform.runLater(()->mainController.showAlertPopup(new Exception(),"unexpected error"));
+                        public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                                SheetDto sheetDto = GSON_INSTANCE.fromJson(response.body().string(), SheetDto.class);
+                                        System.out.println(sheetDto.name);
+                                        System.out.println(sheetDto.layout.rows);
+                                        System.out.println(sheetDto.layout.columns);
+
+                                sheetDto.activeCells.forEach((coordinate, cell) -> {
+                                            System.out.println(coordinate +" ="+ cell.effectiveValue);
+                                            cell.influenceFrom.forEach(cellDto -> System.out.println(cellDto.coordinate));
+                                            cell.influenceOn.forEach(cellDto -> System.out.println(cellDto.coordinate));
+                                });
+                                sheetDto.ranges.forEach(range -> System.out.println(range.name));
                         }
                 });
 
-                mainController.uploadXml(selectedFileProperty.get());
+               //mainController.uploadXml(selectedFileProperty.get());
         }
 
         @FXML //no need

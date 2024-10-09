@@ -2,7 +2,6 @@ package utils.http;
 
 import okhttp3.*;
 
-import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
 public class HttpClientUtil {
@@ -33,10 +32,10 @@ public class HttpClientUtil {
         call.enqueue(callback);
     }
     //itay change
-    public static void runAsyncPost(String finalUrl,String body, Callback callback) {
+    public static void runAsyncPost(String finalUrl, RequestBody body, Callback callback) {
         Request request = new Request.Builder()
                 .url(finalUrl)
-                .post(RequestBody.create(body,MediaType.parse(body))) //try
+                .post(body) //try
                 .build();
         Call call = HttpClientUtil.HTTP_CLIENT.newCall(request);
 
