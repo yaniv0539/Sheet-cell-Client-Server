@@ -7,7 +7,7 @@
 /dataSources/
 /dataSources.local.xml
 #out
-/out/
+../../out/
 #javaFx
-/lib/
+../../lib/
 
