@@ -57,6 +57,16 @@ public class EngineImpl implements Engine, Serializable {
             }
 
             InputStream inputStream = new FileInputStream(new File(filename));
+            readXMLInitFile(inputStream);
+
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException("Failed to read XML file", e);
+        }
+    }
+
+    @Override
+    public void readXMLInitFile(InputStream inputStream) {
+        try {
             STLSheet stlSheet = deserializeFrom(inputStream);
             //versionManager.clearVersions();
             Sheet sheet = STLSheetToSheet.generate(stlSheet);
@@ -70,7 +80,7 @@ public class EngineImpl implements Engine, Serializable {
             versionManager.clearVersions();
             versionManager.addVersion(this.sheet);
 
-        } catch (JAXBException | FileNotFoundException e) {
+        } catch (JAXBException e) {
             throw new RuntimeException("Failed to read XML file", e);
         }
     }

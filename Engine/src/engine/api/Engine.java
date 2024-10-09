@@ -8,6 +8,7 @@ import sheet.range.api.Range;
 import sheet.range.api.RangeGetters;
 import sheet.range.boundaries.api.Boundaries;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +16,7 @@ import java.util.Set;
 public interface Engine {
 
     void readXMLInitFile(String filename);
+    void readXMLInitFile(InputStream inputStream);
     SheetGetters getSheetStatus();
     CellGetters getCellStatus(SheetGetters sheet, String cellName);
     CellGetters getCellStatus(String cellName);
