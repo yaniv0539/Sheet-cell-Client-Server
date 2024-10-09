@@ -1,5 +1,6 @@
 package engine.api;
 
+import dto.SheetDto;
 import engine.version.manager.api.VersionManagerGetters;
 import sheet.api.SheetGetters;
 import sheet.cell.api.CellGetters;
@@ -8,6 +9,7 @@ import sheet.range.api.Range;
 import sheet.range.api.RangeGetters;
 import sheet.range.boundaries.api.Boundaries;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,7 +17,9 @@ import java.util.Set;
 public interface Engine {
 
     void readXMLInitFile(String filename);
+    void readXMLInitFile(InputStream inputStream);
     SheetGetters getSheetStatus();
+    SheetDto getSheetDTOStatus();
     CellGetters getCellStatus(SheetGetters sheet, String cellName);
     CellGetters getCellStatus(String cellName);
     CellGetters getCellStatus(int row, int col);

@@ -21,6 +21,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="Engine" />
     <orderEntry type="library" name="Gson" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Tomcat 10.1.26" level="application_server_libraries" />
+    <orderEntry type="library" scope="PROVIDED" name="Tomcat 10.1.30" level="application_server_libraries" />
+    <orderEntry type="module" module-name="shticell-dto" />
   </component>
 </module>

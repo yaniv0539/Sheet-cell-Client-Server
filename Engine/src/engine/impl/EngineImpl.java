@@ -1,5 +1,6 @@
 package engine.impl;
 
+import dto.SheetDto;
 import engine.api.Engine;
 import engine.jaxb.parser.STLSheetToSheet;
 import engine.version.manager.api.VersionManager;
@@ -57,6 +58,16 @@ public class EngineImpl implements Engine, Serializable {
             }
 
             InputStream inputStream = new FileInputStream(new File(filename));
+            readXMLInitFile(inputStream);
+
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException("Failed to read XML file", e);
+        }
+    }
+
+    @Override
+    public void readXMLInitFile(InputStream inputStream) {
+        try {
             STLSheet stlSheet = deserializeFrom(inputStream);
             //versionManager.clearVersions();
             Sheet sheet = STLSheetToSheet.generate(stlSheet);
@@ -70,13 +81,18 @@ public class EngineImpl implements Engine, Serializable {
             versionManager.clearVersions();
             versionManager.addVersion(this.sheet);
 
-        } catch (JAXBException | FileNotFoundException e) {
+        } catch (JAXBException e) {
             throw new RuntimeException("Failed to read XML file", e);
         }
     }
 
     @Override
     public SheetGetters getSheetStatus() { return this.sheet; }
+
+    @Override
+    public SheetDto getSheetDTOStatus() {
+        return new SheetDto(getSheetStatus());
+    }
 
     @Override
     public CellGetters getCellStatus(SheetGetters sheet, String cellName) {

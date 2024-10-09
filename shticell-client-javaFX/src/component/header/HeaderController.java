@@ -166,6 +166,9 @@ public class HeaderController {
 
                         @Override
                         public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                                String jsonResponse = response.body().string(); // Raw response
+                                System.out.println("Raw JSON Response: " + jsonResponse);
+
                                 SheetDto sheetDto = GSON_INSTANCE.fromJson(response.body().string(), SheetDto.class);
                                         System.out.println(sheetDto.name);
                                         System.out.println(sheetDto.layout.rows);
