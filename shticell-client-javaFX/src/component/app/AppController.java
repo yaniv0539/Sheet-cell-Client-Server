@@ -155,6 +155,7 @@ public class AppController {
     }
 
     private void onFinishLoadingFile() {
+        //methode
         showHeaders.set(true);
         showRanges.set(true);
         headerComponentController.getSplitMenuButtonSelectVersion().setDisable(false);
@@ -162,9 +163,11 @@ public class AppController {
         commandsComponentController.getButtonSort().setDisable(false);
         commandsComponentController.resetButtonFilter();
         commandsComponentController.resetButtonSort();
-        setEffectiveValuesPoolProperty(engine.getSheetStatus(), this.effectiveValuesPool);
+
+        SheetGetters sheetStatus = engine.getSheetStatus(); //this what server bring
+        setEffectiveValuesPoolProperty(sheetStatus, this.effectiveValuesPool);
         setSheet();
-        this.currentSheet = engine.getSheetStatus();
+        this.currentSheet = sheetStatus;
         headerComponentController.clearVersionButton();
         headerComponentController.addMenuOptionToVersionSelection(String.valueOf(engine.getVersionsManagerStatus().getVersions().size()));
         rangesComponentController.uploadRanges(engine.getRanges());

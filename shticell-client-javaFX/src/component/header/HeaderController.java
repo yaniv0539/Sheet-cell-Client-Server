@@ -1,6 +1,7 @@
 package component.header;
 
 import component.app.AppController;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -8,8 +9,18 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttp;
+import okhttp3.Response;
+import org.jetbrains.annotations.NotNull;
+import utils.http.HttpClientUtil;
 
 import java.io.File;
+import java.io.IOException;
+
+import static utils.Constants.GSON_INSTANCE;
+import static utils.Constants.UPLOAD_FILE;
 
 public class HeaderController {
 
@@ -143,7 +154,32 @@ public class HeaderController {
                 here i need to pass the content of the file into the server.
                 then the server open the file.
                 */
-            mainController.uploadXml(selectedFileProperty.get());
+
+                String body = GSON_INSTANCE.toJson(selectedFileProperty.get());
+                HttpClientUtil.runAsyncPost(UPLOAD_FILE,body, new Callback() {
+                        @Override
+                        public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+
+                                if (response.code() != 200) {
+                                        Platform.runLater(() -> {
+                                           mainController.showAlertPopup(new Exception(response.body().toString()),"loading file");
+                                        });
+                                }
+                                else{
+                                        Platform.runLater(() -> {
+                                           //mainController.
+                                        });
+                                }
+
+                        }
+
+                        @Override
+                        public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                                Platform.runLater(()->mainController.showAlertPopup(new Exception(),"unexpected error"));
+                        }
+                });
+
+                mainController.uploadXml(selectedFileProperty.get());
         }
 
         @FXML //no need
