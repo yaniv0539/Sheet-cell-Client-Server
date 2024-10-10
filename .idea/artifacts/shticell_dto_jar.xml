@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="shticell-dto:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/shticell_dto_jar</output-path>
+    <root id="archive" name="shticell-dto.jar">
+      <element id="module-output" name="shticell-dto" />
+    </root>
+  </artifact>
+</component>

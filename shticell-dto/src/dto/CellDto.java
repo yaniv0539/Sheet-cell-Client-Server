@@ -1,15 +1,13 @@
 package dto;
 
-import expression.api.Data;
 import expression.impl.DataImpl;
 import sheet.cell.api.CellGetters;
-import sheet.coordinate.api.Coordinate;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public class CellDto {
-    public  Coordinate coordinate;
+    public CoordinateDto coordinate;
     public int version;
     public String originalValue;
     public DataImpl effectiveValue;
@@ -17,7 +15,7 @@ public class CellDto {
     public Set<CellDto> influenceOn;
 
     public CellDto(CellGetters cell) {
-        this.coordinate = cell.getCoordinate();
+        this.coordinate = new CoordinateDto(cell.getCoordinate());
         this.version = cell.getVersion();
         this.originalValue = cell.getOriginalValue();
         this.effectiveValue = (DataImpl) cell.getEffectiveValue();
@@ -26,7 +24,7 @@ public class CellDto {
 
         cell.getInfluenceFrom().forEach(cell1 -> influenceFrom.add(new CellDto(cell1)));
 
-        //cell.getInfluenceOn().forEach(cell1 -> influenceOn.add(new CellDto(cell1)));
+        cell.getInfluenceOn().forEach(cell1 -> influenceOn.add(new CellDto(cell1)));
     }
 
     public void setInfluenceOn() {
