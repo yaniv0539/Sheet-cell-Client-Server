@@ -16,6 +16,7 @@ public class CellDto {
     public Set<CellDto> influenceFrom;
     public Set<CellDto> influenceOn;
 
+
     public CellDto(CellGetters cell) {
         this.coordinate = cell.getCoordinate();
         this.version = cell.getVersion();
