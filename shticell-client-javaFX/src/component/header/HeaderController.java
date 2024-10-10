@@ -179,7 +179,8 @@ public class HeaderController {
 //                                            cell.influenceFrom.forEach(cellDto -> System.out.println(cellDto.coordinate));
 //                                            cell.influenceOn.forEach(cellDto -> System.out.println(cellDto.coordinate));
                                 });
-//                                sheetDto.ranges.forEach(range -> System.out.println(range.name));
+                                sheetDto.ranges.forEach(range -> System.out.println(range.name + " : " + range.boundaries.from + " - "
+                                + range.boundaries.to));
                         }
                 });
 

@@ -11,7 +11,7 @@ public class SheetDto {
     public String name;
     public LayoutDto layout;
     public int version;
-    public Map<CoordinateDto, CellDto> activeCells;
+    public Map<String, CellDto> activeCells;
     public Set<RangeDto> ranges;
 
     public SheetDto(SheetGetters sheet) {
@@ -20,8 +20,10 @@ public class SheetDto {
         this.layout = new LayoutDto(sheet.getLayout());
         this.activeCells = new HashMap<>();
         this.ranges = new HashSet<>();
-        sheet.getActiveCells().forEach((coordinate, cell) -> activeCells.put(new CoordinateDto(coordinate), new CellDto(cell)));
-        activeCells.values().forEach(CellDto::setInfluenceOn);
+        //sheet.getActiveCells().forEach((coordinate, cell) -> activeCells.put(new CoordinateDto(coordinate), new CellDto(cell)));
+        sheet.getActiveCells().forEach((coordinate, cell) -> activeCells.put(coordinate.toString(), new CellDto(cell)));
+
+        //activeCells.values().forEach(CellDto::setInfluenceOn);
         sheet.getRanges().forEach(range-> ranges.add(new RangeDto(range)));
     }
 

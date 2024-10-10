@@ -1,10 +1,10 @@
 <component name="libraryTable">
   <library name="OKhttp">
     <CLASSES>
-      <root url="file://$USER_HOME$/Desktop/Yaniv/First Degree - Computer Science/Second Year/Java/OKHttp" />
+      <root url="file://$PROJECT_DIR$/../OKhttp" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
-    <jarDirectory url="file://$USER_HOME$/Desktop/Yaniv/First Degree - Computer Science/Second Year/Java/OKHttp" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/../OKhttp" recursive="false" />
   </library>
 </component>

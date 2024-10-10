@@ -1,13 +1,13 @@
 <component name="libraryTable">
   <library name="mod">
     <CLASSES>
-      <root url="file://$USER_HOME$/Desktop/Yaniv/First Degree - Computer Science/Second Year/Java/jaxb-ri-4.0.5/mod" />
+      <root url="file://$PROJECT_DIR$/../jaxb/jaxb-ri-4.0.5/mod" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
-      <root url="file://$USER_HOME$/Desktop/Yaniv/First Degree - Computer Science/Second Year/Java/jaxb-ri-4.0.5/mod" />
+      <root url="file://$PROJECT_DIR$/../jaxb/jaxb-ri-4.0.5/mod" />
     </SOURCES>
-    <jarDirectory url="file://$USER_HOME$/Desktop/Yaniv/First Degree - Computer Science/Second Year/Java/jaxb-ri-4.0.5/mod" recursive="false" />
-    <jarDirectory url="file://$USER_HOME$/Desktop/Yaniv/First Degree - Computer Science/Second Year/Java/jaxb-ri-4.0.5/mod" recursive="false" type="SOURCES" />
+    <jarDirectory url="file://$PROJECT_DIR$/../jaxb/jaxb-ri-4.0.5/mod" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/../jaxb/jaxb-ri-4.0.5/mod" recursive="false" type="SOURCES" />
   </library>
 </component>
