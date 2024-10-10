@@ -28,7 +28,9 @@ public class ServletUtils {
 
         synchronized (gsonLock) {
             if (servletContext.getAttribute(GSON_ATTRIBUTE_NAME) == null) {
-                servletContext.setAttribute(GSON_ATTRIBUTE_NAME, new GsonBuilder().setPrettyPrinting().create());
+                servletContext.setAttribute(GSON_ATTRIBUTE_NAME, new GsonBuilder()
+                        .setPrettyPrinting()
+                        .create());
             }
         }
         return (Gson) servletContext.getAttribute(GSON_ATTRIBUTE_NAME);
