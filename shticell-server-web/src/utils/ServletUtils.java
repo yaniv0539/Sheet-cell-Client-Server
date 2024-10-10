@@ -1,6 +1,7 @@
 package utils;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import engine.api.Engine;
 import engine.impl.EngineImpl;
 import jakarta.servlet.ServletContext;
@@ -27,7 +28,7 @@ public class ServletUtils {
 
         synchronized (gsonLock) {
             if (servletContext.getAttribute(GSON_ATTRIBUTE_NAME) == null) {
-                servletContext.setAttribute(GSON_ATTRIBUTE_NAME, new Gson());
+                servletContext.setAttribute(GSON_ATTRIBUTE_NAME, new GsonBuilder().setPrettyPrinting().create());
             }
         }
         return (Gson) servletContext.getAttribute(GSON_ATTRIBUTE_NAME);

@@ -130,28 +130,28 @@ public class EngineImpl implements Engine, Serializable {
     @Override
     public VersionManagerGetters getVersionsManagerStatus() { return this.versionManager; }
 
-    @Override
-    public Task<Boolean> loadFileTask(String path) {
-
-        return new Task<Boolean>() {
-            @Override
-            protected Boolean call() throws Exception {
-
-                for (int i = 0; i < 50; i++) {
-                    Thread.sleep(50);
-                    updateProgress(i,50);
-                    if(i == 10){
-                        updateMessage("Fetching...");
-                    }
-                    if(i == 40){
-                        updateMessage("Preparing data...");
-                        readXMLInitFile(path);
-                    }
-                }
-                return true;
-            }
-        };
-    }
+    //@Override
+//    public Task<Boolean> loadFileTask(String path) {
+//
+//        return new Task<Boolean>() {
+//            @Override
+//            protected Boolean call() throws Exception {
+//
+//                for (int i = 0; i < 50; i++) {
+//                    Thread.sleep(50);
+//                    updateProgress(i,50);
+//                    if(i == 10){
+//                        updateMessage("Fetching...");
+//                    }
+//                    if(i == 40){
+//                        updateMessage("Preparing data...");
+//                        readXMLInitFile(path);
+//                    }
+//                }
+//                return true;
+//            }
+//        };
+//    }
 
     @Override
     public SheetGetters filter(Boundaries boundaries, String column, List<String> values,int version) {

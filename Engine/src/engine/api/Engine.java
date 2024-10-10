@@ -30,7 +30,7 @@ public interface Engine {
     RangeGetters getRange(String name);
     Set<RangeGetters> getRanges();
     void deleteRange(String name);
-    javafx.concurrent.Task<Boolean> loadFileTask(String path);
+    //javafx.concurrent.Task<Boolean> loadFileTask(String path);
     SheetGetters filter(Boundaries boundaries, String column, List<String> values,int version);
     SheetGetters sortSheet(Boundaries boundaries, List<String> column, int version);
     List<List<CellGetters>> sortCellsInRange(Boundaries boundaries, List<String> column, int version);

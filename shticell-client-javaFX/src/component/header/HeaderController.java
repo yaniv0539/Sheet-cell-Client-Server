@@ -156,7 +156,7 @@ public class HeaderController {
                 File f = new File(selectedFile.getAbsolutePath());
                 RequestBody body = new MultipartBody.Builder()
                         .addFormDataPart("sheet",f.getName(),RequestBody.create(f,MediaType.parse("text/plain")))
-                                .build();
+                        .build();
 
                 HttpClientUtil.runAsyncPost(UPLOAD_FILE_URL, body, new Callback() {
                         @Override
@@ -169,17 +169,18 @@ public class HeaderController {
                                 String jsonResponse = response.body().string(); // Raw response
                                 System.out.println("Raw JSON Response: " + jsonResponse);
 
-                                SheetDto sheetDto = GSON_INSTANCE.fromJson(response.body().string(), SheetDto.class);
+                                SheetDto sheetDto = GSON_INSTANCE.fromJson(jsonResponse, SheetDto.class);
                                         System.out.println(sheetDto.name);
                                         System.out.println(sheetDto.layout.rows);
                                         System.out.println(sheetDto.layout.columns);
 
                                 sheetDto.activeCells.forEach((coordinate, cell) -> {
-                                            System.out.println(coordinate +" ="+ cell.effectiveValue);
-                                            cell.influenceFrom.forEach(cellDto -> System.out.println(cellDto.coordinate));
-                                            cell.influenceOn.forEach(cellDto -> System.out.println(cellDto.coordinate));
+//                                            System.out.println(coordinate +" ="+ cell.effectiveValue);
+//                                            cell.influenceFrom.forEach(cellDto -> System.out.println(cellDto.coordinate));
+//                                            cell.influenceOn.forEach(cellDto -> System.out.println(cellDto.coordinate));
                                 });
-                                sheetDto.ranges.forEach(range -> System.out.println(range.name));
+                                sheetDto.ranges.forEach(range -> System.out.println(range.name + " : " + range.boundaries.from + " - "
+                                + range.boundaries.to));
                         }
                 });
 
