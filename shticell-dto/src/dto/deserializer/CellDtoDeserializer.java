@@ -1,9 +1,6 @@
 package dto.deserializer;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
+import com.google.gson.*;
 import dto.CellDto;
 import dto.CoordinateDto;
 
@@ -26,7 +23,10 @@ public class CellDtoDeserializer implements JsonDeserializer<CellDto> {
 
         json.getAsJsonObject().get("influenceFrom").getAsJsonArray()
                 .forEach(jsonElement -> {
-                    CellDto influencer = deserialize(jsonElement.getAsJsonObject(),typeOfT,context);
+
+                    JsonObject asJsonObject = jsonElement.getAsJsonObject();
+
+                    CellDto influencer = deserialize(asJsonObject,typeOfT,context);
                     SetInfluence.add(influencer);
                 });
 

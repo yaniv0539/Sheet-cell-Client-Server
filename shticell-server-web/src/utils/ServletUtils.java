@@ -2,6 +2,9 @@ package utils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import dto.CellDto;
+import dto.deserializer.CellDtoDeserializer;
+import dto.serializer.CellDtoSerializer;
 import engine.api.Engine;
 import engine.impl.EngineImpl;
 import jakarta.servlet.ServletContext;
@@ -30,6 +33,8 @@ public class ServletUtils {
             if (servletContext.getAttribute(GSON_ATTRIBUTE_NAME) == null) {
                 servletContext.setAttribute(GSON_ATTRIBUTE_NAME, new GsonBuilder()
                         .setPrettyPrinting()
+                        .registerTypeAdapter(CellDto.class,new CellDtoSerializer())
+                        .registerTypeAdapter(CellDto.class,new CellDtoDeserializer())
                         .create());
             }
         }

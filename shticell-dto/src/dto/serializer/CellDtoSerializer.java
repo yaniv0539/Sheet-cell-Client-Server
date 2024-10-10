@@ -16,8 +16,9 @@ public class CellDtoSerializer implements JsonSerializer<CellDto> {
         cellOuter.addProperty("effectiveValue",src.effectiveValue);
 
         JsonArray array = new JsonArray();
+
         src.influenceFrom.forEach(cellDto -> array.add(serialize(cellDto,typeOfSrc,context)));
-        cellOuter.add("influence",array);
+        cellOuter.add("influenceFrom",array);
 
         return cellOuter;
     }
