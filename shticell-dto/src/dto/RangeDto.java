@@ -1,14 +1,13 @@
 package dto;
 
 import sheet.range.api.RangeGetters;
-import sheet.range.boundaries.impl.BoundariesImpl;
 
 public class RangeDto {
     public String name;
-    public BoundariesImpl bounds;
+    public BoundariesDto boundaries;
 
     public RangeDto(RangeGetters range) {
         this.name = range.getName();
-        this.bounds = (BoundariesImpl) range.getBoundaries();
+        this.boundaries = new BoundariesDto(range.getBoundaries());
     }
 }

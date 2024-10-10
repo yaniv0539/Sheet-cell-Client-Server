@@ -1,6 +1,7 @@
 package servlets;
 
 import com.google.gson.Gson;
+import dto.SheetDto;
 import engine.api.Engine;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -65,6 +66,7 @@ public class SheetServlet extends HttpServlet {
 
         } catch (Exception e) {
             // Todo: Handle correctly with the exception.
+            e.printStackTrace();
             response.setContentType("text/plain");
             response.getWriter().println("Something went wrong");
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
