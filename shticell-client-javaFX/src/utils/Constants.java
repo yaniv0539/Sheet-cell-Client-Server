@@ -1,10 +1,11 @@
 package utils;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 public class Constants {
     // GSON instance
-    public final static Gson GSON_INSTANCE = new Gson();
+    public final static Gson GSON_INSTANCE = new GsonBuilder().setPrettyPrinting().create();
 
     // Server resources locations
     public final static String BASE_DOMAIN = "localhost";

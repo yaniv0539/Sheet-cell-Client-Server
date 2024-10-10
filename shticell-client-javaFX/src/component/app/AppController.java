@@ -132,27 +132,27 @@ public class AppController {
         loadingStage.setScene(new Scene(progressComponentController.getProgressVbox()));
     }
 
-    public void uploadXml(String path)
-    {
-        Task<Boolean> FileTask = engine.loadFileTask(path);
-
-        progressComponentController.init(FileTask);
-
-        FileTask.setOnSucceeded(workerStateEvent -> {
-            loadingStage.close();
-            onFinishLoadingFile();
-        });
-
-        FileTask.setOnFailed(workerStateEvent -> {
-            loadingStage.close();
-            Throwable exception = FileTask.getException();
-            Platform.runLater(()->showAlertPopup(exception, "loading a file"));
-        });
-
-        loadingStage.show();
-
-        new Thread(FileTask).start();
-    }
+//    public void uploadXml(String path)
+//    {
+//        Task<Boolean> FileTask = engine.loadFileTask(path);
+//
+//        progressComponentController.init(FileTask);
+//
+//        FileTask.setOnSucceeded(workerStateEvent -> {
+//            loadingStage.close();
+//            onFinishLoadingFile();
+//        });
+//
+//        FileTask.setOnFailed(workerStateEvent -> {
+//            loadingStage.close();
+//            Throwable exception = FileTask.getException();
+//            Platform.runLater(()->showAlertPopup(exception, "loading a file"));
+//        });
+//
+//        loadingStage.show();
+//
+//        new Thread(FileTask).start();
+//    }
 
     private void onFinishLoadingFile() {
         //methode
