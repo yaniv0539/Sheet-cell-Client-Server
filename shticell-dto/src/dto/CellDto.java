@@ -26,10 +26,11 @@ public class CellDto {
     }
 
     public CellDto() {
-
     }
 
     public void setInfluenceOn() {
-        influenceFrom.forEach(cell -> cell.influenceOn.add(this));
+        for (CellDto cell : influenceFrom) {
+            cell.influenceOn.add(this);
+        }
     }
 }
