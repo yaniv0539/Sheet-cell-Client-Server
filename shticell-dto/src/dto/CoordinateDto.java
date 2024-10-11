@@ -2,6 +2,8 @@ package dto;
 
 import sheet.coordinate.api.Coordinate;
 
+import java.util.Objects;
+
 public class CoordinateDto {
     public int row;
     public int column;
@@ -21,5 +23,18 @@ public class CoordinateDto {
 
         // Combine column and row into the string representation
         return "" + column + row;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CoordinateDto that = (CoordinateDto) o;
+        return row == that.row && column == that.column;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(row, column);
     }
 }

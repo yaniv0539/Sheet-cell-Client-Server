@@ -1,6 +1,7 @@
 package component.header;
 
 import component.app.AppController;
+import dto.CellDto;
 import dto.SheetDto;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -170,17 +171,19 @@ public class HeaderController {
                                 System.out.println("Raw JSON Response: " + jsonResponse);
 
                                 SheetDto sheetDto = GSON_INSTANCE.fromJson(jsonResponse, SheetDto.class);
-                                        System.out.println(sheetDto.name);
+                                System.out.println(sheetDto.name);
                                         System.out.println(sheetDto.layout.rows);
                                         System.out.println(sheetDto.layout.columns);
 
-                                sheetDto.activeCells.forEach((coordinate, cell) -> {
-//                                            System.out.println(coordinate +" ="+ cell.effectiveValue);
-//                                            cell.influenceFrom.forEach(cellDto -> System.out.println(cellDto.coordinate));
-//                                            cell.influenceOn.forEach(cellDto -> System.out.println(cellDto.coordinate));
-                                });
-                                sheetDto.ranges.forEach(range -> System.out.println(range.name + " : " + range.boundaries.from + " - "
-                                + range.boundaries.to));
+                                        sheetDto.activeCells.forEach((coordinate, cell) -> {
+                                            System.out.println(coordinate +" ="+ cell.effectiveValue);
+                                            System.out.println("From:");
+                                            cell.influenceFrom.forEach(cellDto -> System.out.println(cellDto.coordinate));
+                                            System.out.println("On:");
+                                            cell.influenceOn.forEach(cellDto -> System.out.println(cellDto.coordinate));
+                                        });
+                                        sheetDto.ranges.forEach(range -> System.out.println(range.name + " : " + range.boundaries.from + " - "
+                                        + range.boundaries.to));
                         }
                 });
 

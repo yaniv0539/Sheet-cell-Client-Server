@@ -12,7 +12,7 @@ public class CellDto {
     public String originalValue;
     public String effectiveValue;
     public Set<CellDto> influenceFrom;
-//    public Set<CellDto> influenceOn;
+    public Set<CellDto> influenceOn;
 
     public CellDto(CellGetters cell) {
         this.coordinate = new CoordinateDto(cell.getCoordinate());
@@ -20,14 +20,17 @@ public class CellDto {
         this.originalValue = cell.getOriginalValue();
         this.effectiveValue = cell.getEffectiveValue().toString();
         this.influenceFrom = new HashSet<>();
-//        this.influenceOn = new HashSet<>();
+        this.influenceOn = new HashSet<>();
 
         cell.getInfluenceFrom().forEach(cell1 -> influenceFrom.add(new CellDto(cell1)));
-
-//        cell.getInfluenceOn().forEach(cell1 -> influenceOn.add(new CellDto(cell1)));
     }
 
-//    public void setInfluenceOn() {
-//        influenceFrom.forEach(cell -> cell.influenceOn.add(this));
-//    }
+    public CellDto() {
+    }
+
+    public void setInfluenceOn() {
+        for (CellDto cell : influenceFrom) {
+            cell.influenceOn.add(this);
+        }
+    }
 }

@@ -2,10 +2,17 @@ package utils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import dto.CellDto;
+import dto.deserializer.CellDtoDeserializer;
+import dto.serializer.CellDtoSerializer;
 
 public class Constants {
     // GSON instance
-    public final static Gson GSON_INSTANCE = new GsonBuilder().setPrettyPrinting().create();
+    public final static Gson GSON_INSTANCE = new GsonBuilder()
+            .setPrettyPrinting()
+            .registerTypeAdapter(CellDto.class,new CellDtoSerializer())
+            .registerTypeAdapter(CellDto.class,new CellDtoDeserializer())
+            .create();
 
     // Server resources locations
     public final static String BASE_DOMAIN = "localhost";
