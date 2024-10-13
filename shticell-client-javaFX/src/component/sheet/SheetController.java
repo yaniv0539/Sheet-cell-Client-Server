@@ -125,10 +125,10 @@ public class SheetController {
                     textField.setText(Integer.toString(row));  // Row headers (1, 2, 3, etc.)
                 } else {
                     if (row != 0 || col != 0) {
-                        Coordinate coordinate = CoordinateFactory.createCoordinate(row-1,col-1);
-                        cellsTextFieldMap.put(coordinate.toString(), textField);
-                        previousBackgrounds.put(coordinate.toString(),textField.getBackground());
-                        textField.textProperty().bind(dataToView.getEffectiveValuePropertyAt(coordinate));
+                        String coordinateString = CoordinateFactory.createCoordinate(row-1,col-1).toString();
+                        cellsTextFieldMap.put(coordinateString, textField);
+                        previousBackgrounds.put(coordinateString,textField.getBackground());
+                        textField.textProperty().bind(dataToView.getEffectiveValuePropertyAt(coordinateString));
                         //add listener to focus, need to change.
                         int finalCol = col;
                         int finalRow = row;
@@ -139,7 +139,7 @@ public class SheetController {
                             } else {
                                 textField.setBorder(Border.stroke(Paint.valueOf("gray")));
                             }
-                            mainController.focusChanged(newValue, coordinate);
+                            mainController.focusChanged(newValue, coordinateString);
                             mainController.changeCommandsColumnWidth(gridPane.getColumnConstraints().get(finalCol).getPrefWidth());
                             mainController.changeCommandsRowHeight(gridPane.getRowConstraints().get(finalRow).getPrefHeight());
                             mainController.changeCommandsColumnAlignment(textField.getAlignment());
