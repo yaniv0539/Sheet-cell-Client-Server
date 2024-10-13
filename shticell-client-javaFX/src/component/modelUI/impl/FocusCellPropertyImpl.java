@@ -1,6 +1,7 @@
 package component.modelUI.impl;
 
 import component.modelUI.api.FocusCellProperty;
+import dto.CoordinateDto;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -16,8 +17,8 @@ public class FocusCellPropertyImpl implements FocusCellProperty {
     public StringProperty originalValue;
     public StringProperty effectiveValue;
     public StringProperty lastUpdateVersion;
-    private ObservableList<Coordinate> dependenceOn;
-    private ObservableList<Coordinate> influenceOn;
+    private ObservableList<CoordinateDto> dependenceOn;
+    private ObservableList<CoordinateDto> influenceOn;
 
     public FocusCellPropertyImpl() {
         coordinate = new SimpleStringProperty("");
@@ -49,12 +50,12 @@ public class FocusCellPropertyImpl implements FocusCellProperty {
     }
 
     @Override
-    public ObservableList<Coordinate> getDependOn() {
+    public ObservableList<CoordinateDto> getDependOn() {
         return dependenceOn;
     }
 
     @Override
-    public ObservableList<Coordinate> getInfluenceOn() {
+    public ObservableList<CoordinateDto> getInfluenceOn() {
         return influenceOn;
     }
 
@@ -78,12 +79,12 @@ public class FocusCellPropertyImpl implements FocusCellProperty {
     }
 
     @Override
-    public void setDependOn(Collection<Coordinate> dependOn) {
+    public void setDependOn(Collection<CoordinateDto> dependOn) {
         this.dependenceOn.clear();
         this.dependenceOn.addAll(dependOn);
     }
     @Override
-    public void setInfluenceOn(Collection<Coordinate> influenceOn) {
+    public void setInfluenceOn(Collection<CoordinateDto> influenceOn) {
         this.influenceOn.clear();
         this.influenceOn.addAll(influenceOn);
 

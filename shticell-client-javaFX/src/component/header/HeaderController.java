@@ -149,45 +149,13 @@ public class HeaderController {
                 }
                 selectedFileProperty = new SimpleStringProperty(selectedFile.getAbsolutePath());
                 textFieldFileName.textProperty().bind(selectedFileProperty);
+                mainController.uploadXml(selectedFileProperty.get());
                 /*
                 here i need to pass the content of the file into the server.
                 then the server open the file.
                 */
 
-                File f = new File(selectedFile.getAbsolutePath());
-                RequestBody body = new MultipartBody.Builder()
-                        .addFormDataPart("sheet",f.getName(),RequestBody.create(f,MediaType.parse("text/plain")))
-                        .build();
 
-                HttpClientUtil.runAsyncPost(UPLOAD_FILE_URL, body, new Callback() {
-                        @Override
-                        public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                                System.err.println("Failed to upload file: " + e.getMessage());
-                        }
-
-                        @Override
-                        public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                                String jsonResponse = response.body().string(); // Raw response
-                                System.out.println("Raw JSON Response: " + jsonResponse);
-
-                                SheetDto sheetDto = GSON_INSTANCE.fromJson(jsonResponse, SheetDto.class);
-                                System.out.println(sheetDto.name);
-                                        System.out.println(sheetDto.layout.rows);
-                                        System.out.println(sheetDto.layout.columns);
-
-                                        sheetDto.activeCells.forEach((coordinate, cell) -> {
-                                            System.out.println(coordinate +" ="+ cell.effectiveValue);
-                                            System.out.println("From:");
-                                            cell.influenceFrom.forEach(cellDto -> System.out.println(cellDto.coordinate));
-                                            System.out.println("On:");
-                                            cell.influenceOn.forEach(cellDto -> System.out.println(cellDto.coordinate));
-                                        });
-                                        sheetDto.ranges.forEach(range -> System.out.println(range.name + " : " + range.boundaries.from + " - "
-                                        + range.boundaries.to));
-                        }
-                });
-
-               //mainController.uploadXml(selectedFileProperty.get());
         }
 
         @FXML //no need

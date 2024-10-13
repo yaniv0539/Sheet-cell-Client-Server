@@ -10,4 +10,12 @@ public class BoundariesDto {
         this.from = new CoordinateDto(boundaries.getFrom());
         this.to = new CoordinateDto(boundaries.getTo());
     }
+
+    public CoordinateDto getFrom() {
+        return from;
+    }
+
+    public CoordinateDto getTo() {
+        return to;
+    }
 }
