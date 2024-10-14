@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import utils.ServletUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 
 @WebServlet(name = "CellServlet", urlPatterns = {"/sheet/cell"})
@@ -59,11 +60,20 @@ public class CellServlet extends HttpServlet {
             String sheetName = request.getParameter(Constants.SHEET_NAME_PARAMETER);
 
             String cellName = request.getParameter(Constants.CELL_NAME_PARAMETER);
-            String cellValue = request.getParameter(Constants.CELL_VALUE_PARAMETER);
 
-            engine.updateCell(sheetName, cellName, cellValue);
+            StringBuilder body = new StringBuilder();
+            String line;
 
-            response.setStatus(HttpServletResponse.SC_OK);
+            try (BufferedReader reader = request.getReader()) {
+                while ((line = reader.readLine()) != null) {
+                    body.append(line);
+                }
+            }
+
+            engine.updateCell(sheetName, cellName, body.toString());
+            SheetDto sheetDTO = engine.getSheetDTO(sheetName);
+            response.getWriter().print(gson.toJson(sheetDTO));
+            response.setStatus(HttpServletResponse.SC_CREATED);
         } catch (Exception e) {
             response.setContentType("text/plain");
             response.getWriter().println(e.getMessage());

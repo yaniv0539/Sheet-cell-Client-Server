@@ -77,14 +77,14 @@ public interface Engine {
         // Get Functions
 
             // RangeGetters
-            Set<RangeGetters> getRanges();
+            Set<RangeGetters> getRanges(String sheetName);
             RangeGetters getRange(String name);
 
             // RangeDto
             RangeDto getRangeDTO(String name);
 
         // Post Functions
-        boolean addRange(String name, String boundariesString);
+        boolean addRange(String sheetName, String rangeName, String boundariesString);
 
         // Delete Functions
         void deleteRange(String name);

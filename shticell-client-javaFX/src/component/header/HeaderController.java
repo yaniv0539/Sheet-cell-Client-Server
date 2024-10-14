@@ -132,11 +132,11 @@ public class HeaderController {
                 textFieldCellId.textProperty().bind(strProp);
         }
 
-        //test nor real implementation
-//        @FXML
-//        void buttonUpdateCellAction(ActionEvent event) {
-//                mainController.updateCell();
-//        }
+//        test nor real implementation
+        @FXML
+        void buttonUpdateCellAction(ActionEvent event) {
+                mainController.updateCell();
+        }
 
         @FXML
         public void buttonUploadXmlFileAction(ActionEvent event) {
@@ -163,10 +163,10 @@ public class HeaderController {
 
         }
 
-//        @FXML //maybe
-//        void textFieldOrignalValueAction(ActionEvent event) {
-//                mainController.updateCell();
-//        }
+        @FXML //maybe
+        void textFieldOrignalValueAction(ActionEvent event) {
+                mainController.updateCell();
+        }
 
         @FXML
         void textFieldVersionSelectorAction(ActionEvent event) {

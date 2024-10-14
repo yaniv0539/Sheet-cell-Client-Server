@@ -132,11 +132,7 @@ public class EngineImpl implements Engine, Serializable {
                         "valid scale: rows <= 50 , columns <= 20");
             }
 
-            VersionManager versionManager = this.versionManagers.get(sheet.getName());
-
-            if (versionManager == null) {
-                versionManager = VersionManagerImpl.create();
-            }
+            VersionManager versionManager = this.versionManagers.computeIfAbsent(sheet.getName(), k -> VersionManagerImpl.create());
 
             versionManager.init(sheet);
 
@@ -457,8 +453,11 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public boolean addRange(String name, String boundariesString) {
+    public boolean addRange(String sheetName, String name, String boundariesString) {
+        VersionManager versionManager = versionManagers.get(sheetName);
+
         versionManager.makeNewVersion();
+
         try {
             return versionManager.getLastVersion().addRange(name, BoundariesFactory.toBoundaries(boundariesString));
         } catch (Exception e) {
@@ -478,8 +477,14 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public Set<RangeGetters> getRanges() {
-        return Collections.unmodifiableSet(sheet.getRanges());
+    public Set<RangeGetters> getRanges(String sheetName) {
+        VersionManager versionManager = this.versionManagers.get(sheetName);
+
+        if (versionManager == null) {
+            throw new RuntimeException("No version found for sheet " + sheetName);
+        }
+
+        return versionManager.getLastVersion().getRanges();
     }
 
     @Override

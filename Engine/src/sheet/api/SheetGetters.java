@@ -21,7 +21,7 @@ public interface SheetGetters {
     Map<Coordinate, CellGetters> getActiveCells();
 
     RangeGetters getRange(String rangeName);
-    Set<? extends RangeGetters> getRanges();
+    Set<RangeGetters> getRanges();
     List<List<CellGetters>> getCellInRange(int startRow, int endRow, int startCol, int endCol);
     List<String> getColumnUniqueValuesInRange(int column, int startRow, int endRow);
 

@@ -69,8 +69,9 @@ public class SheetServlet extends HttpServlet {
                 engine.addNewSheet(part.getInputStream());
             }
 
-            response.setContentType("application/json");
-            response.getWriter().println(gson.toJson(engine.getSheetDTO()));
+            response.setContentType("text/plain");
+            SheetDto sheetDTO = engine.getSheetDTO("beginner");
+            response.getWriter().println(gson.toJson(sheetDTO));
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

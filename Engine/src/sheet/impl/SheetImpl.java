@@ -214,8 +214,8 @@ public class SheetImpl implements Sheet, Serializable {
     }
 
     @Override
-    public Set<Range> getRanges() {
-        return this.ranges;
+    public Set<RangeGetters> getRanges() {
+        return Collections.unmodifiableSet(this.ranges);
     }
 
     @Override
