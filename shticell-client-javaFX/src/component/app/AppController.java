@@ -2,8 +2,6 @@ package component.app;
 
 import component.commands.CommandsController;
 import dto.*;
-import engine.api.Engine;
-import engine.impl.EngineImpl;
 import component.header.HeaderController;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -33,12 +31,7 @@ import component.ranges.RangesController;
 import component.sheet.SheetController;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
-import sheet.api.SheetGetters;
-import sheet.cell.api.Cell;
-import sheet.cell.api.CellGetters;
-import sheet.coordinate.api.Coordinate;
 import sheet.coordinate.impl.CoordinateFactory;
-import sheet.range.api.RangeGetters;
 import sheet.range.boundaries.api.Boundaries;
 import utils.http.HttpClientUtil;
 
@@ -170,11 +163,12 @@ public class AppController {
     //check:
     public void updateCell() {
 
-        RequestBody body = RequestBody.create(cellInFocus.getEffectiveValue().get(), MediaType.parse("text/plain"));
+        RequestBody body = RequestBody.create(cellInFocus.getOriginalValue().get(), MediaType.parse("text/plain"));
 
         String finalUrl = HttpUrl
                 .parse(UPDATE_CELL_URL)
                 .newBuilder()
+                .addQueryParameter("name",currentSheet.getName())
                 .addQueryParameter("target",cellInFocus.getCoordinate().get())
                 .build()
                 .toString();
@@ -190,7 +184,7 @@ public class AppController {
                 String jsonResponse = response.body().string();
 
                 if(response.code() != 200){
-                    showAlertPopup(new Exception(GSON_INSTANCE.fromJson(jsonResponse,String.class)), "updating cell " + "\"" + cellInFocus.getCoordinate().get() + "\"");
+                    Platform.runLater(()-> showAlertPopup(new Exception(GSON_INSTANCE.fromJson(jsonResponse,String.class)), "updating cell " + "\"" + cellInFocus.getCoordinate().get() + "\"") );
                 }
                 else{
                     SheetDto sheetDto = GSON_INSTANCE.fromJson(jsonResponse, SheetDto.class);
@@ -246,30 +240,77 @@ public class AppController {
     }
     public void addRange(String name, String boundaries) {
 
-        BoundariesStringDto boundariesStringDto = new BoundariesStringDto(name,boundaries);
-        String jsonString = GSON_INSTANCE.toJson(boundariesStringDto);
+        RangeStringDto rangeStringDto = new RangeStringDto(name,boundaries);
+        String jsonString = GSON_INSTANCE.toJson(rangeStringDto);
         RequestBody body = RequestBody.create(jsonString, MediaType.parse("text/plain"));
 
         String finalUrl = HttpUrl
-                .parse(ADD_RANGE_URL)
+                .parse(ADD_RANGE_URL + "/" + currentSheet.getName())
                 .newBuilder()
-                .addQueryParameter("sheet",cellInFocus.getCoordinate().get())
                 .build()
                 .toString();
 
+        HttpClientUtil.runAsyncPost(finalUrl, body, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> showAlertPopup(new Exception(),"add range"));
+            }
 
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+               String jsonResponse = response.body().string();
 
+                if(response.code() != 200){
+                    Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"add range"));
+                }
+                else{
+                    RangeDto rangeDto = GSON_INSTANCE.fromJson(jsonResponse, RangeDto.class);
 
+                    Platform.runLater(()->{
+                        rangesComponentController.runLaterAddRange(rangeDto);
+                    });
 
-//           if(engine.addRange(name, boundaries)){
-//               this.currentSheet = engine.getSheetStatus();
-//               setEffectiveValuesPoolProperty(new SheetDto(engine.getSheetStatus()), this.effectiveValuesPool);
-//               versionDesignManager.addVersion();
-//               //need to make in engine version manager, current version number.
-//               headerComponentController.addMenuOptionToVersionSelection(String.valueOf(engine.getVersionsManagerStatus().getVersions().size()));
-//           }
+                }
+
+            }
+        });
     }
     public void deleteRange(RangeDto range) throws Exception {
+        String jsonString = GSON_INSTANCE.toJson(range);
+        RequestBody body = RequestBody.create(jsonString, MediaType.parse("text/plain"));
+
+        String finalUrl = HttpUrl
+                .parse(ADD_RANGE_URL + "/" + currentSheet.getName())
+                .newBuilder()
+                .addQueryParameter("sheetName",this.currentSheet.getName())
+                .addQueryParameter("rangeName",range.getName())
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsyncPost(finalUrl, body, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> showAlertPopup(new Exception(),"add range"));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                String jsonResponse = response.body().string();
+
+                if(response.code() != 204){
+                    Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"add range"));
+                }
+                else{
+
+                    //nothing to do ?
+                    //return sheetDto ?
+                    //only range /
+
+
+                }
+
+            }
+        });
 //
 //        Collection<Coordinate> coordinates = rangeUses(range);
 //        if (coordinates.isEmpty()) {

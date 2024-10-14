@@ -141,16 +141,12 @@ public class RangesController {
     }
 
     public void addRange(String name, String boundaries) {
-        try{
             this.mainController.addRange(name, boundaries);
-            //ranges.add(this.mainController.getRange(name));
-            //todo: line above shouldnt be in commenet is bcz dto and compile check only.
-            popupStage.close();
-            tableViewActiveRanges.refresh();
-        }catch(Exception e){
-            mainController.showAlertPopup(e,"add range");
-        }
-
+    }
+    public void runLaterAddRange(RangeDto rangeDto){
+        ranges.add(rangeDto);
+        popupStage.close();
+        tableViewActiveRanges.refresh();
     }
 
     public void uploadRanges(Set<RangeDto> ranges) {

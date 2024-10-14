@@ -1,10 +1,10 @@
 package dto;
 
-public class BoundariesStringDto {
+public class RangeStringDto {
     private String name;
     private String boundaries;
 
-    public BoundariesStringDto(String name, String boundaries) {
+    public RangeStringDto(String name, String boundaries) {
         this.name = name;
         this.boundaries = boundaries;
     }

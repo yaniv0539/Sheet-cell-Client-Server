@@ -19,11 +19,15 @@ public class Constants {
     private final static String BASE_URL = "http://" + BASE_DOMAIN + ":8080";
     private final static String CONTEXT_PATH = "/shticell";
     private final static String FULL_SERVER_PATH = BASE_URL + CONTEXT_PATH;
+    private final static String RANGE_URL = BASE_URL + CONTEXT_PATH + "/range";
+
 
     public final static String UPLOAD_FILE_URL = FULL_SERVER_PATH + "/upload";
     public final static String UPDATE_CELL_URL = FULL_SERVER_PATH + "/updateCell";
     public final static String GET_VERSION_URL = FULL_SERVER_PATH + "/show";
-    public final static String ADD_RANGE_URL = FULL_SERVER_PATH + "/range/add";
+    public final static String ADD_RANGE_URL = RANGE_URL + "/add";
+    public final static String REMOVE_RANGE_URL = RANGE_URL + "/remove";
+
 
 //    public final static String USERS_LIST = FULL_SERVER_PATH + "/userslist";
 //    public final static String LOGOUT = FULL_SERVER_PATH + "/chat/logout";
