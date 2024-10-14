@@ -10,4 +10,12 @@ public class RangeDto {
         this.name = range.getName();
         this.boundaries = new BoundariesDto(range.getBoundaries());
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public BoundariesDto getBoundaries() {
+        return boundaries;
+    }
 }

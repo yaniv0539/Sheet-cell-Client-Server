@@ -10,21 +10,21 @@ import java.util.Map;
 
     public class EffectiveValuesPoolPropertyImpl implements EffectiveValuesPoolProperty {
 
-    Map<Coordinate, StringProperty> effectiveValuesMap;
+    Map<String, StringProperty> effectiveValuesMap;
 
     public EffectiveValuesPoolPropertyImpl() {
         effectiveValuesMap = new HashMap<>();
     }
 
     @Override
-    public StringProperty getEffectiveValuePropertyAt(Coordinate coordinate) {
-        return effectiveValuesMap.get(coordinate);
+    public StringProperty getEffectiveValuePropertyAt(String coordinateString) {
+        return effectiveValuesMap.get(coordinateString);
     }
 
     @Override
-    public boolean setEffectiveValuePropertyAt(Coordinate coordinate, String value) {
-        if (effectiveValuesMap.containsKey(coordinate)) {
-            effectiveValuesMap.get(coordinate).set(value);
+    public boolean setEffectiveValuePropertyAt(String coordinateString, String value) {
+        if (effectiveValuesMap.containsKey(coordinateString)) {
+            effectiveValuesMap.get(coordinateString).set(value);
             return true;
         }
 
@@ -32,13 +32,13 @@ import java.util.Map;
     }
 
     @Override
-    public void addEffectiveValuePropertyAt(Coordinate coordinate, String value) {
-        if(effectiveValuesMap.containsKey(coordinate)) {
-            setEffectiveValuePropertyAt(coordinate, value);
+    public void addEffectiveValuePropertyAt(String coordinateString, String value) {
+        if(effectiveValuesMap.containsKey(coordinateString)) {
+            setEffectiveValuePropertyAt(coordinateString, value);
             return;
         }
 
-        effectiveValuesMap.put(coordinate, new SimpleStringProperty(value));
+        effectiveValuesMap.put(coordinateString, new SimpleStringProperty(value));
     }
 
     @Override

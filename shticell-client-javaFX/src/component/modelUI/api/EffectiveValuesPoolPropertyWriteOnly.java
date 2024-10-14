@@ -4,7 +4,7 @@ import sheet.coordinate.api.Coordinate;
 
 public interface EffectiveValuesPoolPropertyWriteOnly {
 
-    boolean setEffectiveValuePropertyAt(Coordinate coordinate, String value);
-    void addEffectiveValuePropertyAt(Coordinate coordinate, String value);
+    boolean setEffectiveValuePropertyAt(String coordinate, String value);
+    void addEffectiveValuePropertyAt(String coordinate, String value);
     void clear();
 }

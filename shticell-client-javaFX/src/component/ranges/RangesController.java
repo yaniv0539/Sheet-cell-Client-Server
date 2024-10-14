@@ -1,6 +1,7 @@
 package component.ranges;
 
 import component.app.AppController;
+import dto.RangeDto;
 import javafx.beans.property.BooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -37,18 +38,18 @@ public class RangesController {
     private Button buttonDeleteRange;
 
     @FXML
-    private TableColumn<RangeGetters, String> tableActiveRanges;
+    private TableColumn<RangeDto, String> tableActiveRanges;
 
     @FXML
-    private TableView<RangeGetters> tableViewActiveRanges;
+    private TableView<RangeDto> tableViewActiveRanges;
 
     private AppController mainController;
 
-    private final ObservableList<RangeGetters> ranges;
+    private final ObservableList<RangeDto> ranges;
 
     private Stage popupStage;
 
-    private RangeGetters lastClickedItem = null;
+    private RangeDto lastClickedItem = null;
 
     public RangesController() {
         ranges = FXCollections.observableArrayList();
@@ -65,17 +66,17 @@ public class RangesController {
 
     @FXML
     void deleteRangeAction(ActionEvent event) {
-        RangeGetters selectedRange = tableViewActiveRanges.getSelectionModel().getSelectedItem();
-        try{
-            if (selectedRange != null) {
-                this.mainController.deleteRange(selectedRange);
-                this.ranges.remove(selectedRange);
-            }
-
-        }
-        catch(Exception e){
-            mainController.showAlertPopup(e,"Delete Range");
-        }
+//        RangeDto selectedRange = tableViewActiveRanges.getSelectionModel().getSelectedItem();
+//        try{
+//            if (selectedRange != null) {
+//               this.mainController.deleteRange(selectedRange);
+//                this.ranges.remove(selectedRange);
+//            }
+//
+//        }
+//        catch(Exception e){
+//            mainController.showAlertPopup(e,"Delete Range");
+//        }
     }
 
     void activateRangeAction(String resource, String title) throws IOException {
@@ -110,8 +111,8 @@ public class RangesController {
         tableActiveRanges.setCellValueFactory(new PropertyValueFactory<>("name"));
 
         tableViewActiveRanges.focusedProperty().addListener((observable, oldValue, newValue) -> {
-            TableView.TableViewSelectionModel<RangeGetters> selectionModel = tableViewActiveRanges.getSelectionModel();
-            RangeGetters selectedItem = selectionModel.getSelectedItem();
+            TableView.TableViewSelectionModel<RangeDto> selectionModel = tableViewActiveRanges.getSelectionModel();
+            RangeDto selectedItem = selectionModel.getSelectedItem();
 
             if (lastClickedItem != null && !newValue) {
                 this.mainController.resetRangeOnSheet(lastClickedItem);
@@ -122,8 +123,8 @@ public class RangesController {
         tableViewActiveRanges.setOnMouseClicked(event -> {
            if (event.getClickCount() == 1 && !event.isConsumed()) {
                 // Find the clicked row
-                TableView.TableViewSelectionModel<RangeGetters> selectionModel = tableViewActiveRanges.getSelectionModel();
-                RangeGetters selectedItem = selectionModel.getSelectedItem();
+                TableView.TableViewSelectionModel<RangeDto> selectionModel = tableViewActiveRanges.getSelectionModel();
+                RangeDto selectedItem = selectionModel.getSelectedItem();
 
                 if (selectedItem != null) {
                     if (lastClickedItem != null) {
@@ -140,18 +141,15 @@ public class RangesController {
     }
 
     public void addRange(String name, String boundaries) {
-        try{
             this.mainController.addRange(name, boundaries);
-            ranges.add(this.mainController.getRange(name));
-            popupStage.close();
-            tableViewActiveRanges.refresh();
-        }catch(Exception e){
-            mainController.showAlertPopup(e,"add range");
-        }
-
+    }
+    public void runLaterAddRange(RangeDto rangeDto){
+        ranges.add(rangeDto);
+        popupStage.close();
+        tableViewActiveRanges.refresh();
     }
 
-    public void uploadRanges(Set<RangeGetters> ranges) {
+    public void uploadRanges(Set<RangeDto> ranges) {
         this.ranges.clear();
         this.ranges.addAll(ranges);
         tableViewActiveRanges.refresh();
