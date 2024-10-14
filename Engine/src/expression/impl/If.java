@@ -14,12 +14,10 @@ public class If extends ExpressionImpl {
         this.condition = condition;
         this.thenExpression = thenExpression;
         this.elseExpression = elseExpression;
-       // setDataType(this.evaluate().getType());
     }
 
     @Override
     public Data evaluate() {
-
         Data data;
 
         if(condition.evaluate().getType() == DataType.BOOLEAN && thenExpression.evaluate().getType() == elseExpression.evaluate().getType()) {

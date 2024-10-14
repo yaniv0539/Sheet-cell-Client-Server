@@ -21,7 +21,6 @@ public class Sum extends UnaryExpression {
 
     @Override
     protected Data dynamicEvaluate(Data input) {
-
         Data data = new DataImpl(DataType.UNKNOWN,Double.NaN);
 
         if(input.getType() == DataType.STRING) {

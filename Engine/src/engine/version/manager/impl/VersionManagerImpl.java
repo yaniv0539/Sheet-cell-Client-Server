@@ -2,19 +2,16 @@ package engine.version.manager.impl;
 
 import engine.version.manager.api.VersionManager;
 import sheet.api.Sheet;
-import sheet.api.SheetGetters;
 import sheet.impl.SheetImpl;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class VersionManagerImpl implements VersionManager, Serializable {
 
-    private int currentVersion = 0;
-
-    private final List<SheetGetters> versions;
+    private final static int FIRST_VERSION = 1;
+    private final List<Sheet> versions;
 
     private VersionManagerImpl() {
         this.versions = new ArrayList<>();
@@ -24,44 +21,52 @@ public class VersionManagerImpl implements VersionManager, Serializable {
         return new VersionManagerImpl();
     }
 
-    public List<SheetGetters> getVersions() {
-        return Collections.unmodifiableList(this.versions);
+    @Override
+    public List<Sheet> getVersions() {
+        return this.versions;
     }
 
     @Override
-    public SheetGetters getVersion(int version) {
+    public Sheet getVersion(int version) {
         
-        for (SheetGetters sheetGetters : this.versions) {
-            if (sheetGetters.getVersion() == version) {
-                return sheetGetters;
+        for (Sheet sheet : this.versions) {
+            if (sheet.getVersion() == version) {
+                return sheet;
             }
         }
 
         throw new IllegalArgumentException("Version " + version + " not found");
     }
 
-    public int getCurrentVersion() {
-        return currentVersion;
+    @Override
+    public Sheet getLastVersion() {
+        return this.versions.getLast();
     }
 
     @Override
-    public void addVersion(Sheet sheet) {
-        this.versions.add(copySheet(sheet));
-        currentVersion++;
-    }
-
-    public void increaseVersion(Sheet sheet) {
-        sheet.setVersion(sheet.getVersion() + 1);
-    }
-
-    public void decreaseVersion(Sheet sheet) {
-        sheet.setVersion(sheet.getVersion() - 1);
-    }
-
-    @Override
-    public void clearVersions() {
-        currentVersion = 0;
+    public void init(Sheet sheet) {
         this.versions.clear();
+        Sheet firstVersion = copySheet(sheet);
+        firstVersion.setVersion(FIRST_VERSION);
+        this.versions.add(firstVersion);
+    }
+
+    @Override
+    public void makeNewVersion() {
+        Sheet lastVersion = getLastVersion();
+
+        if (lastVersion == null) {
+            throw new IllegalArgumentException("No version found, please use the init function to make the first version");
+        }
+
+        Sheet newVersion = copySheet(lastVersion);
+        newVersion.setVersion(newVersion.getVersion() + 1);
+        this.versions.add(newVersion);
+    }
+
+    @Override
+    public void deleteLastVersion() {
+        this.versions.removeLast();
     }
 
     private Sheet copySheet(Sheet sheet) {
@@ -79,4 +84,19 @@ public class VersionManagerImpl implements VersionManager, Serializable {
             throw new RuntimeException(e);
         }
     }
+
+//    @Override
+//    public void increaseVersion(Sheet sheet) {
+//        sheet.setVersion(sheet.getVersion() + 1);
+//    }
+//
+//    @Override
+//    public void decreaseVersion(Sheet sheet) {
+//        sheet.setVersion(sheet.getVersion() - 1);
+//    }
+//
+//    @Override
+//    public void clearVersions() {
+//        this.versions.clear();
+//    }
 }

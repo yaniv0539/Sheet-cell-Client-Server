@@ -6,7 +6,6 @@ import expression.api.Expression;
 
 public class Equal extends BinaryExpression {
 
-
     public Equal(Expression left, Expression right) {
         super(left, right);
         setDataType(DataType.BOOLEAN);

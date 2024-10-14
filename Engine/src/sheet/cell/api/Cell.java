@@ -1,4 +1,3 @@
 package sheet.cell.api;
 
-public interface Cell extends CellGetters, CellSetters {
-}
+public interface Cell extends CellGetters, CellSetters { }

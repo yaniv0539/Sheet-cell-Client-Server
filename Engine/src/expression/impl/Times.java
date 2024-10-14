@@ -8,10 +8,8 @@ import java.util.Arrays;
 public class Times extends BinaryExpression {
 
     public Times(Expression left, Expression right) {
-
         super(left, right);
         setDataType(DataType.NUMERIC);
-       //isValidArgs(left, right);
     }
 
     @Override
@@ -29,7 +27,6 @@ public class Times extends BinaryExpression {
                 .allMatch(arg -> arg.getType() == DataType.NUMERIC || arg.getType() == DataType.UNKNOWN);
 
         if (!value) {
-            //need to throw our own exception.
             throw new IllegalArgumentException("arguments must be number/numeric function or reference to cell!\n" +
                     "for example: {TIMES,{DIVIDE,4,5},{REF,A3}}");
         }

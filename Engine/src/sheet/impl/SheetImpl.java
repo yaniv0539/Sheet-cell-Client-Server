@@ -1,8 +1,5 @@
 package sheet.impl;
 
-import expression.api.Data;
-import expression.api.DataType;
-import expression.api.Expression;
 import expression.impl.Average;
 import expression.impl.DataImpl;
 import expression.impl.Ref;
@@ -26,15 +23,13 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 public class SheetImpl implements Sheet, Serializable {
 
     private final String name;
     private final Layout layout;
     private int version;
-    private Map<Coordinate, Cell> activeCells;
-    private Set<Range> ranges;
-    private int numberOfCellsThatChanged;
+    private final Map<Coordinate, Cell> activeCells;
+    private final Set<Range> ranges;
 
     private SheetImpl(String name, Layout layout) {
 
@@ -87,20 +82,8 @@ public class SheetImpl implements Sheet, Serializable {
     }
 
     @Override
-    public int getNumberOfCellsThatChanged() {
-        return this.numberOfCellsThatChanged;
-    }
-
-    @Override
     public Map<Coordinate, CellGetters> getActiveCells() {
         return Collections.unmodifiableMap(this.activeCells);
-    }
-
-    // FOR INTERFACE lookupCellService
-    //NO NEED
-    @Override
-    public Data getCellData(String cellId) {
-        return new DataImpl(DataType.UNKNOWN,1);
     }
 
     @Override
@@ -115,35 +98,36 @@ public class SheetImpl implements Sheet, Serializable {
 
     @Override
     public boolean addRange(String name, Boundaries boundaries) {
-        if(!isRangeInBoundaries(boundaries)){
+
+        if (!isRangeInBoundaries(boundaries)){
             throw new IndexOutOfBoundsException("first coordinate " + boundaries.getFrom() + " < " + boundaries.getTo() + " last coordinate in " + name+ "\n" +
                                                 "Range format:<top-left-cell>..<bottom-right-cell>");
         }
-        ///itay change
+
         RangeImpl range = RangeImpl.create(name, boundaries);
         if (!ranges.add(range)) {
             throw new IllegalArgumentException("Range " +"\""+name+"\""+ " already exists in " + "\""+this.name+"\"");
         }
-        //itay change
+
         Collection<Coordinate> coordinates = this.rangeUses(range);
         if (!coordinates.isEmpty()) {
             coordinates.forEach(coordinate -> {
                 this.setCell(coordinate, activeCells.get(coordinate).getOriginalValue());
             });
         }
+
         return !coordinates.isEmpty();
     }
 
     @Override
     public boolean isRangeInBoundaries(Boundaries boundaries) {
-
         return (isCoordinateInBoundaries(boundaries.getFrom()) && isCoordinateInBoundaries(boundaries.getTo())
                  && CoordinateFactory.isGreaterThen(boundaries.getTo(),boundaries.getFrom()));
     }
 
     @Override
-    public void deleteRange(RangeGetters range) {
-        ranges.remove(range);
+    public boolean deleteRange(RangeGetters range) {
+        return ranges.remove(range);
     }
 
     @Override
@@ -166,7 +150,6 @@ public class SheetImpl implements Sheet, Serializable {
              insertCellToSheet(previousCell);
              throw circle;
          }
-
     }
 
     @Override
@@ -204,51 +187,6 @@ public class SheetImpl implements Sheet, Serializable {
 
             throw exception;
         }
-        numberOfCellsThatChanged = originalValues.size();
-    }
-
-    private void setCellsHelper(Map<Coordinate, String> newOriginalValuesMap,
-                                Map<Coordinate, Boolean> flagMap,
-                                Map<Coordinate, String> oldOriginalValueMap,
-                                Stack<Coordinate> updatedCellsCoordinates,
-                                Coordinate coordinate) {
-
-        // If we touched the coordinate, go back.
-        if (flagMap.get(coordinate)) {
-            return;
-        }
-
-        // We touched the coordinate!
-        flagMap.put(coordinate, true);
-
-        String newOriginalValue = newOriginalValuesMap.get(coordinate);
-
-        Set<Coordinate> refCoordinates = OrignalValueUtilis.findInfluenceFrom(newOriginalValue,this);
-
-        // For each cell that we might be depended on, we'll do some checks:
-        // If the cell is inside 'newOriginalValuesMap', we'll do recursive operation with this cell.
-        // Else if the cell is not inside 'activeCells' map we'll throw exception because this cell is null.
-        // Else, it is inside 'activeCells' map, and we'll skip to next iteration.
-
-        refCoordinates.forEach(refCoordinate -> {
-            if (newOriginalValuesMap.containsKey(refCoordinate)) {
-                setCellsHelper(newOriginalValuesMap, flagMap, oldOriginalValueMap, updatedCellsCoordinates, refCoordinate);
-            }
-            else if (!this.activeCells.containsKey(refCoordinate)) {
-                throw new IndexOutOfBoundsException(refCoordinate + " is not define in file, cannot get data !");
-            }
-        });
-
-        if (this.activeCells.containsKey(coordinate)) {
-            Cell cell = this.activeCells.get(coordinate);
-            oldOriginalValueMap.put(coordinate, cell.getOriginalValue());
-        }
-        else {
-            oldOriginalValueMap.put(coordinate, "");
-        }
-
-        setCell(coordinate, newOriginalValue);
-        updatedCellsCoordinates.push(coordinate);
     }
 
     @Override
@@ -259,138 +197,6 @@ public class SheetImpl implements Sheet, Serializable {
         }
 
         return true;
-    }
-
-    private boolean isRowInSheetBoundaries(int row) {
-        return !(row >= this.layout.getRows());
-    }
-
-    private boolean isColumnInSheetBoundaries(int column) {
-        return !(column >= this.layout.getColumns());
-    }
-
-    public static boolean isValidVersion(int version) {
-        return version >= 1;
-    }
-
-    private boolean circleFrom(Cell cellToCheck) {
-        return hasCircle(cellToCheck);
-    }
-
-    private boolean hasCircle(Cell cellToCheck) {
-        return recHasCircle(cellToCheck, new HashSet<Coordinate>());
-    }
-
-    private boolean recHasCircle(Cell current, Set<Coordinate> visited) {
-        try{
-            // If the current object is already visited, a cycle is detected
-            if (visited.contains(current.getCoordinate())) {
-                return true;
-            }
-
-            // Mark the current object as visited
-            visited.add(current.getCoordinate());
-
-            // Recur for all the objects in the relatedObjects list
-            for (Cell affectedBy : current.getInfluenceFrom()) {
-                // If a cycle is detected in the recursion, return true
-                if (recHasCircle(affectedBy, visited)) {
-                    throw new IllegalArgumentException("Circular voting: " + affectedBy.getCoordinate().toString());
-                }
-            }
-
-            // Remove the current object from the visited set (backtracking)
-            visited.remove(current.getCoordinate());
-
-            // If no cycle was found, return false
-            return false;
-        }catch (IllegalArgumentException exception) {
-           throw new IllegalArgumentException(exception.getMessage() + " -> " + current.getCoordinate().toString());
-        }
-
-    }
-
-    private Set<Cell> CoordinateToCell(Set<Coordinate> newInfluenceCellsId) {
-        Set<Cell> Cells = new HashSet<>();
-
-        for (Coordinate location : newInfluenceCellsId) {
-            Cells.add(getCell(location));
-        }
-        return Cells;
-    }
-
-    private Stack<Cell> topologicalSortFrom(Cell cell) {
-
-        Stack<Cell> stack = new Stack<>();
-        Set<Coordinate> visited = new HashSet<>();
-
-        // Call the recursive helper function to store topological sort starting from all cells one by one
-        for (Cell neighbor : cell.getInfluenceOn()) {
-
-            if (!visited.contains(neighbor.getCoordinate())) {
-                dfs(neighbor, visited, stack);
-            }
-        }
-        stack.push(cell);
-
-        return stack;
-    }
-
-    private void dfs(Cell cell, Set<Coordinate> visited,Stack<Cell> stack) {
-        visited.add(cell.getCoordinate());
-
-        // Visit all the adjacent vertices
-        for (Cell neighbor : cell.getInfluenceOn()) {
-
-            if (!visited.contains(neighbor.getCoordinate())) {
-                dfs(neighbor, visited, stack);
-            }
-        }
-
-        // Push current cell to stack which stores the result
-        stack.push(cell);
-    }
-
-    private Cell insertCellToSheet(Cell toInsert) {
-
-        Cell toReplace = activeCells.put(toInsert.getCoordinate(),toInsert);
-        OrignalValueUtilis.findInfluenceFrom(toInsert.getOriginalValue(),this).forEach(coord ->
-        {
-            isCoordinateInBoundaries(coord);
-            if(!activeCells.containsKey(coord)) {
-                Cell c = CellImpl.create(coord,version, DataImpl.empty);
-                c.computeEffectiveValue();
-                activeCells.put(coord,c);
-            }
-        });
-
-        toInsert.setInfluenceFrom(CoordinateToCell(OrignalValueUtilis.findInfluenceFrom(toInsert.getOriginalValue(),this)));
-        toInsert.getInfluenceFrom().forEach(cell -> cell.getInfluenceOn().add(toInsert));
-
-        //if it is a new cell there is no influenceOn, if exist he may have influenced on other cells.
-        if(toReplace != null) {
-            toInsert.setInfluenceOn(toReplace.getInfluenceOn());
-            toInsert.getInfluenceOn().forEach(cell -> cell.getInfluenceFrom().add(toInsert));
-            //until here we get a new sheet now we just need to remove
-            toReplace.getInfluenceFrom().forEach(cell -> cell.getInfluenceOn().remove(toReplace));
-            toReplace.getInfluenceOn().forEach(cell -> cell.getInfluenceFrom().remove(toReplace));
-
-        }
-
-        return toReplace;
-    }
-
-    private void recalculateSheetFrom(Cell cell) {
-
-        Stack<Cell> cellStack = topologicalSortFrom(cell);
-        numberOfCellsThatChanged = cellStack.size();
-
-        while (!cellStack.isEmpty()) {
-            Cell c = cellStack.pop();
-            c.computeEffectiveValue();
-            c.setVersion(version);
-
-        }
     }
 
     @Override
@@ -408,8 +214,8 @@ public class SheetImpl implements Sheet, Serializable {
     }
 
     @Override
-    public Set<Range> getRanges() {
-        return this.ranges;
+    public Set<RangeGetters> getRanges() {
+        return Collections.unmodifiableSet(this.ranges);
     }
 
     @Override
@@ -472,7 +278,6 @@ public class SheetImpl implements Sheet, Serializable {
         return uniqueValues;
     }
 
-
     @Override
     public Collection<Coordinate> rangeUses(RangeGetters range) {
 
@@ -513,5 +318,178 @@ public class SheetImpl implements Sheet, Serializable {
         if (!ranges.add(range)) {
             throw new IllegalArgumentException("Range already exists in " + this.name);
         }
+    }
+
+    private boolean isRowInSheetBoundaries(int row) {
+        return !(row >= this.layout.getRows());
+    }
+
+    private boolean isColumnInSheetBoundaries(int column) {
+        return !(column >= this.layout.getColumns());
+    }
+
+    public static boolean isValidVersion(int version) {
+        return version >= 1;
+    }
+
+    private boolean circleFrom(Cell cellToCheck) {
+        return hasCircle(cellToCheck);
+    }
+
+    private boolean hasCircle(Cell cellToCheck) {
+        return recHasCircle(cellToCheck, new HashSet<Coordinate>());
+    }
+
+    private boolean recHasCircle(Cell current, Set<Coordinate> visited) {
+        try {
+            // If the current object is already visited, a cycle is detected
+            if (visited.contains(current.getCoordinate())) {
+                return true;
+            }
+
+            // Mark the current object as visited
+            visited.add(current.getCoordinate());
+
+            // Recur for all the objects in the relatedObjects list
+            for (Cell affectedBy : current.getInfluenceFrom()) {
+                // If a cycle is detected in the recursion, return true
+                if (recHasCircle(affectedBy, visited)) {
+                    throw new IllegalArgumentException("Circular voting: " + affectedBy.getCoordinate().toString());
+                }
+            }
+
+            // Remove the current object from the visited set (backtracking)
+            visited.remove(current.getCoordinate());
+
+            // If no cycle was found, return false
+            return false;
+        } catch (IllegalArgumentException exception) {
+           throw new IllegalArgumentException(exception.getMessage() + " -> " + current.getCoordinate().toString());
+        }
+    }
+
+    private Set<Cell> CoordinateToCell(Set<Coordinate> newInfluenceCellsId) {
+        Set<Cell> Cells = new HashSet<>();
+
+        for (Coordinate location : newInfluenceCellsId) {
+            Cells.add(getCell(location));
+        }
+        return Cells;
+    }
+
+    private Stack<Cell> topologicalSortFrom(Cell cell) {
+        Stack<Cell> stack = new Stack<>();
+        Set<Coordinate> visited = new HashSet<>();
+
+        // Call the recursive helper function to store topological sort starting from all cells one by one
+        for (Cell neighbor : cell.getInfluenceOn()) {
+
+            if (!visited.contains(neighbor.getCoordinate())) {
+                dfs(neighbor, visited, stack);
+            }
+        }
+
+        stack.push(cell);
+
+        return stack;
+    }
+
+    private void dfs(Cell cell, Set<Coordinate> visited,Stack<Cell> stack) {
+        visited.add(cell.getCoordinate());
+
+        // Visit all the adjacent vertices
+        for (Cell neighbor : cell.getInfluenceOn()) {
+
+            if (!visited.contains(neighbor.getCoordinate())) {
+                dfs(neighbor, visited, stack);
+            }
+        }
+
+        // Push current cell to stack which stores the result
+        stack.push(cell);
+    }
+
+    private Cell insertCellToSheet(Cell toInsert) {
+
+        Cell toReplace = activeCells.put(toInsert.getCoordinate(),toInsert);
+        OrignalValueUtilis.findInfluenceFrom(toInsert.getOriginalValue(),this).forEach(coord ->
+        {
+            isCoordinateInBoundaries(coord);
+            if(!activeCells.containsKey(coord)) {
+                Cell c = CellImpl.create(coord,version, DataImpl.empty);
+                c.computeEffectiveValue();
+                activeCells.put(coord,c);
+            }
+        });
+
+        toInsert.setInfluenceFrom(CoordinateToCell(OrignalValueUtilis.findInfluenceFrom(toInsert.getOriginalValue(),this)));
+        toInsert.getInfluenceFrom().forEach(cell -> cell.getInfluenceOn().add(toInsert));
+
+        //if it is a new cell there is no influenceOn, if exist he may have influenced on other cells.
+        if(toReplace != null) {
+            toInsert.setInfluenceOn(toReplace.getInfluenceOn());
+            toInsert.getInfluenceOn().forEach(cell -> cell.getInfluenceFrom().add(toInsert));
+            //until here we get a new sheet now we just need to remove
+            toReplace.getInfluenceFrom().forEach(cell -> cell.getInfluenceOn().remove(toReplace));
+            toReplace.getInfluenceOn().forEach(cell -> cell.getInfluenceFrom().remove(toReplace));
+
+        }
+
+        return toReplace;
+    }
+
+    private void recalculateSheetFrom(Cell cell) {
+
+        Stack<Cell> cellStack = topologicalSortFrom(cell);
+
+        while (!cellStack.isEmpty()) {
+            Cell c = cellStack.pop();
+            c.computeEffectiveValue();
+            c.setVersion(version);
+        }
+    }
+
+    private void setCellsHelper(Map<Coordinate, String> newOriginalValuesMap,
+                                Map<Coordinate, Boolean> flagMap,
+                                Map<Coordinate, String> oldOriginalValueMap,
+                                Stack<Coordinate> updatedCellsCoordinates,
+                                Coordinate coordinate) {
+
+        // If we touched the coordinate, go back.
+        if (flagMap.get(coordinate)) {
+            return;
+        }
+
+        // We touched the coordinate!
+        flagMap.put(coordinate, true);
+
+        String newOriginalValue = newOriginalValuesMap.get(coordinate);
+
+        Set<Coordinate> refCoordinates = OrignalValueUtilis.findInfluenceFrom(newOriginalValue,this);
+
+        // For each cell that we might be depended on, we'll do some checks:
+        // If the cell is inside 'newOriginalValuesMap', we'll do recursive operation with this cell.
+        // Else if the cell is not inside 'activeCells' map we'll throw exception because this cell is null.
+        // Else, it is inside 'activeCells' map, and we'll skip to next iteration.
+
+        refCoordinates.forEach(refCoordinate -> {
+            if (newOriginalValuesMap.containsKey(refCoordinate)) {
+                setCellsHelper(newOriginalValuesMap, flagMap, oldOriginalValueMap, updatedCellsCoordinates, refCoordinate);
+            }
+            else if (!this.activeCells.containsKey(refCoordinate)) {
+                throw new IndexOutOfBoundsException(refCoordinate + " is not define in file, cannot get data !");
+            }
+        });
+
+        if (this.activeCells.containsKey(coordinate)) {
+            Cell cell = this.activeCells.get(coordinate);
+            oldOriginalValueMap.put(coordinate, cell.getOriginalValue());
+        }
+        else {
+            oldOriginalValueMap.put(coordinate, "");
+        }
+
+        setCell(coordinate, newOriginalValue);
+        updatedCellsCoordinates.push(coordinate);
     }
 }

@@ -19,7 +19,6 @@ public class BoundariesFactory {
     }
 
     public static Boundaries toBoundaries(String boundariesName) {
-
         boundariesName = boundariesName.toUpperCase();
 
         if (boundariesName.trim().isEmpty()) {
@@ -38,8 +37,8 @@ public class BoundariesFactory {
 
         return BoundariesFactory.createBoundaries(from, to);
     }
+
     public static boolean isValidBoundariesFormat(String boundariesName) {
         return boundariesName.matches(CELL_RANGE_REGEX);
     }
-
 }

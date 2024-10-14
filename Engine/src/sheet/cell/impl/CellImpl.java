@@ -7,7 +7,6 @@ import sheet.cell.api.Cell;
 import sheet.coordinate.api.Coordinate;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -92,15 +91,15 @@ public class CellImpl implements Cell, Serializable {
        this.originalValue = originalValue;
     }
 
-    private void setEffectiveValue(Data effectiveValue) {
-        this.effectiveValue = effectiveValue;
-    }
-
     @Override
     public void setVersion(int changeInVersion) { version = changeInVersion; }
 
     @Override
     public void computeEffectiveValue() {
         setEffectiveValue(expression.evaluate());
+    }
+
+    private void setEffectiveValue(Data effectiveValue) {
+        this.effectiveValue = effectiveValue;
     }
 }

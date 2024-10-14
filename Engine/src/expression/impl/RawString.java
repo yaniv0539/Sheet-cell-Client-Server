@@ -1,4 +1,5 @@
 package expression.impl;
+
 import expression.api.Data;
 import expression.api.DataType;
 
@@ -11,7 +12,6 @@ public class RawString extends ExpressionImpl {
     public RawString(String value) {
         this.value = value;
         setDataType(DataType.STRING);
-        //isValidArgs(value);
     }
 
     @Override
@@ -35,7 +35,6 @@ public class RawString extends ExpressionImpl {
         catch(ClassCastException e) {
             throw new IllegalArgumentException("arguments must be String in " + this.getClass().getSimpleName());
         }
-
 
         return true;
     }

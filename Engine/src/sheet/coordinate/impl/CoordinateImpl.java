@@ -51,16 +51,6 @@ public class CoordinateImpl implements Coordinate, Serializable {
         return Objects.hash(row, column);
     }
 
-    private static boolean isValidRow(int row)
-    {
-        return row >= 0;
-    }
-
-    private static boolean isValidColumn(int column)
-    {
-        return column >= 0;
-    }
-
     @Override
     public String toString() {
         // Convert x to a character, starting with 'A'
@@ -73,4 +63,13 @@ public class CoordinateImpl implements Coordinate, Serializable {
         return "" + column + row;
     }
 
+    private static boolean isValidRow(int row)
+    {
+        return row >= 0;
+    }
+
+    private static boolean isValidColumn(int column)
+    {
+        return column >= 0;
+    }
 }

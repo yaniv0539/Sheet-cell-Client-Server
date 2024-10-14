@@ -1,17 +1,14 @@
 package operation;
 
-import exception.InvalidFunctionArgument;
 import expression.api.Expression;
 import expression.impl.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
-import java.util.List;
 
 public enum Operation {
 
-    PLUS(BinaryExpression.numberOfArgs)
-        {
+    PLUS(BinaryExpression.numberOfArgs) {
         @Override
         public Expression create(Object... args)
         {
@@ -27,110 +24,126 @@ public enum Operation {
         }
     },
 
-    TIMES(BinaryExpression.numberOfArgs){
+    TIMES(BinaryExpression.numberOfArgs) {
         @Override
         public Expression create(Object... args) {
             return  (Expression) createInstance(Times.class, getNumberOfArguments(),args);
         }
     },
 
-    DIVIDE(BinaryExpression.numberOfArgs){
+    DIVIDE(BinaryExpression.numberOfArgs) {
         @Override
         public Expression create(Object... args) {
             return (Expression) createInstance(Divide.class, getNumberOfArguments(),args);
         }
     },
-    CONCAT(BinaryExpression.numberOfArgs){
+
+    CONCAT(BinaryExpression.numberOfArgs) {
         @Override
         public Expression create(Object... args) {
             return (Expression) createInstance(Concat.class, getNumberOfArguments(),args);
         }
     },
-    POW(BinaryExpression.numberOfArgs){
+
+    POW(BinaryExpression.numberOfArgs) {
         @Override
         public Expression create(Object... args) {
             return (Expression) createInstance(Pow.class, getNumberOfArguments(),args);
         }
     },
+
     MOD(BinaryExpression.numberOfArgs){
         @Override
         public Expression create(Object... args) {
             return (Expression) createInstance(Mod.class, getNumberOfArguments(),args);
         }
     },
-    SUB(3){
+
+    SUB(3) {
         @Override
         public Expression create(Object... args) {
             return (Expression) createInstance(Sub.class, getNumberOfArguments(),args);
         }
     },
-    ABS(UnaryExpression.numberOfArgs){
+
+    ABS(UnaryExpression.numberOfArgs) {
         @Override
         public Expression create(Object... args) {
             return (Expression) createInstance(Abs.class, getNumberOfArguments(),args);
         }
     },
-    REF(UnaryExpression.numberOfArgs){
+
+    REF(UnaryExpression.numberOfArgs) {
         @Override
         public Expression create(Object... args) {
             return (Expression) createInstance(Ref.class, getNumberOfArguments(),args);
         }
     },
-    EQUAL(BinaryExpression.numberOfArgs){
+
+    EQUAL(BinaryExpression.numberOfArgs) {
         @Override
         public Expression create(Object... args) {
             return (Expression) createInstance(Equal.class, getNumberOfArguments(),args);
         }
     },
-    NOT(UnaryExpression.numberOfArgs){
+
+    NOT(UnaryExpression.numberOfArgs) {
         @Override
         public Expression create(Object... args) {
             return (Expression) createInstance(Not.class, getNumberOfArguments(),args);
         }
     },
-    OR(BinaryExpression.numberOfArgs){
+
+    OR(BinaryExpression.numberOfArgs) {
         @Override
         public Expression create(Object... args) {
             return (Expression) createInstance(Or.class, getNumberOfArguments(),args);
         }
     },
-    AND(BinaryExpression.numberOfArgs){
+
+    AND(BinaryExpression.numberOfArgs) {
         @Override
         public Expression create(Object... args) {
             return (Expression) createInstance(And.class, getNumberOfArguments(),args);
         }
     },
-    BIGGER(BinaryExpression.numberOfArgs){
+
+    BIGGER(BinaryExpression.numberOfArgs) {
         @Override
         public Expression create(Object... args) {
             return (Expression) createInstance(Bigger.class, getNumberOfArguments(),args);
         }
     },
-    LESS(BinaryExpression.numberOfArgs){
+
+    LESS(BinaryExpression.numberOfArgs) {
         @Override
         public Expression create(Object... args) {
             return (Expression) createInstance(Less.class, getNumberOfArguments(),args);
         }
     },
-    IF(3){
+
+    IF(3) {
         @Override
         public Expression create(Object... args) {
             return (Expression) createInstance(If.class, getNumberOfArguments(),args);
         }
     },
-    PERCENT(BinaryExpression.numberOfArgs){
+
+    PERCENT(BinaryExpression.numberOfArgs) {
         @Override
         public Expression create(Object... args) {
             return (Expression) createInstance(Percent.class, getNumberOfArguments(),args);
         }
     },
-    SUM(UnaryExpression.numberOfArgs){
+
+    SUM(UnaryExpression.numberOfArgs) {
         @Override
         public Expression create(Object... args) {
             return (Expression) createInstance(Sum.class, getNumberOfArguments(),args);
         }
     },
-    AVERAGE(UnaryExpression.numberOfArgs){
+
+    AVERAGE(UnaryExpression.numberOfArgs) {
         @Override
         public Expression create(Object... args) {
             return (Expression) createInstance(Average.class, getNumberOfArguments(),args);

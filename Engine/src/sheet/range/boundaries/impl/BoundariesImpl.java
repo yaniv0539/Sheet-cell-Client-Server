@@ -6,6 +6,7 @@ import sheet.range.boundaries.api.Boundaries;
 import java.io.Serializable;
 
 public class BoundariesImpl implements Boundaries, Serializable {
+
     private Coordinate from;
     private Coordinate to;
 
@@ -27,6 +28,4 @@ public class BoundariesImpl implements Boundaries, Serializable {
     public Coordinate getTo() {
         return this.to;
     }
-
-
 }

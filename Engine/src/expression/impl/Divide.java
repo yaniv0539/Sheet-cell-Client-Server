@@ -8,11 +8,9 @@ import java.util.Arrays;
 
 public class Divide extends BinaryExpression {
 
-
     public Divide(Expression left, Expression right) {
         super(left, right);
         setDataType(DataType.NUMERIC);
-        //isValidArgs(left, right);
     }
 
     @Override
@@ -42,7 +40,6 @@ public class Divide extends BinaryExpression {
                 .allMatch(arg -> arg.getType() == DataType.NUMERIC || arg.getType() == DataType.UNKNOWN);
 
         if (!value) {
-            //need to throw our own exception.
             throw new IllegalArgumentException("arguments must be number/numeric function or reference to cell!\n" +
                     "for example: {DIVIDE,{PLUS,4,5},{REF,A3}}");
         }

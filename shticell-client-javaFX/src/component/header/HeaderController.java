@@ -132,7 +132,7 @@ public class HeaderController {
                 textFieldCellId.textProperty().bind(strProp);
         }
 
-        //test nor real implementation
+//        test nor real implementation
         @FXML
         void buttonUpdateCellAction(ActionEvent event) {
                 mainController.updateCell();

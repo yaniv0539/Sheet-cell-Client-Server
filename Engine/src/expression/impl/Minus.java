@@ -11,7 +11,6 @@ public class Minus extends BinaryExpression  {
     public Minus(Expression left, Expression right) {
         super(left, right);
         setDataType(DataType.NUMERIC);
-        //isValidArgs(left, right);
     }
 
     @Override
@@ -29,7 +28,6 @@ public class Minus extends BinaryExpression  {
                 .allMatch(arg -> arg.getType() == DataType.NUMERIC || arg.getType() == DataType.UNKNOWN);
 
         if (!value) {
-            //need to throw our own exception.
             throw new IllegalArgumentException("arguments must be number/numeric function or reference to cell!\n" +
                     "for example: {MINUS,{PLUS,4,5},{REF,A3}}");
         }

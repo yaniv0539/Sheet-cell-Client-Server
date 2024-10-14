@@ -12,13 +12,13 @@ import java.util.Set;
 
 public class CellDtoDeserializer implements JsonDeserializer<CellDto> {
 
-    private Map<CoordinateDto, CellDto> referenceCache = new HashMap<>();
+    private final Map<CoordinateDto, CellDto> referenceCache = new HashMap<>();
 
     @Override
     public CellDto deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         CoordinateDto coordinate = context.deserialize(json.getAsJsonObject().get("coordinate"), CoordinateDto.class);
 
-        // Check if the cell with this coordinate is already deserialized
+//         Check if the cell with this coordinate is already deserialized
         if (referenceCache.containsKey(coordinate)) {
             return referenceCache.get(coordinate);
         }

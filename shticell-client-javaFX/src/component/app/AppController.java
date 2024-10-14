@@ -1,8 +1,12 @@
 package component.app;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import component.commands.CommandsController;
 import dto.*;
 import component.header.HeaderController;
+import dto.deserializer.CellDtoDeserializer;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
@@ -155,6 +159,7 @@ public class AppController {
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 String jsonResponse = response.body().string(); // Raw response
+                System.out.println(jsonResponse);
                 SheetDto sheetDto = GSON_INSTANCE.fromJson(jsonResponse, SheetDto.class);
                 Platform.runLater(() -> onFinishLoadingFile(sheetDto));
             }
@@ -168,7 +173,7 @@ public class AppController {
         String finalUrl = HttpUrl
                 .parse(UPDATE_CELL_URL)
                 .newBuilder()
-                .addQueryParameter("name",currentSheet.getName())
+                .addQueryParameter("sheetName",currentSheet.getName())
                 .addQueryParameter("target",cellInFocus.getCoordinate().get())
                 .build()
                 .toString();
@@ -183,11 +188,13 @@ public class AppController {
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 String jsonResponse = response.body().string();
 
-                if(response.code() != 200){
+                if(response.code() != 201) {
                     Platform.runLater(()-> showAlertPopup(new Exception(GSON_INSTANCE.fromJson(jsonResponse,String.class)), "updating cell " + "\"" + cellInFocus.getCoordinate().get() + "\"") );
                 }
                 else{
-                    SheetDto sheetDto = GSON_INSTANCE.fromJson(jsonResponse, SheetDto.class);
+                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
+                   // SheetDto sheetDto = GSON_INSTANCE.fromJson(jsonResponse, SheetDto.class);
+                    SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
                     Platform.runLater(() ->{
                         currentSheet = sheetDto;
                         setEffectiveValuesPoolProperty(currentSheet, effectiveValuesPool);
@@ -240,13 +247,16 @@ public class AppController {
     }
     public void addRange(String name, String boundaries) {
 
-        RangeStringDto rangeStringDto = new RangeStringDto(name,boundaries);
-        String jsonString = GSON_INSTANCE.toJson(rangeStringDto);
-        RequestBody body = RequestBody.create(jsonString, MediaType.parse("text/plain"));
+//        RangeStringDto rangeStringDto = new RangeStringDto(name,boundaries);
+//        String jsonString = GSON_INSTANCE.toJson(rangeStringDto);
+        RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
 
         String finalUrl = HttpUrl
-                .parse(ADD_RANGE_URL + "/" + currentSheet.getName())
+                .parse(RANGE_URL)
                 .newBuilder()
+                .addQueryParameter("sheetName",currentSheet.getName())
+                .addQueryParameter("rangeName", name)
+                .addQueryParameter("boundaries", boundaries)
                 .build()
                 .toString();
 
@@ -260,10 +270,10 @@ public class AppController {
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                String jsonResponse = response.body().string();
 
-                if(response.code() != 200){
+                if(response.code() != 201) {
                     Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"add range"));
                 }
-                else{
+                else {
                     RangeDto rangeDto = GSON_INSTANCE.fromJson(jsonResponse, RangeDto.class);
 
                     Platform.runLater(()->{
@@ -280,7 +290,7 @@ public class AppController {
         RequestBody body = RequestBody.create(jsonString, MediaType.parse("text/plain"));
 
         String finalUrl = HttpUrl
-                .parse(ADD_RANGE_URL + "/" + currentSheet.getName())
+                .parse(RANGE_URL)
                 .newBuilder()
                 .addQueryParameter("sheetName",this.currentSheet.getName())
                 .addQueryParameter("rangeName",range.getName())

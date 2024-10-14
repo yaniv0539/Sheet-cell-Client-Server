@@ -1,5 +1,3 @@
 package sheet.layout.size.api;
 
-public interface Size extends SizeGetters, SizeSetters {
-
-}
+public interface Size extends SizeGetters, SizeSetters { }

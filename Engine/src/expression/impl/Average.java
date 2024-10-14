@@ -21,7 +21,6 @@ public class Average extends UnaryExpression {
 
     @Override
     protected Data dynamicEvaluate(Data input) {
-
         Data data = new DataImpl(DataType.UNKNOWN,Double.NaN);
 
         if(input.getType() == DataType.STRING) {
@@ -38,12 +37,10 @@ public class Average extends UnaryExpression {
                                             .count();
 
                 data = new DataImpl(DataType.NUMERIC,sumOfNumericCells/numberOfCells);
-
             }
         }
 
         return data;
-
     }
 
     @Override

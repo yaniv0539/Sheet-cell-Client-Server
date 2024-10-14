@@ -5,6 +5,7 @@ import sheet.layout.size.api.Size;
 import java.io.Serializable;
 
 public class SizeImpl implements Size, Serializable {
+
     private int width;
     private int height;
 

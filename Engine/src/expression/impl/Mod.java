@@ -11,12 +11,10 @@ public class Mod extends BinaryExpression {
     public Mod(Expression left, Expression right) {
         super(left, right);
         setDataType(DataType.NUMERIC);
-        //isValidArgs(left, right);
     }
 
     @Override
     protected Data dynamicEvaluate(Data left, Data right) {
-
         Data d;
 
         if(left.getType() == DataType.NUMERIC && right.getType() == DataType.NUMERIC) {
@@ -36,7 +34,6 @@ public class Mod extends BinaryExpression {
 
     @Override
     public boolean isValidArgs(Object... args) {
-
         boolean value = Arrays
                 .stream(args)
                 .map(Expression.class::cast)

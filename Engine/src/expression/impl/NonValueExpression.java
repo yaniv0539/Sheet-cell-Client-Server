@@ -6,9 +6,9 @@ import expression.api.DataType;
 public class NonValueExpression extends ExpressionImpl{
 
     public NonValueExpression() {
-
         setDataType(DataType.UNKNOWN);
     }
+
     @Override
     public Data evaluate() {
         return new DataImpl(DataType.UNKNOWN,"");

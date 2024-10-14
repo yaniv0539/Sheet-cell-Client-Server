@@ -19,6 +19,7 @@ public class Ref extends ExpressionImpl {
         isValidArgs(cellId);
         cellToReferTo = CoordinateFactory.toCoordinate(((String) cellId.evaluate().getValue()).toUpperCase());
     }
+
     @Override
     public Data evaluate() {
         return sheetView.getCell(cellToReferTo).getEffectiveValue();
@@ -26,7 +27,6 @@ public class Ref extends ExpressionImpl {
 
     @Override
     public boolean isValidArgs(Object... args) {
-
         boolean value = Arrays
                  .stream(args)
                  .map(Expression.class::cast)
