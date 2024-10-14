@@ -10,7 +10,6 @@ import operation.Operation;
 import sheet.api.SheetGetters;
 import sheet.coordinate.api.Coordinate;
 import sheet.coordinate.impl.CoordinateFactory;
-import sheet.range.api.Range;
 import sheet.range.api.RangeGetters;
 
 import java.util.*;
@@ -19,7 +18,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class OrignalValueUtilis {
-
 
     private static boolean isBoolean(String value) {
         return "true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value);
@@ -34,9 +32,7 @@ public class OrignalValueUtilis {
         }
     }
 
-
     private static Expression primitiveParseToExpression(String inputToCell) {
-
         if (isBoolean(inputToCell)) {
             return new BooleanExpression(Boolean.parseBoolean(inputToCell));
         } else if (isNumeric(inputToCell)) {
@@ -44,7 +40,6 @@ public class OrignalValueUtilis {
         } else {
             return new RawString(inputToCell);
         }
-
     }
 
     //this function need to get trimmed expression already !!!!!
@@ -109,8 +104,7 @@ public class OrignalValueUtilis {
 
     }
 
-    public static Set<Coordinate> findInfluenceFrom(String value, SheetGetters sheetGetters)
-    {
+    public static Set<Coordinate> findInfluenceFrom(String value, SheetGetters sheetGetters) {
         Set<Coordinate> cellDependence = new HashSet<>();
         Set<String> validFirstStrings = Set.of("sum", "average"); //should be in expression.
 

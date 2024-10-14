@@ -4,10 +4,8 @@ import component.commands.CommandsController;
 import engine.api.Engine;
 import engine.impl.EngineImpl;
 import component.header.HeaderController;
-import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
-import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -164,12 +162,12 @@ public class AppController {
         commandsComponentController.resetButtonFilter();
         commandsComponentController.resetButtonSort();
 
-        SheetGetters sheetStatus = engine.getSheetStatus(); //this what server bring
+        SheetGetters sheetStatus = engine.getSheet(); //this what server bring
         setEffectiveValuesPoolProperty(sheetStatus, this.effectiveValuesPool);
         setSheet();
         this.currentSheet = sheetStatus;
         headerComponentController.clearVersionButton();
-        headerComponentController.addMenuOptionToVersionSelection(String.valueOf(engine.getVersionsManagerStatus().getVersions().size()));
+        headerComponentController.addMenuOptionToVersionSelection(String.valueOf(engine.getVersionsManager().getVersions().size()));
         rangesComponentController.uploadRanges(engine.getRanges());
         versionDesignManager.clear();
         saveDesignVersion(sheetComponentController.getGridPane());
@@ -179,7 +177,7 @@ public class AppController {
     private void setSheet() {
         sheetComponentController = new SheetController();
         sheetComponentController.setMainController(this);
-        sheetComponent = sheetComponentController.getInitializedSheet(engine.getSheetStatus().getLayout(), effectiveValuesPool);
+        sheetComponent = sheetComponentController.getInitializedSheet(engine.getSheet().getLayout(), effectiveValuesPool);
         appBorderPane.setCenter(sheetComponent);
     }
 
@@ -206,7 +204,7 @@ public class AppController {
 
         if (newValue && !OperationView )
         {
-            showCommands.set(currentSheet.getVersion() == engine.getVersionsManagerStatus().getVersions().size());
+            showCommands.set(currentSheet.getVersion() == engine.getVersionsManager().getVersions().size());
             Cell cell = currentSheet.getCell(coordinate);
             cellInFocus.setCoordinate(coordinate.toString());
 
@@ -236,18 +234,18 @@ public class AppController {
         return effectiveValuesPool;
     }
 
-    public void updateCell() {
-        try{
-            engine.updateCellStatus(cellInFocus.getCoordinate().get(), cellInFocus.getOriginalValue().get());
-            this.currentSheet = engine.getSheetStatus();
-            setEffectiveValuesPoolProperty(engine.getSheetStatus(), this.effectiveValuesPool);
-            versionDesignManager.addVersion();
-            //need to make in engine version manager, current version number.
-            headerComponentController.addMenuOptionToVersionSelection(String.valueOf(engine.getVersionsManagerStatus().getVersions().size()));
-        }catch(Exception e){
-            showAlertPopup(e, "updating cell " + "\"" + cellInFocus.getCoordinate().get() + "\"");
-        }
-    }
+//    public void updateCell() {
+//        try{
+//            engine.updateCell(cellInFocus.getCoordinate().get(), cellInFocus.getOriginalValue().get());
+//            this.currentSheet = engine.getSheet();
+//            setEffectiveValuesPoolProperty(engine.getSheet(), this.effectiveValuesPool);
+//            versionDesignManager.addVersion();
+//            //need to make in engine version manager, current version number.
+//            headerComponentController.addMenuOptionToVersionSelection(String.valueOf(engine.getVersionsManager().getVersions().size()));
+//        }catch(Exception e){
+//            showAlertPopup(e, "updating cell " + "\"" + cellInFocus.getCoordinate().get() + "\"");
+//        }
+//    }
 
     private void saveDesignVersion(GridPane gridPane) {
         versionDesignManager.saveVersionDesign(gridPane);
@@ -257,16 +255,16 @@ public class AppController {
         //TODO:need to change it to some toggle on/off for disable enable
         //TODO: need to put a current version showing, and if we pick the newest version the button would not be disable.
         //TODO: the disable make exeption.
-        currentSheet = engine.getVersionsManagerStatus().getVersion(Integer.parseInt(numberOfVersion));
-        showCommands.set(Integer.parseInt(numberOfVersion) == engine.getVersionsManagerStatus().getVersions().size());
-        showRanges.set(Integer.parseInt(numberOfVersion) == engine.getVersionsManagerStatus().getVersions().size());
-        showHeaders.set(Integer.parseInt(numberOfVersion) == engine.getVersionsManagerStatus().getVersions().size());
+        currentSheet = engine.getVersionsManager().getVersion(Integer.parseInt(numberOfVersion));
+        showCommands.set(Integer.parseInt(numberOfVersion) == engine.getVersionsManager().getVersions().size());
+        showRanges.set(Integer.parseInt(numberOfVersion) == engine.getVersionsManager().getVersions().size());
+        showHeaders.set(Integer.parseInt(numberOfVersion) == engine.getVersionsManager().getVersions().size());
         setEffectiveValuesPoolProperty(currentSheet, this.effectiveValuesPool);
         resetSheetToVersionDesign(Integer.parseInt(numberOfVersion));
     }
 
     private void resetSheetToVersionDesign(int numberOfVersion) {
-        if(numberOfVersion == engine.getVersionsManagerStatus().getVersions().size()){
+        if(numberOfVersion == engine.getVersionsManager().getVersions().size()){
             numberOfVersion++;
         }
         sheetComponentController.setGridPaneDesign(versionDesignManager.getVersionDesign(numberOfVersion));
@@ -371,11 +369,11 @@ public class AppController {
 
     public void addRange(String name, String boundaries) {
            if(engine.addRange(name, boundaries)){
-               this.currentSheet = engine.getSheetStatus();
-               setEffectiveValuesPoolProperty(engine.getSheetStatus(), this.effectiveValuesPool);
+               this.currentSheet = engine.getSheet();
+               setEffectiveValuesPoolProperty(engine.getSheet(), this.effectiveValuesPool);
                versionDesignManager.addVersion();
                //need to make in engine version manager, current version number.
-               headerComponentController.addMenuOptionToVersionSelection(String.valueOf(engine.getVersionsManagerStatus().getVersions().size()));
+               headerComponentController.addMenuOptionToVersionSelection(String.valueOf(engine.getVersionsManager().getVersions().size()));
            }
     }
 
@@ -417,7 +415,7 @@ public class AppController {
         //design
         VersionDesignManager.VersionDesign design;
 
-        if(currentSheet.getVersion() == engine.getVersionsManagerStatus().getVersions().size()){
+        if(currentSheet.getVersion() == engine.getVersionsManager().getVersions().size()){
             design = versionDesignManager.getVersionDesign(currentSheet.getVersion() + 1 );
         }else{
             design = versionDesignManager.getVersionDesign(currentSheet.getVersion());
@@ -478,7 +476,7 @@ public class AppController {
 
         OperationView = true;
 
-        SheetGetters sortedSheet = engine.sortSheet(boundariesToSort, sortingByColumns, currentSheet.getVersion());
+        SheetGetters sortedSheet = engine.sort(boundariesToSort, sortingByColumns, currentSheet.getVersion());
 
         EffectiveValuesPoolProperty effectiveValuesPoolProperty = new EffectiveValuesPoolPropertyImpl();
         setEffectiveValuesPoolProperty(sortedSheet, effectiveValuesPoolProperty);
@@ -491,7 +489,7 @@ public class AppController {
         VersionDesignManager.VersionDesign design;
 
 
-        if(currentSheet.getVersion() == engine.getVersionsManagerStatus().getVersions().size()){
+        if(currentSheet.getVersion() == engine.getVersionsManager().getVersions().size()){
             design = versionDesignManager.getVersionDesign(currentSheet.getVersion() + 1 );
         }else{
             design = versionDesignManager.getVersionDesign(currentSheet.getVersion());

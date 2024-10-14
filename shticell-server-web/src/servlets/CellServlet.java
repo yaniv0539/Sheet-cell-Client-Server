@@ -2,6 +2,8 @@ package servlets;
 
 import com.google.gson.Gson;
 import constants.Constants;
+import dto.CellDto;
+import dto.SheetDto;
 import engine.api.Engine;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -15,26 +17,56 @@ import java.io.IOException;
 @WebServlet(name = "CellServlet", urlPatterns = {"/sheet/cell"})
 public class CellServlet extends HttpServlet {
 
-    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             Engine engine = ServletUtils.getEngine(getServletContext());
             Gson gson = ServletUtils.getGson(getServletContext());
 
-//        String sheetName = request.getParameter(Constants.SHEET_NAME_PARAMETER);
+            String sheetName = request.getParameter(Constants.SHEET_NAME_PARAMETER);
+            SheetDto sheetDTO = engine.getSheetDTO(sheetName);
 
-            // Todo: Find the right sheet in the engine and return the SheetDTO.
-            // For now I assume that there is only one sheet...
+            if (sheetName == null || sheetDTO == null) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                throw new ServletException("Invalid sheet name");
+            }
+
+            String cellName = request.getParameter(Constants.CELL_NAME_PARAMETER);
+            CellDto cellDto = sheetDTO.activeCells.get(cellName);
+
+            if (cellName == null || cellDto == null) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                throw new ServletException("Invalid cell name");
+            }
+
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().print(gson.toJson(cellDto));
+            response.setStatus(HttpServletResponse.SC_OK);
+
+        } catch (Exception e) {
+            response.setContentType("text/plain");
+            response.getWriter().println(e.getMessage());
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+//            throw new ServletException(e.getMessage());
+        }
+    }
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        try {
+            Engine engine = ServletUtils.getEngine(getServletContext());
+            Gson gson = ServletUtils.getGson(getServletContext());
+
+            String sheetName = request.getParameter(Constants.SHEET_NAME_PARAMETER);
 
             String cellName = request.getParameter(Constants.CELL_NAME_PARAMETER);
             String cellValue = request.getParameter(Constants.CELL_VALUE_PARAMETER);
 
-            engine.updateCellStatus(cellName, cellValue);
+            engine.updateCell(sheetName, cellName, cellValue);
 
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (Exception e) {
-            // Todo: Handle correctly with the exception.
             response.setContentType("text/plain");
-            response.getWriter().println("Something went wrong");
+            response.getWriter().println(e.getMessage());
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }

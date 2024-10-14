@@ -9,7 +9,6 @@ public abstract class BinaryExpression extends ExpressionImpl {
     private Expression right;
 
     public BinaryExpression(Expression left, Expression right) {
-
         this.left = left;
         this.right = right;
     }

@@ -12,7 +12,7 @@ import java.util.Set;
 
 public class CellDtoDeserializer implements JsonDeserializer<CellDto> {
 
-    private Map<CoordinateDto, CellDto> referenceCache = new HashMap<>();
+    private final Map<CoordinateDto, CellDto> referenceCache = new HashMap<>();
 
     @Override
     public CellDto deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {

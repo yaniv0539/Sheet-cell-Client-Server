@@ -10,7 +10,6 @@ public class Number extends ExpressionImpl {
     public Number(double value) {
         this.value = value;
         setDataType(DataType.NUMERIC);
-        //isValidArgs(value);
     }
 
     public double getValue() {
@@ -24,12 +23,12 @@ public class Number extends ExpressionImpl {
 
     @Override
     public boolean isValidArgs(Object... args) {
-        try{
+        try {
             Arrays
                     .stream(args)
                     .map(double.class::cast);
         }
-        catch(ClassCastException e) {
+        catch (ClassCastException e) {
             throw new IllegalArgumentException("arguments must be number in " + this.getClass().getSimpleName());
         }
 

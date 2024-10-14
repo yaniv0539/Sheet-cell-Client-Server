@@ -7,12 +7,9 @@ import java.util.Arrays;
 public class Plus extends BinaryExpression {
 
     public Plus(Expression left, Expression right) {
-
         super(left, right);
         setDataType(DataType.NUMERIC);
-        //isValidArgs(left, right);
     }
-
 
     @Override
     protected Data dynamicEvaluate(Data left, Data right) {
@@ -35,6 +32,5 @@ public class Plus extends BinaryExpression {
         }
 
         return true;
-
     }
 }

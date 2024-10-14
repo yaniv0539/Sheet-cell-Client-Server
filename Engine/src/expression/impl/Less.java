@@ -9,8 +9,6 @@ public class Less extends BinaryExpression {
     public Less(Expression left, Expression right) {
         super(left, right);
         setDataType(DataType.BOOLEAN);
-
-
     }
 
     @Override
@@ -23,6 +21,4 @@ public class Less extends BinaryExpression {
     public boolean isValidArgs(Object... args) {
         return false;
     }
-
-
 }

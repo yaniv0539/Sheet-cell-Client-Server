@@ -7,6 +7,7 @@ import sheet.layout.size.api.SizeGetters;
 import java.io.Serializable;
 
 public class LayoutImpl implements Layout, Serializable {
+
     private Size size;
     private int rows;
     private int columns;

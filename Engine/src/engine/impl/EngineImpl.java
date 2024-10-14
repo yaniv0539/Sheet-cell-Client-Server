@@ -1,17 +1,16 @@
 package engine.impl;
 
+import dto.RangeDto;
 import dto.SheetDto;
+import dto.VersionManagerDto;
 import engine.api.Engine;
 import engine.jaxb.parser.STLSheetToSheet;
 import engine.version.manager.api.VersionManager;
 import engine.version.manager.api.VersionManagerGetters;
 import engine.version.manager.impl.VersionManagerImpl;
-import expression.api.Data;
-import expression.impl.DataImpl;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
-import javafx.concurrent.Task;
 import sheet.api.Sheet;
 
 import java.io.*;
@@ -27,7 +26,6 @@ import sheet.impl.SheetImpl;
 import sheet.layout.api.Layout;
 import sheet.layout.api.LayoutGetters;
 import sheet.layout.impl.LayoutImpl;
-import sheet.range.api.Range;
 import sheet.range.api.RangeGetters;
 import sheet.range.boundaries.api.Boundaries;
 import sheet.range.boundaries.impl.BoundariesFactory;
@@ -39,10 +37,13 @@ public class EngineImpl implements Engine, Serializable {
     private final static int MAX_ROWS = 50;
     private final static int MAX_COLUMNS = 20;
 
+    private final Map<String, VersionManager> versionManagers;
+
     private Sheet sheet;
     private final VersionManager versionManager;
 
     private EngineImpl() {
+        this.versionManagers = new HashMap<>();
         this.versionManager = VersionManagerImpl.create();
     }
 
@@ -69,7 +70,6 @@ public class EngineImpl implements Engine, Serializable {
     public void readXMLInitFile(InputStream inputStream) {
         try {
             STLSheet stlSheet = deserializeFrom(inputStream);
-            //versionManager.clearVersions();
             Sheet sheet = STLSheetToSheet.generate(stlSheet);
 
             if (!isValidLayout(sheet.getLayout())) {
@@ -78,8 +78,7 @@ public class EngineImpl implements Engine, Serializable {
             }
 
             this.sheet = sheet;
-            versionManager.clearVersions();
-            versionManager.addVersion(this.sheet);
+            versionManager.init(this.sheet);
 
         } catch (JAXBException e) {
             throw new RuntimeException("Failed to read XML file", e);
@@ -87,48 +86,144 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public SheetGetters getSheetStatus() { return this.sheet; }
+    public SheetGetters getSheet() { return this.sheet; }
 
     @Override
-    public SheetDto getSheetDTOStatus() {
-        return new SheetDto(getSheetStatus());
+    public SheetDto getSheetDTO() {
+        return new SheetDto(getSheet());
     }
 
     @Override
-    public CellGetters getCellStatus(SheetGetters sheet, String cellName) {
+    public SheetDto getSheetDTO(String sheetName) {
+        VersionManager versionManager = this.versionManagers.get(sheetName);
+
+        if (versionManager == null) {
+            throw new RuntimeException("No version manager found for sheet " + sheetName);
+        }
+
+        return new SheetDto(versionManager.getLastVersion());
+    }
+
+    @Override
+    public SheetDto getSheetDTO(String sheetName, int sheetVersion) {
+        VersionManager versionManager = this.versionManagers.get(sheetName);
+
+        if (versionManager == null) {
+            throw new RuntimeException("No version manager found for sheet " + sheetName);
+        }
+
+        SheetGetters sheetGetters = versionManager.getVersion(sheetVersion);
+
+        if (sheetGetters == null) {
+            throw new RuntimeException("Sheet " + sheetName + " not found");
+        }
+
+        return new SheetDto(sheetGetters);
+    }
+
+    @Override
+    public void addNewSheet(InputStream inputStream) {
+        try {
+            STLSheet stlSheet = deserializeFrom(inputStream);
+            Sheet sheet = STLSheetToSheet.generate(stlSheet);
+
+            if (!isValidLayout(sheet.getLayout())) {
+                throw new IndexOutOfBoundsException("Layout is invalid !" + "\n" +
+                        "valid scale: rows <= 50 , columns <= 20");
+            }
+
+            VersionManager versionManager = this.versionManagers.get(sheet.getName());
+
+            if (versionManager == null) {
+                versionManager = VersionManagerImpl.create();
+            }
+
+            versionManager.init(sheet);
+
+        } catch (JAXBException e) {
+            throw new RuntimeException("Failed to read XML file", e);
+        }
+    }
+
+    @Override
+    public CellGetters getCell(SheetGetters sheet, String cellName) {
         return sheet.getCell(CoordinateFactory.toCoordinate(cellName.toUpperCase()));
     }
 
     @Override
-    public CellGetters getCellStatus(String cellName) {
-        return getCellStatus(this.sheet, cellName);
+    public CellGetters getCell(String cellName) {
+        return getCell(this.sheet, cellName);
     }
 
     @Override
-    public CellGetters getCellStatus(int row, int col) {
-        return getCellStatus(this.sheet, row, col);
+    public CellGetters getCell(int row, int col) {
+        return getCell(this.sheet, row, col);
     }
 
     @Override
-    public CellGetters getCellStatus(SheetGetters sheet, int row, int col) {
-        return getCellStatus(sheet, CoordinateFactory.createCoordinate(row, col).toString());
+    public CellGetters getCell(SheetGetters sheet, int row, int col) {
+        return getCell(sheet, CoordinateFactory.createCoordinate(row, col).toString());
     }
 
+//    @Override
+//    public CellDto getCellDto(SheetDto sheet, String cellName) {
+//        return new CellDto(getCell(sheet, cellName));
+//    }
+//
+//    @Override
+//    public CellDto getCellDto(String cellName) {
+//        return getCellDto(this.sheet, cellName);
+//    }
+//
+//    @Override
+//    public CellDto getCellDto(int row, int col) {
+//        return getCellDto(this.sheet, row, col);
+//    }
+//
+//    @Override
+//    public CellDto getCellDto(SheetDto sheet, int row, int col) {
+//        return getCellDto(sheet, CoordinateFactory.createCoordinate(row, col).toString());
+//    }
+
+//    @Override
+//    public void updateCell(String cellName, String value) {
+//        versionManager.increaseVersion(sheet);
+//        // this.sheet.setVersion(sheet.getVersion() + 1);
+//        try {
+//            this.sheet.setCell(CoordinateFactory.toCoordinate(cellName.toUpperCase()), value);
+//            versionManager.makeNewVersion(this.sheet);
+//        } catch (Exception e) {
+//            versionManager.decreaseVersion(sheet);
+//            throw e;
+//        }
+//    }
+
     @Override
-    public void updateCellStatus(String cellName, String value) {
-        versionManager.increaseVersion(sheet);
-        // this.sheet.setVersion(sheet.getVersion() + 1);
+    public void updateCell(String sheetName, String cellName, String cellValue) {
+
+        VersionManager versionManager = versionManagers.get(sheetName);
+
+        if (versionManager == null) {
+            throw new RuntimeException("No version manager found for sheet " + sheetName);
+        }
+
+        versionManager.makeNewVersion();
+
         try {
-            this.sheet.setCell(CoordinateFactory.toCoordinate(cellName.toUpperCase()), value);
-            versionManager.addVersion(this.sheet);
+            versionManager.getLastVersion().setCell(CoordinateFactory.toCoordinate(cellName.toUpperCase()), cellValue);
         } catch (Exception e) {
-            versionManager.decreaseVersion(sheet);
+            versionManager.deleteLastVersion();
             throw e;
         }
     }
 
     @Override
-    public VersionManagerGetters getVersionsManagerStatus() { return this.versionManager; }
+    public VersionManagerGetters getVersionsManager() { return this.versionManager; }
+
+    @Override
+    public VersionManagerDto getVersionManager(String sheetName) {
+        return new VersionManagerDto(this.versionManagers.get(sheetName));
+    }
 
     //@Override
 //    public Task<Boolean> loadFileTask(String path) {
@@ -154,7 +249,7 @@ public class EngineImpl implements Engine, Serializable {
 //    }
 
     @Override
-    public SheetGetters filter(Boundaries boundaries, String column, List<String> values,int version) {
+    public SheetGetters filter(Boundaries boundaries, String column, List<String> values, int version) {
 
         Coordinate to = boundaries.getTo();
         Coordinate from = boundaries.getFrom();
@@ -249,7 +344,7 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public SheetGetters sortSheet(Boundaries boundaries, List<String> columns, int version) {
+    public SheetGetters sort(Boundaries boundaries, List<String> columns, int version) {
 
         Coordinate from = boundaries.getFrom();
         Coordinate to = boundaries.getTo();
@@ -325,6 +420,78 @@ public class EngineImpl implements Engine, Serializable {
         return dataToSort;
     }
 
+    @Override
+    public Map<Coordinate, Coordinate> filteredMap(Boundaries boundariesToFilter, String filteringByColumn, List<String> filteringByValues, int version) {
+
+        Coordinate to = boundariesToFilter.getTo();
+        Coordinate from = boundariesToFilter.getFrom();
+
+        SheetGetters sheetToFilter = versionManager.getVersion(version);
+
+        int columnInt = CoordinateFactory.parseColumnToInt(filteringByColumn) - 1;
+
+        Map<Coordinate, Coordinate> oldCoordToNewCoord = new HashMap<>();
+
+        int liftDownCellsCounter = 0;
+
+        for (int i = from.getRow(); i <= to.getRow(); i++) {
+            Cell cell = sheetToFilter.getCell(CoordinateFactory.createCoordinate(i, columnInt));
+            String effectiveValueStr;
+            if (cell == null) {
+                effectiveValueStr = "";
+            } else {
+                effectiveValueStr = cell.getEffectiveValue().toString();
+            }
+
+            if (filteringByValues.contains(effectiveValueStr)) {
+                for(int col = from.getCol(); col <= to.getCol(); col++) {
+                    Coordinate oldCoord = CoordinateFactory.createCoordinate(i, col);
+                    Coordinate newCoord = CoordinateFactory.createCoordinate(from.getRow() +liftDownCellsCounter, col);
+                    oldCoordToNewCoord.put(oldCoord, newCoord);
+                }
+                liftDownCellsCounter++;
+            }
+        }
+
+        return oldCoordToNewCoord;
+    }
+
+    @Override
+    public boolean addRange(String name, String boundariesString) {
+        versionManager.makeNewVersion();
+        try {
+            return versionManager.getLastVersion().addRange(name, BoundariesFactory.toBoundaries(boundariesString));
+        } catch (Exception e) {
+            versionManager.deleteLastVersion();
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public RangeGetters getRange(String name) {
+        return sheet.getRange(name);
+    }
+
+    @Override
+    public RangeDto getRangeDTO(String name) {
+        return new RangeDto(sheet.getRange(name));
+    }
+
+    @Override
+    public Set<RangeGetters> getRanges() {
+        return Collections.unmodifiableSet(sheet.getRanges());
+    }
+
+    @Override
+    public void deleteRange(String rangeName) {
+        RangeGetters range = this.sheet.getRange(rangeName);
+        Collection<Coordinate> coordinates = this.sheet.rangeUses(range);
+        if (!coordinates.isEmpty()) {
+            throw new RuntimeException("Can not delete range in use !\nCells that using range: " + coordinates.toString());
+        }
+        this.sheet.deleteRange(range);
+    }
+
     //sort function helper
     private Comparator<List<CellGetters>> createComparator(List<Integer> sortByColumns, int startCol) {
         Comparator<List<CellGetters>> comparator = (row1, row2) -> 0;
@@ -370,72 +537,6 @@ public class EngineImpl implements Engine, Serializable {
             return false;
         }
     }
-
-
-    @Override
-    public Map<Coordinate, Coordinate> filteredMap(Boundaries boundariesToFilter, String filteringByColumn, List<String> filteringByValues, int version) {
-
-        Coordinate to = boundariesToFilter.getTo();
-        Coordinate from = boundariesToFilter.getFrom();
-
-        SheetGetters sheetToFilter = versionManager.getVersion(version);
-
-        int columnInt = CoordinateFactory.parseColumnToInt(filteringByColumn) - 1;
-
-        Map<Coordinate, Coordinate> oldCoordToNewCoord = new HashMap<>();
-
-        int liftDownCellsCounter = 0;
-
-        for (int i = from.getRow(); i <= to.getRow(); i++) {
-            Cell cell = sheetToFilter.getCell(CoordinateFactory.createCoordinate(i, columnInt));
-            String effectiveValueStr;
-            if (cell == null) {
-                effectiveValueStr = "";
-            } else {
-                effectiveValueStr = cell.getEffectiveValue().toString();
-            }
-
-            if (filteringByValues.contains(effectiveValueStr)) {
-                for(int col = from.getCol(); col <= to.getCol(); col++) {
-                    Coordinate oldCoord = CoordinateFactory.createCoordinate(i, col);
-                    Coordinate newCoord = CoordinateFactory.createCoordinate(from.getRow() +liftDownCellsCounter, col);
-                    oldCoordToNewCoord.put(oldCoord, newCoord);
-                }
-                liftDownCellsCounter++;
-            }
-        }
-
-        return oldCoordToNewCoord;
-    }
-
-    @Override
-    public boolean addRange(String name, String boundariesString) {
-        if(sheet.addRange(name, BoundariesFactory.toBoundaries(boundariesString))){
-            //itay change
-            versionManager.increaseVersion(sheet);
-            versionManager.addVersion(this.sheet);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public RangeGetters getRange(String name) {
-        return sheet.getRange(name);
-    }
-
-    @Override
-    public Set<RangeGetters> getRanges() {
-        return Collections.unmodifiableSet(sheet.getRanges());
-    }
-
-    @Override
-    public void deleteRange(String rangeName) {
-        this.sheet.deleteRange(this.sheet.getRange(rangeName));
-    }
-
-    @Override
-    public void exit() {}
 
     private static STLSheet deserializeFrom(InputStream inputStream) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(JAXB_XML_GENERATED_PACKAGE_NAME);
