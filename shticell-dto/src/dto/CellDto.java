@@ -34,4 +34,28 @@ public class CellDto {
             cell.influenceOn.add(this);
         }
     }
+
+    public String getEffectiveValue() {
+        return effectiveValue;
+    }
+
+    public CoordinateDto getCoordinate() {
+        return coordinate;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public String getOriginalValue() {
+        return originalValue;
+    }
+
+    public Set<CellDto> getInfluenceFrom() {
+        return influenceFrom;
+    }
+
+    public Set<CellDto> getInfluenceOn() {
+        return influenceOn;
+    }
 }

@@ -10,4 +10,12 @@ public class SizeDto {
         this.width = size.getWidth();
         this.height = size.getHeight();
     }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
 }

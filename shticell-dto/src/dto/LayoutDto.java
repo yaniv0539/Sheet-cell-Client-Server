@@ -12,4 +12,16 @@ public class LayoutDto {
         this.columns = layout.getColumns();
         this.size = new SizeDto(layout.getSize());
     }
+
+    public int getRows() {
+        return rows;
+    }
+
+    public SizeDto getSize() {
+        return size;
+    }
+
+    public int getColumns() {
+        return columns;
+    }
 }
