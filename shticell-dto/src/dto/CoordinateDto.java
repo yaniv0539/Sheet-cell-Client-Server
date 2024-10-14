@@ -13,6 +13,14 @@ public class CoordinateDto {
         this.column = coordinate.getCol();
     }
 
+    public int getRow() {
+        return row;
+    }
+
+    public int getColumn() {
+        return column;
+    }
+
     @Override
     public String toString() {
         // Convert x to a character, starting with 'A'

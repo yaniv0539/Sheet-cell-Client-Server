@@ -318,6 +318,7 @@ public class CommandsController {
         buttonFilter.setText("Reset Filter");
         filterStage.close();
     }
+
     public void sortRange(Boundaries boundariesToFilter, List<String> sortingByColumns) {
         this.mainController.getSortedSheet(boundariesToFilter, sortingByColumns);
         buttonFilter.setDisable(true);

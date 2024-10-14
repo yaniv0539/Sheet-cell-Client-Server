@@ -1,11 +1,11 @@
 package dto;
 
+import engine.jaxb.generated.STLLayout;
 import sheet.api.SheetGetters;
+import sheet.cell.api.CellGetters;
+import sheet.coordinate.api.Coordinate;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class SheetDto {
     public String name;
@@ -26,7 +26,26 @@ public class SheetDto {
         sheet.getRanges().forEach(range-> ranges.add(new RangeDto(range)));
     }
 
-//    public static void main(String[] args) {
+    public Map<String, CellDto> getActiveCells() {
+        return Collections.unmodifiableMap(activeCells);
+    }
+
+    public LayoutDto getLayout() {
+        return layout;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public Set<RangeDto> getRanges() {
+        return ranges;
+    }
+    //    public static void main(String[] args) {
 //        //test
 //        Engine  e = EngineImpl.create();
 //        String file = "C:/Users/itayr/OneDrive/Desktop/second year/java/shticell_client_server/Engine/src/engine/jaxb/resources/grades.xml";

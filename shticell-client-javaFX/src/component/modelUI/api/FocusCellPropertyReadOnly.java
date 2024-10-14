@@ -1,5 +1,6 @@
 package component.modelUI.api;
 
+import dto.CoordinateDto;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
@@ -12,6 +13,6 @@ public interface FocusCellPropertyReadOnly {
     StringProperty getOriginalValue();
     StringProperty getEffectiveValue();
     StringProperty getLastUpdateVersion();
-    ObservableList<Coordinate> getDependOn();
-    ObservableList<Coordinate> getInfluenceOn();
+    ObservableList<CoordinateDto> getDependOn();
+    ObservableList<CoordinateDto> getInfluenceOn();
 }
