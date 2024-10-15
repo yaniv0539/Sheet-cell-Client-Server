@@ -823,7 +823,7 @@ public class AppController {
     }
 
 
-    //todo: function that will be deleted eventually.
+    //todo: function that will be deleted eventually..
     public boolean isBoundariesValidForCurrentSheet(Boundaries boundaries) {
         //function in sheet impl.
         //return currentSheet.isRangeInBoundaries(boundaries);
