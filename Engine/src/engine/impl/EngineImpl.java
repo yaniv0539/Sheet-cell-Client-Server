@@ -86,14 +86,6 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public SheetGetters getSheet() { return this.sheet; }
-
-    @Override
-    public SheetDto getSheetDTO() {
-        return new SheetDto(getSheet());
-    }
-
-    @Override
     public SheetDto getSheetDTO(String sheetName) {
         VersionManager versionManager = this.versionManagers.get(sheetName);
 
@@ -142,59 +134,6 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public CellGetters getCell(SheetGetters sheet, String cellName) {
-        return sheet.getCell(CoordinateFactory.toCoordinate(cellName.toUpperCase()));
-    }
-
-    @Override
-    public CellGetters getCell(String cellName) {
-        return getCell(this.sheet, cellName);
-    }
-
-    @Override
-    public CellGetters getCell(int row, int col) {
-        return getCell(this.sheet, row, col);
-    }
-
-    @Override
-    public CellGetters getCell(SheetGetters sheet, int row, int col) {
-        return getCell(sheet, CoordinateFactory.createCoordinate(row, col).toString());
-    }
-
-//    @Override
-//    public CellDto getCellDto(SheetDto sheet, String cellName) {
-//        return new CellDto(getCell(sheet, cellName));
-//    }
-//
-//    @Override
-//    public CellDto getCellDto(String cellName) {
-//        return getCellDto(this.sheet, cellName);
-//    }
-//
-//    @Override
-//    public CellDto getCellDto(int row, int col) {
-//        return getCellDto(this.sheet, row, col);
-//    }
-//
-//    @Override
-//    public CellDto getCellDto(SheetDto sheet, int row, int col) {
-//        return getCellDto(sheet, CoordinateFactory.createCoordinate(row, col).toString());
-//    }
-
-//    @Override
-//    public void updateCell(String cellName, String value) {
-//        versionManager.increaseVersion(sheet);
-//        // this.sheet.setVersion(sheet.getVersion() + 1);
-//        try {
-//            this.sheet.setCell(CoordinateFactory.toCoordinate(cellName.toUpperCase()), value);
-//            versionManager.makeNewVersion(this.sheet);
-//        } catch (Exception e) {
-//            versionManager.decreaseVersion(sheet);
-//            throw e;
-//        }
-//    }
-
-    @Override
     public void updateCell(String sheetName, String cellName, String cellValue) {
 
         VersionManager versionManager = versionManagers.get(sheetName);
@@ -212,37 +151,6 @@ public class EngineImpl implements Engine, Serializable {
             throw e;
         }
     }
-
-    @Override
-    public VersionManagerGetters getVersionsManager() { return this.versionManager; }
-
-    @Override
-    public VersionManagerDto getVersionManager(String sheetName) {
-        return new VersionManagerDto(this.versionManagers.get(sheetName));
-    }
-
-    //@Override
-//    public Task<Boolean> loadFileTask(String path) {
-//
-//        return new Task<Boolean>() {
-//            @Override
-//            protected Boolean call() throws Exception {
-//
-//                for (int i = 0; i < 50; i++) {
-//                    Thread.sleep(50);
-//                    updateProgress(i,50);
-//                    if(i == 10){
-//                        updateMessage("Fetching...");
-//                    }
-//                    if(i == 40){
-//                        updateMessage("Preparing data...");
-//                        readXMLInitFile(path);
-//                    }
-//                }
-//                return true;
-//            }
-//        };
-//    }
 
     @Override
     public SheetGetters filter(Boundaries boundaries, String column, List<String> values, int version) {
@@ -467,34 +375,28 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public RangeGetters getRange(String name) {
-        return sheet.getRange(name);
-    }
-
-    @Override
     public RangeDto getRangeDTO(String name) {
         return new RangeDto(sheet.getRange(name));
     }
 
     @Override
-    public Set<RangeGetters> getRanges(String sheetName) {
+    public void deleteRange(String sheetName, String rangeName) {
+
         VersionManager versionManager = this.versionManagers.get(sheetName);
 
         if (versionManager == null) {
             throw new RuntimeException("No version found for sheet " + sheetName);
         }
 
-        return versionManager.getLastVersion().getRanges();
-    }
+        Sheet lastVersion = versionManager.getLastVersion();
+        RangeGetters range = lastVersion.getRange(rangeName);
+        Collection<Coordinate> coordinates = lastVersion.rangeUses(range);
 
-    @Override
-    public void deleteRange(String rangeName) {
-        RangeGetters range = this.sheet.getRange(rangeName);
-        Collection<Coordinate> coordinates = this.sheet.rangeUses(range);
         if (!coordinates.isEmpty()) {
             throw new RuntimeException("Can not delete range in use !\nCells that using range: " + coordinates.toString());
         }
-        this.sheet.deleteRange(range);
+
+        lastVersion.deleteRange(range);
     }
 
     //sort function helper

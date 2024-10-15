@@ -30,7 +30,7 @@ public class SheetServlet extends HttpServlet {
 
             if (sheetName == null || sheetName.isEmpty()) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new ServletException("Sheet name is required");
+                throw new RuntimeException("Sheet name is required");
             }
 
             String sheetVersion = request.getParameter(Constants.SHEET_VERSION_PARAMETER);
@@ -47,8 +47,9 @@ public class SheetServlet extends HttpServlet {
             response.getWriter().println(gson.toJson(sheetDTO));
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (Exception e) {
+            response.setContentType("text/plain");
+            response.getWriter().println(e.getMessage());
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            throw new ServletException(e.getMessage());
         }
     }
 
@@ -62,7 +63,7 @@ public class SheetServlet extends HttpServlet {
 
             if (parts.size() != 1) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new ServletException("Expected exactly one part");
+                throw new RuntimeException("Expected exactly one part");
             }
 
             for (Part part : parts) {
@@ -74,8 +75,9 @@ public class SheetServlet extends HttpServlet {
             response.getWriter().println(gson.toJson(sheetDTO));
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (Exception e) {
+            response.setContentType("text/plain");
+            response.getWriter().println(e.getMessage());
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            throw new ServletException(e.getMessage());
         }
     }
 }

@@ -48,7 +48,6 @@ public class CellServlet extends HttpServlet {
             response.setContentType("text/plain");
             response.getWriter().println(e.getMessage());
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-//            throw new ServletException(e.getMessage());
         }
     }
 
