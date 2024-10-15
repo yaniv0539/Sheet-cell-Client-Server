@@ -1,9 +1,6 @@
 package component.header;
 
 import component.app.AppController;
-import dto.CellDto;
-import dto.SheetDto;
-import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -11,15 +8,8 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
-import okhttp3.*;
-import org.jetbrains.annotations.NotNull;
-import utils.http.HttpClientUtil;
 
 import java.io.File;
-import java.io.IOException;
-
-import static utils.Constants.GSON_INSTANCE;
-import static utils.Constants.UPLOAD_FILE_URL;
 
 public class HeaderController {
 
