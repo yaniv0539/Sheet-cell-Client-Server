@@ -142,8 +142,7 @@ public class AppController {
 
     //ToDo: HTTP request.
     //Done:
-    public void uploadXml(String path)
-    {
+    public void uploadXml(String path) {
         File f = new File(path);
         RequestBody body = new MultipartBody.Builder()
                 .addFormDataPart("sheet",f.getName(),RequestBody.create(f, MediaType.parse("text/plain")))
@@ -165,7 +164,6 @@ public class AppController {
             }
         });
     }
-    //check:
     public void updateCell() {
 
         RequestBody body = RequestBody.create(cellInFocus.getOriginalValue().get(), MediaType.parse("text/plain"));
@@ -193,7 +191,6 @@ public class AppController {
                 }
                 else{
                     Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
-                   // SheetDto sheetDto = GSON_INSTANCE.fromJson(jsonResponse, SheetDto.class);
                     SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
                     Platform.runLater(() ->{
                         currentSheet = sheetDto;
@@ -207,8 +204,74 @@ public class AppController {
         });
 
     }
-    //Undone:
+    public void addRange(String name, String boundaries) {
 
+        RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
+
+        String finalUrl = HttpUrl
+                .parse(RANGE_URL)
+                .newBuilder()
+                .addQueryParameter("sheetName",currentSheet.getName())
+                .addQueryParameter("rangeName", name)
+                .addQueryParameter("boundaries", boundaries)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsyncPost(finalUrl, body, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> showAlertPopup(new Exception(),"add range"));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                String jsonResponse = response.body().string();
+
+                if(response.code() != 201) {
+                    Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"add range"));
+                }
+                else {
+                    RangeDto rangeDto = GSON_INSTANCE.fromJson(jsonResponse, RangeDto.class);
+
+                    Platform.runLater(()->{
+                        rangesComponentController.runLaterAddRange(rangeDto);
+                    });
+                }
+            }
+        });
+    }
+    //check:
+    public void deleteRange(RangeDto range) {
+
+        RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
+        String finalUrl = HttpUrl
+                .parse(RANGE_URL)
+                .newBuilder()
+                .addQueryParameter("sheetName",this.currentSheet.getName())
+                .addQueryParameter("rangeName",range.getName())
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsyncDelete(finalUrl, body, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> showAlertPopup(new Exception(),"add range"));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                String jsonResponse = response.body().string();
+
+                if(response.code() != 204){
+                    Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"add range"));
+                }
+                else{
+                    Platform.runLater(() -> rangesComponentController.runLaterRemoveRange(range));
+                }
+
+            }
+        });
+    }
     public void viewSheetVersion(String numberOfVersion) {
         String finalUrl = HttpUrl
                 .parse(GET_VERSION_URL)
@@ -232,12 +295,14 @@ public class AppController {
                     showAlertPopup(new Exception(GSON_INSTANCE.fromJson(jsonResponse,String.class)), "show version: " + numberOfVersion);
                 }
                 else{
-                    SheetViewVersionDto sheetViewVersionDto = GSON_INSTANCE.fromJson(jsonResponse, SheetViewVersionDto.class);
+                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
+                    SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
+
                     Platform.runLater(() -> {
-                        currentSheet = sheetViewVersionDto.getSheetDto();
-                        showCommands.set(Integer.parseInt(numberOfVersion) == sheetViewVersionDto.getNewestVersion());
-                        showRanges.set(Integer.parseInt(numberOfVersion) == sheetViewVersionDto.getNewestVersion());
-                        showHeaders.set(Integer.parseInt(numberOfVersion) == sheetViewVersionDto.getNewestVersion());
+                        currentSheet = sheetDto;
+                        showCommands.set(Integer.parseInt(numberOfVersion) == mostUpdatedVersionNumber);
+                        showRanges.set(Integer.parseInt(numberOfVersion) == mostUpdatedVersionNumber);
+                        showHeaders.set(Integer.parseInt(numberOfVersion) == mostUpdatedVersionNumber);
                         setEffectiveValuesPoolProperty(currentSheet, effectiveValuesPool);
                         resetSheetToVersionDesign(Integer.parseInt(numberOfVersion));
                     });
@@ -245,149 +310,165 @@ public class AppController {
             }
         });
     }
-    public void addRange(String name, String boundaries) {
-
-//        RangeStringDto rangeStringDto = new RangeStringDto(name,boundaries);
-//        String jsonString = GSON_INSTANCE.toJson(rangeStringDto);
-        RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
+    public void getBoundariesDto(String text) {
 
         String finalUrl = HttpUrl
-                .parse(RANGE_URL)
+                .parse(GET_BOUNDARIES_URL)
                 .newBuilder()
                 .addQueryParameter("sheetName",currentSheet.getName())
-                .addQueryParameter("rangeName", name)
-                .addQueryParameter("boundaries", boundaries)
+                .addQueryParameter("boundaries", text)
                 .build()
                 .toString();
 
-        HttpClientUtil.runAsyncPost(finalUrl, body, new Callback() {
+        HttpClientUtil.runAsync(finalUrl, new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(() -> showAlertPopup(new Exception(),"add range"));
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-               String jsonResponse = response.body().string();
-
-                if(response.code() != 201) {
-                    Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"add range"));
-                }
-                else {
-                    RangeDto rangeDto = GSON_INSTANCE.fromJson(jsonResponse, RangeDto.class);
-
-                    Platform.runLater(()->{
-                        rangesComponentController.runLaterAddRange(rangeDto);
-                    });
-
-                }
-
-            }
-        });
-    }
-    public void deleteRange(RangeDto range) throws Exception {
-        String jsonString = GSON_INSTANCE.toJson(range);
-        RequestBody body = RequestBody.create(jsonString, MediaType.parse("text/plain"));
-
-        String finalUrl = HttpUrl
-                .parse(RANGE_URL)
-                .newBuilder()
-                .addQueryParameter("sheetName",this.currentSheet.getName())
-                .addQueryParameter("rangeName",range.getName())
-                .build()
-                .toString();
-
-        HttpClientUtil.runAsyncPost(finalUrl, body, new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(() -> showAlertPopup(new Exception(),"add range"));
+                Platform.runLater(() -> showAlertPopup(new Exception(),"get Boundaries Dto"));
             }
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 String jsonResponse = response.body().string();
-
-                if(response.code() != 204){
-                    Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"add range"));
+                if(response.code() != 201){
+                    Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"get Boundaries Dto"));
                 }
                 else{
+                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
+                    BoundariesDto boundariesDto = gson.fromJson(jsonResponse, BoundariesDto.class);
+                    Platform.runLater(() -> commandsComponentController.wrapRunLateForFilterController(boundariesDto));
+                }
+            }
+        });
+    }
+    public void getColumnUniqueValuesInRange(int column, int startRow, int endRow) {
+        String finalUrl = HttpUrl
+                .parse(UNIQUE_COL_VALUES_URL)
+                .newBuilder()
+                .addQueryParameter("sheetName",currentSheet.getName())
+                .addQueryParameter("version", String.valueOf(currentSheet.getVersion()))
+                .addQueryParameter("column", String.valueOf(column))
+                .addQueryParameter("startRow", String.valueOf(startRow))
+                .addQueryParameter("endRow", String.valueOf(endRow))
+                .build()
+                .toString();
 
-                    //nothing to do ?
-                    //return sheetDto ?
-                    //only range /
+        HttpClientUtil.runAsync(finalUrl,new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> showAlertPopup(new Exception(),"get column unique values"));
+            }
 
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
+                String jsonResponse = response.body().string();
+                List<String> values = gson.fromJson(jsonResponse, new TypeToken<List<String>>(){}.getType());
 
+                Platform.runLater(() -> commandsComponentController.wrapRunLaterForUniqueValues(values));
+
+            }
+        });
+
+    }
+    public void getFilteredSheet(FilterDto data) {
+
+        String jsonString = GSON_INSTANCE.toJson(data);
+        RequestBody body = RequestBody.create(jsonString, MediaType.parse("text/plain"));
+
+        String finalUrl = HttpUrl
+                .parse(FILTER_SHEET_URL)
+                .newBuilder()
+                .addQueryParameter("sheetName",currentSheet.getName())
+                .addQueryParameter("version", String.valueOf(currentSheet.getVersion()))
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsyncPost(finalUrl, body, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> showAlertPopup(new Exception(),"get Filtered Sheet"));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                String jsonResponse = response.body().string();
+                if(response.code() != 201){
+                    Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"get Filtered Sheet"));
+                }
+                else{
+                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
+                    FilterDesignDto responseDto = gson.fromJson(jsonResponse, FilterDesignDto.class);
+                    Platform.runLater(() -> getFilteredSheetRunLater(responseDto));
                 }
 
             }
         });
-//
-//        Collection<Coordinate> coordinates = rangeUses(range);
-//        if (coordinates.isEmpty()) {
-//            engine.deleteRange(range.getName());
-//        } else {
-//            throw new Exception("Can not delete range in use !\nCells that using range: " + coordinates.toString());
-//        }
+
     }
-    public void getFilteredSheet(Boundaries boundariesToFilter, String filteringByColumn, List<String> filteringByValues) {
+    //Undone:
+
+
+
+
+
+    public void getFilteredSheetRunLater(FilterDesignDto responseDto) {
 
         OperationView = true;
-//        SheetGetters GfilteredSheet = engine.filter(boundariesToFilter, filteringByColumn, filteringByValues, currentSheet.getVersion());
-//
-//        SheetDto filteredSheet = new SheetDto(GfilteredSheet);
-//        EffectiveValuesPoolProperty effectiveValuesPoolProperty = new EffectiveValuesPoolPropertyImpl();
-//        setEffectiveValuesPoolProperty(filteredSheet, effectiveValuesPoolProperty);
-//
-//        SheetController filteredSheetComponentController = new SheetController();
-//        filteredSheetComponentController.setMainController(this);
-//        ScrollPane sheetComponent = filteredSheetComponentController.getInitializedSheet(filteredSheet.getLayout(), effectiveValuesPoolProperty);
-//
-//        //design
-//        VersionDesignManager.VersionDesign design;
-//
-//        if(currentSheet.getVersion() == engine.getVersionsManagerStatus().getVersions().size()){
-//            design = versionDesignManager.getVersionDesign(currentSheet.getVersion() + 1 );
-//        }else{
-//            design = versionDesignManager.getVersionDesign(currentSheet.getVersion());
-//        }
-//
-//        filteredSheetComponentController.setColumnsDesign(design.getColumnsLayoutVersion());
-//        filteredSheetComponentController.setRowsDesign(design.getRowsLayoutVersion());
-//
-//        Map<Coordinate,Coordinate> oldToNew = engine.filteredMap(boundariesToFilter, filteringByColumn, filteringByValues, currentSheet.getVersion());
-//        // design on range works
-//        oldToNew.forEach((coordinateWithDesign,coordinateToDesign) -> {
-//            int indexDesign = filteredSheetComponentController.getIndexDesign(coordinateWithDesign);
-//
-//            filteredSheetComponentController.setCoordinateDesign(coordinateToDesign,design.getCellDesignsVersion()
-//                    .get(indexDesign));
-//
-//        });
-//
-//        //design the out of range cells
-//        for (int row = 0; row <= filteredSheet.getLayout().getRows() ; row++) {
-//            for (int col = 0;col <= filteredSheet.getLayout().getColumns() ; col++) {
-//                int indexDesign;
-//                if(row < boundariesToFilter.getFrom().getRow() || row > boundariesToFilter.getTo().getRow() ||
-//                        col < boundariesToFilter.getFrom().getCol() || col > boundariesToFilter.getTo().getCol()){
-//
-//                    Coordinate coordinate = CoordinateFactory.createCoordinate(row,col);
-//                    indexDesign = filteredSheetComponentController.getIndexDesign(coordinate);
-//                    filteredSheetComponentController.setCoordinateDesign(coordinate,design.getCellDesignsVersion()
-//                            .get(indexDesign));
-//                }
-//            }
-//        }
-//
-//        //design
-//        appBorderPane.setCenter(sheetComponent);
-//
-//        showHeaders.set(false);
-//        showRanges.set(false);
-//        showCommands.set(false);
-//        headerComponentController.getSplitMenuButtonSelectVersion().setDisable(true);
-//        commandsComponentController.getButtonFilter().setDisable(false);
+        SheetDto filteredSheet = responseDto.getSheet();
+        EffectiveValuesPoolProperty effectiveValuesPoolProperty = new EffectiveValuesPoolPropertyImpl();
+        setEffectiveValuesPoolProperty(filteredSheet, effectiveValuesPoolProperty);
+
+        SheetController filteredSheetComponentController = new SheetController();
+        filteredSheetComponentController.setMainController(this);
+        ScrollPane sheetComponent = filteredSheetComponentController.getInitializedSheet(filteredSheet.getLayout(), effectiveValuesPoolProperty);
+
+        //design
+        VersionDesignManager.VersionDesign design;
+
+        if(currentSheet.getVersion() == mostUpdatedVersionNumber){
+            design = versionDesignManager.getVersionDesign(currentSheet.getVersion() + 1 );
+        }else{
+            design = versionDesignManager.getVersionDesign(currentSheet.getVersion());
+        }
+
+        filteredSheetComponentController.setColumnsDesign(design.getColumnsLayoutVersion());
+        filteredSheetComponentController.setRowsDesign(design.getRowsLayoutVersion());
+
+        //Map<Coordinate,Coordinate> oldToNew = engine.filteredMap(boundariesToFilter, filteringByColumn, filteringByValues, currentSheet.getVersion());
+        Map<CoordinateDto,CoordinateDto> oldToNew = responseDto.getFilterMap();
+        // design on range works
+        oldToNew.forEach((coordinateWithDesign,coordinateToDesign) -> {
+            int indexDesign = filteredSheetComponentController.getIndexDesign(coordinateWithDesign);
+
+            filteredSheetComponentController.setCoordinateDesign(coordinateToDesign,design.getCellDesignsVersion()
+                    .get(indexDesign));
+
+        });
+        BoundariesDto boundariesToFilter = responseDto.getBoundariesFilter();
+        //design the out of range cells
+        for (int row = 0; row <= filteredSheet.getLayout().getRows() ; row++) {
+            for (int col = 0;col <= filteredSheet.getLayout().getColumns() ; col++) {
+                int indexDesign;
+                if(row < boundariesToFilter.getFrom().getRow() || row > boundariesToFilter.getTo().getRow() ||
+                        col < boundariesToFilter.getFrom().getColumn() || col > boundariesToFilter.getTo().getColumn()){
+
+                    CoordinateDto coordinate = new CoordinateDto(row,col);
+                    indexDesign = filteredSheetComponentController.getIndexDesign(coordinate);
+                    filteredSheetComponentController.setCoordinateDesign(coordinate,design.getCellDesignsVersion()
+                            .get(indexDesign));
+                }
+            }
+        }
+
+        //design
+        appBorderPane.setCenter(sheetComponent);
+        showHeaders.set(false);
+        showRanges.set(false);
+        showCommands.set(false);
+        headerComponentController.getSplitMenuButtonSelectVersion().setDisable(true);
+        commandsComponentController.getButtonFilter().setDisable(false);
     }
+
     public void getSortedSheet(Boundaries boundariesToSort, List<String> sortingByColumns) {
 
         OperationView = true;
@@ -471,6 +552,7 @@ public class AppController {
         this.currentSheet = sheetDto;//this what server bring
         setEffectiveValuesPoolProperty(currentSheet, this.effectiveValuesPool);
         setSheet(currentSheet);
+        mostUpdatedVersionNumber = sheetDto.getVersion();
         headerComponentController.clearVersionButton();
         headerComponentController.addMenuOptionToVersionSelection("1");
         rangesComponentController.uploadRanges(currentSheet.getRanges());
@@ -618,7 +700,7 @@ public class AppController {
         //itay change for saving on edit version the design
 
         versionDesignManager.getVersionDesign(currentSheet.getVersion() + 1).getCellDesignsVersion()
-                .compute(sheetComponentController.getIndexDesign(CoordinateFactory.toCoordinate(cellInFocus.getCoordinate().get()))
+                .compute(sheetComponentController.getIndexDesign(new CoordinateDto(cellInFocus.getCoordinate().get()))
                         , (k, textFieldDesign) -> new TextFieldDesign(color, textFieldDesign.getTextStyle(), textFieldDesign.getTextAlignment()));
 
 
@@ -630,7 +712,7 @@ public class AppController {
         //itay change for saving on edit version the design
 
         versionDesignManager.getVersionDesign(currentSheet.getVersion() + 1).getCellDesignsVersion()
-                .compute(sheetComponentController.getIndexDesign(CoordinateFactory.toCoordinate(cellInFocus.getCoordinate().get()))
+                .compute(sheetComponentController.getIndexDesign(new CoordinateDto(cellInFocus.getCoordinate().get()))
                         , (k, textFieldDesign) -> new TextFieldDesign(textFieldDesign.getBackgroundColor(), "-fx-text-fill: " + sheetComponentController.toHexString(color) + ";", textFieldDesign.getTextAlignment()));
     }
 
@@ -665,23 +747,18 @@ public class AppController {
         OperationView = false;
         viewSheetVersion(String.valueOf(currentSheet.getVersion()));
         headerComponentController.getSplitMenuButtonSelectVersion().setDisable(false);
-//        showHeaders.set(true);
-//        showRanges.set(true);
-//        headerComponentController.getSplitMenuButtonSelectVersion().setDisable(false);
-//        commandsComponentController.getButtonFilter().setDisable(false);
-
         appBorderPane.setCenter(sheetComponent);
     }
     public void resetSort() {
         OperationView = false;
         viewSheetVersion(String.valueOf(currentSheet.getVersion()));
-
         headerComponentController.getSplitMenuButtonSelectVersion().setDisable(false);
         appBorderPane.setCenter(sheetComponent);
     }
 
     public boolean isBoundariesValidForCurrentSheet(Boundaries boundaries) {
-//        return currentSheet.isRangeInBoundaries(boundaries);
+        //function in sheet impl.
+       //return currentSheet.isRangeInBoundaries(boundaries);
         return true;
     }
 
@@ -700,10 +777,7 @@ public class AppController {
         return true;
     }
 
-    public List<String> getColumnUniqueValuesInRange(int column, int startRow, int endRow) {
-//        return currentSheet.getColumnUniqueValuesInRange(column,startRow,endRow);
-        return null;
-    }
+
 
     public void showAlertPopup(Throwable exception,String error) {
         // Create a new alert dialog for the error
@@ -732,4 +806,6 @@ public class AppController {
         alert.showAndWait();  // Display the popup
 
     }
+
+
 }

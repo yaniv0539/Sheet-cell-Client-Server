@@ -375,9 +375,9 @@ public class SheetController {
         });
     }
 
-    public void setCoordinateDesign(Coordinate coordinateToDesign,TextFieldDesign design) {
+    public void setCoordinateDesign(CoordinateDto coordinateToDesign,TextFieldDesign design) {
         int row = coordinateToDesign.getRow();
-        int col = coordinateToDesign.getCol();
+        int col = coordinateToDesign.getColumn();
 
         gridPane.getChildren().stream()
                 .filter(node -> node instanceof TextField)
@@ -393,9 +393,9 @@ public class SheetController {
 
     }
 
-    public int getIndexDesign(Coordinate coordinate) {
+    public int getIndexDesign(CoordinateDto coordinate) {
         int row = coordinate.getRow();
-        int col = coordinate.getCol();
+        int col = coordinate.getColumn();
 
         for(int i = 1 ; i < gridPane.getChildren().size(); i++) {
             if (gridPane.getChildren().get(i) instanceof TextField tf) {

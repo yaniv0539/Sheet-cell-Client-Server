@@ -13,6 +13,15 @@ public class CoordinateDto {
         this.column = coordinate.getCol();
     }
 
+    public CoordinateDto(int row, int col) {
+        this.row = row;
+        this.column = col;
+    }
+    public CoordinateDto(String coordinateName ) {
+        row = extractRow(coordinateName) - 1;
+        column = parseColumnToInt(extractColumn(coordinateName)) - 1;
+    }
+
     public int getRow() {
         return row;
     }
@@ -20,7 +29,38 @@ public class CoordinateDto {
     public int getColumn() {
         return column;
     }
+    public static int extractRow(String coordinateName) {
 
+        int index = 0;
+
+        while (index < coordinateName.length() && !Character.isDigit(coordinateName.charAt(index))) {
+            index++;
+        }
+
+        return Integer.parseInt(coordinateName.substring(index));
+    }
+
+    public static String extractColumn(String coordinateName) {
+
+        int index = 0;
+        while (index < coordinateName.length() && !Character.isDigit(coordinateName.charAt(index))) {
+            index++;
+        }
+
+        return coordinateName.substring(0, index);
+    }
+    public static int parseColumnToInt(String column) {
+        int result = 0;
+        int length = column.length();
+
+        for (int i = 0; i < length; i++) {
+            char c = column.charAt(i);
+            int value = c - 'A' + 1;
+            result = result * 26 + value;
+        }
+
+        return result;
+    }
     @Override
     public String toString() {
         // Convert x to a character, starting with 'A'

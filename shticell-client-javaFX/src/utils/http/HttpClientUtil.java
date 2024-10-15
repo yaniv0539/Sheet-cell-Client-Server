@@ -25,7 +25,6 @@ public class HttpClientUtil {
     public static void runAsync(String finalUrl, Callback callback) {
         Request request = new Request.Builder()
                 .url(finalUrl)
-                //.post(RequestBody.create(name.getBytes(StandardCharsets.UTF_8)))
                 .build();
         Call call = HttpClientUtil.HTTP_CLIENT.newCall(request);
 
@@ -35,7 +34,7 @@ public class HttpClientUtil {
     public static void runAsyncPost(String finalUrl, RequestBody body, Callback callback) {
         Request request = new Request.Builder()
                 .url(finalUrl)
-                .post(body) //try
+                .post(body)
                 .build();
         Call call = HttpClientUtil.HTTP_CLIENT.newCall(request);
 
@@ -46,5 +45,15 @@ public class HttpClientUtil {
         System.out.println("Shutting down HTTP CLIENT");
         HTTP_CLIENT.dispatcher().executorService().shutdown();
         HTTP_CLIENT.connectionPool().evictAll();
+    }
+
+    public static void runAsyncDelete(String finalUrl, RequestBody body, Callback callback) {
+        Request request = new Request.Builder()
+                .url(finalUrl)
+                .delete(body)
+                .build();
+        Call call = HttpClientUtil.HTTP_CLIENT.newCall(request);
+
+        call.enqueue(callback);
     }
 }
