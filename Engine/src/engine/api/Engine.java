@@ -1,19 +1,12 @@
 package engine.api;
 
-import dto.RangeDto;
-import dto.SheetDto;
-import dto.VersionManagerDto;
-import engine.version.manager.api.VersionManagerGetters;
-import sheet.api.SheetGetters;
-import sheet.cell.api.CellGetters;
-import sheet.coordinate.api.Coordinate;
-import sheet.range.api.RangeGetters;
+import dto.*;
+
 import sheet.range.boundaries.api.Boundaries;
 
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public interface Engine {
 
@@ -33,10 +26,11 @@ public interface Engine {
         void addNewSheet(InputStream inputStream);
 
         // Logical Functions
-        SheetGetters filter(Boundaries boundaries, String column, List<String> values, int version);
-        SheetGetters sort(Boundaries boundaries, List<String> column, int version);
-        Map<Coordinate, Coordinate> filteredMap(Boundaries boundariesToFilter, String filteringByColumn, List<String> filteringByValues, int version);
-        List<List<CellGetters>> sortCellsInRange(Boundaries boundaries, List<String> column, int version);
+        SheetDto filter(String sheetName, Boundaries boundaries, String column, List<String> values, int version);
+        Map<CoordinateDto, CoordinateDto> filteredMap(String sheetName, Boundaries boundariesToFilter, String filteringByColumn, List<String> filteringByValues, int version);
+        List<String> getColumnUniqueValuesInRange(String sheetName, int column, int startRow, int endRow, int version);
+        SheetDto sort(String sheetName, Boundaries boundaries, List<String> column, int version);
+        List<List<CellDto>> sortCellsInRange(String sheetName, Boundaries boundaries, List<String> column, int version);
 
     // Cells:
 
@@ -53,4 +47,7 @@ public interface Engine {
 
         // Delete Functions
         void deleteRange(String sheetName, String name);
+
+        // Boundaries:
+        BoundariesDto getBoundaries(String sheetName, String boundaries);
 }

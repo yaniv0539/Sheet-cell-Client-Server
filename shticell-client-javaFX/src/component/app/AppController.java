@@ -379,7 +379,7 @@ public class AppController {
                 .parse(FILTER_SHEET_URL)
                 .newBuilder()
                 .addQueryParameter("sheetName",currentSheet.getName())
-                .addQueryParameter("version", String.valueOf(currentSheet.getVersion()))
+                .addQueryParameter("sheetVersion", String.valueOf(currentSheet.getVersion()))
                 .build()
                 .toString();
 
@@ -414,7 +414,7 @@ public class AppController {
     public void getFilteredSheetRunLater(FilterDesignDto responseDto) {
 
         OperationView = true;
-        SheetDto filteredSheet = responseDto.getSheet();
+        SheetDto filteredSheet = responseDto.getFilteredSheet();
         EffectiveValuesPoolProperty effectiveValuesPoolProperty = new EffectiveValuesPoolPropertyImpl();
         setEffectiveValuesPoolProperty(filteredSheet, effectiveValuesPoolProperty);
 
@@ -435,7 +435,7 @@ public class AppController {
         filteredSheetComponentController.setRowsDesign(design.getRowsLayoutVersion());
 
         //Map<Coordinate,Coordinate> oldToNew = engine.filteredMap(boundariesToFilter, filteringByColumn, filteringByValues, currentSheet.getVersion());
-        Map<CoordinateDto,CoordinateDto> oldToNew = responseDto.getFilterMap();
+        Map<CoordinateDto,CoordinateDto> oldToNew = responseDto.getCoordinateBeforeAndAfterFiltering();
         // design on range works
         oldToNew.forEach((coordinateWithDesign,coordinateToDesign) -> {
             int indexDesign = filteredSheetComponentController.getIndexDesign(coordinateWithDesign);
@@ -444,7 +444,7 @@ public class AppController {
                     .get(indexDesign));
 
         });
-        BoundariesDto boundariesToFilter = responseDto.getBoundariesFilter();
+        BoundariesDto boundariesToFilter = responseDto.getFilteredArea();
         //design the out of range cells
         for (int row = 0; row <= filteredSheet.getLayout().getRows() ; row++) {
             for (int col = 0;col <= filteredSheet.getLayout().getColumns() ; col++) {
