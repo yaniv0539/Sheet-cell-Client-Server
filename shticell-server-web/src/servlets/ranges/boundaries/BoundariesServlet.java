@@ -15,7 +15,7 @@ import utils.ServletUtils;
 
 import java.io.IOException;
 
-@WebServlet(name = "FilterServlet", urlPatterns = "/ranges/boundaries")
+@WebServlet(name = "FilterServlet", urlPatterns = "/sheet/ranges/boundaries")
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 1024 * 1024 * 5, maxRequestSize = 1024 * 1024 * 5 * 5)
 public class BoundariesServlet extends HttpServlet {
 
