@@ -1,12 +1,9 @@
 package engine.impl;
 
-import dto.RangeDto;
-import dto.SheetDto;
-import dto.VersionManagerDto;
+import dto.*;
 import engine.api.Engine;
 import engine.jaxb.parser.STLSheetToSheet;
 import engine.version.manager.api.VersionManager;
-import engine.version.manager.api.VersionManagerGetters;
 import engine.version.manager.impl.VersionManagerImpl;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
@@ -153,12 +150,18 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public SheetGetters filter(Boundaries boundaries, String column, List<String> values, int version) {
+    public SheetDto filter(String sheetName, Boundaries boundaries, String column, List<String> values, int version) {
+
+        VersionManager versionManager = this.versionManagers.get(sheetName);
+
+        if (versionManager == null) {
+            throw new RuntimeException("No version manager found for sheet " + sheetName);
+        }
 
         Coordinate to = boundaries.getTo();
         Coordinate from = boundaries.getFrom();
 
-        SheetGetters sheetToFilter = versionManager.getVersion(version);
+        Sheet sheetToFilter = versionManager.getVersion(version);
 
         Sheet newSheet = SheetImpl.create(copyLayout(sheetToFilter.getLayout())); //here need to bring the version we now look at.
 
@@ -244,11 +247,13 @@ public class EngineImpl implements Engine, Serializable {
 //                });
         //todo: until here
 
-        return newSheet;
+        return new SheetDto(newSheet);
     }
 
     @Override
-    public SheetGetters sort(Boundaries boundaries, List<String> columns, int version) {
+    public SheetDto sort(String sheetName, Boundaries boundaries, List<String> columns, int version) {
+
+        VersionManager versionManager = this.versionManagers.get(sheetName);
 
         Coordinate from = boundaries.getFrom();
         Coordinate to = boundaries.getTo();
@@ -303,11 +308,14 @@ public class EngineImpl implements Engine, Serializable {
                                     .getEffectiveValue().toString());
                 });
 
-        return newSheet;
+        return new SheetDto(newSheet);
     }
 
     @Override
-    public List<List<CellGetters>> sortCellsInRange(Boundaries boundaries, List<String> columns, int version) {
+    public List<List<CellDto>> sortCellsInRange(String sheetName, Boundaries boundaries, List<String> columns, int version) {
+
+        VersionManager versionManager = this.versionManagers.get(sheetName);
+
         Coordinate from = boundaries.getFrom();
         Coordinate to = boundaries.getTo();
 
@@ -321,25 +329,43 @@ public class EngineImpl implements Engine, Serializable {
         List<Integer> columnsByInt = columnsToIntList(columns);
         dataToSort.sort(createComparator(columnsByInt, startCol));
 
-        return dataToSort;
+        List<List<CellDto>> dataToSortDto = new ArrayList<>();
+
+        dataToSort.forEach(list -> {
+            List<CellDto> tempList = new ArrayList<>();
+            list.forEach(cellGetters -> tempList.add(new CellDto(cellGetters)));
+            dataToSortDto.add(tempList);
+        });
+
+        return dataToSortDto;
     }
 
     @Override
-    public Map<Coordinate, Coordinate> filteredMap(Boundaries boundariesToFilter, String filteringByColumn, List<String> filteringByValues, int version) {
+    public Map<CoordinateDto, CoordinateDto> filteredMap(String sheetName, Boundaries boundariesToFilter, String filteringByColumn, List<String> filteringByValues, int version) {
+
+        VersionManager versionManager = this.versionManagers.get(sheetName);
+
+        if (versionManager == null) {
+            throw new IllegalArgumentException("Sheet " + sheetName + " does not have a version manager");
+        }
+
+        Sheet sheet = versionManager.getVersion(version);
+
+        if (sheet == null) {
+            throw new IllegalArgumentException("Sheet " + sheetName + " does not have a version manager");
+        }
 
         Coordinate to = boundariesToFilter.getTo();
         Coordinate from = boundariesToFilter.getFrom();
 
-        SheetGetters sheetToFilter = versionManager.getVersion(version);
-
         int columnInt = CoordinateFactory.parseColumnToInt(filteringByColumn) - 1;
 
-        Map<Coordinate, Coordinate> oldCoordToNewCoord = new HashMap<>();
+        Map<CoordinateDto, CoordinateDto> oldCoordToNewCoord = new HashMap<>();
 
         int liftDownCellsCounter = 0;
 
         for (int i = from.getRow(); i <= to.getRow(); i++) {
-            Cell cell = sheetToFilter.getCell(CoordinateFactory.createCoordinate(i, columnInt));
+            Cell cell = sheet.getCell(CoordinateFactory.createCoordinate(i, columnInt));
             String effectiveValueStr;
             if (cell == null) {
                 effectiveValueStr = "";
@@ -351,7 +377,7 @@ public class EngineImpl implements Engine, Serializable {
                 for(int col = from.getCol(); col <= to.getCol(); col++) {
                     Coordinate oldCoord = CoordinateFactory.createCoordinate(i, col);
                     Coordinate newCoord = CoordinateFactory.createCoordinate(from.getRow() +liftDownCellsCounter, col);
-                    oldCoordToNewCoord.put(oldCoord, newCoord);
+                    oldCoordToNewCoord.put(new CoordinateDto(oldCoord), new CoordinateDto(newCoord));
                 }
                 liftDownCellsCounter++;
             }
@@ -361,8 +387,25 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
+    public List<String> getColumnUniqueValuesInRange(String sheetName, int column, int startRow, int endRow, int version) {
+        VersionManager versionManager = this.versionManagers.get(sheetName);
+
+        if (versionManager == null) {
+            throw new IllegalArgumentException("Sheet " + sheetName + " does not have a version manager");
+        }
+
+        Sheet sheet = versionManager.getVersion(version);
+
+        if (sheet == null) {
+            throw new IllegalArgumentException("Sheet " + sheetName + " does not have a version manager");
+        }
+
+        return sheet.getColumnUniqueValuesInRange(column, startRow, endRow);
+    }
+
+    @Override
     public boolean addRange(String sheetName, String name, String boundariesString) {
-        VersionManager versionManager = versionManagers.get(sheetName);
+        VersionManager versionManager = this.versionManagers.get(sheetName);
 
         versionManager.makeNewVersion();
 
@@ -397,6 +440,28 @@ public class EngineImpl implements Engine, Serializable {
         }
 
         lastVersion.deleteRange(range);
+    }
+
+    @Override
+    public BoundariesDto getBoundaries(String sheetName, String boundaries) {
+
+        if (!BoundariesFactory.isValidBoundariesFormat(boundaries)) {
+            throw new RuntimeException("Invalid boundaries");
+        }
+
+        Boundaries boundaries1 = BoundariesFactory.toBoundaries(boundaries);
+
+        VersionManager versionManager = this.versionManagers.get(sheetName);
+
+        if (versionManager == null) {
+            throw new RuntimeException("No version found for sheet " + sheetName);
+        }
+
+        Sheet lastVersion = versionManager.getLastVersion();
+
+        lastVersion.isRangeInBoundaries(boundaries1);
+
+        return new BoundariesDto(boundaries1);
     }
 
     //sort function helper
