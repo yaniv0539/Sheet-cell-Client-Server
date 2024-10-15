@@ -3,28 +3,28 @@ package dto;
 import java.util.Map;
 
 public class FilterDesignDto {
-    SheetDto sheet;
-    Map<CoordinateDto, CoordinateDto> filterMap;
-    BoundariesDto boundariesFilter;
+    SheetDto filteredSheet;
+    Map<CoordinateDto, CoordinateDto> coordinateBeforeAndAfterFiltering;
+    BoundariesDto filteredArea;
 
     public FilterDesignDto() {
     }
 
     public FilterDesignDto(SheetDto sheet, Map<CoordinateDto, CoordinateDto> filterMap, BoundariesDto boundariesFilter) {
-        this.sheet = sheet;
-        this.filterMap = filterMap;
-        this.boundariesFilter = boundariesFilter;
+        this.filteredSheet = sheet;
+        this.coordinateBeforeAndAfterFiltering = filterMap;
+        this.filteredArea = boundariesFilter;
     }
 
     public SheetDto getSheet() {
-        return sheet;
+        return filteredSheet;
     }
 
     public Map<CoordinateDto, CoordinateDto> getFilterMap() {
-        return filterMap;
+        return coordinateBeforeAndAfterFiltering;
     }
 
     public BoundariesDto getBoundariesFilter() {
-        return boundariesFilter;
+        return filteredArea;
     }
 }

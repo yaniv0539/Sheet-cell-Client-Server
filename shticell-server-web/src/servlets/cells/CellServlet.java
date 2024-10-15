@@ -1,4 +1,4 @@
-package servlets;
+package servlets.cells;
 
 import com.google.gson.Gson;
 import constants.Constants;

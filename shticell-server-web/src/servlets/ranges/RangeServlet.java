@@ -1,4 +1,4 @@
-package servlets;
+package servlets.ranges;
 
 import com.google.gson.Gson;
 import constants.Constants;
@@ -10,12 +10,9 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import sheet.api.SheetGetters;
 import utils.ServletUtils;
 
 import java.io.IOException;
-import java.util.Optional;
-import java.util.Set;
 
 @WebServlet(name = "RangeServlet", urlPatterns = "/sheet/range")
 public class RangeServlet extends HttpServlet {
