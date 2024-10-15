@@ -56,7 +56,7 @@ public class SortController {
     void buttonSortAction(ActionEvent event) {
         Boundaries BoundariesToSort = BoundariesFactory.toBoundaries(textFieldRange.getText());
 
-        mainController.sortRange(BoundariesToSort,columToSort);
+        //mainController.sortRange(BoundariesToSort,columToSort);
     }
     @FXML
     void buttonGetColumnsAction(ActionEvent event) {
