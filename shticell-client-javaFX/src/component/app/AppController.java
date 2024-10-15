@@ -98,7 +98,7 @@ public class AppController {
             rangesComponentController.init();
             initLoadingStage();
 
-            //cell in focus init
+            //cell in focus init.
             cellInFocus.getDependOn().addListener((ListChangeListener<CoordinateDto>) change -> sheetComponentController.changeColorDependedCoordinate(change));
             cellInFocus.getInfluenceOn().addListener((ListChangeListener<CoordinateDto>) change -> sheetComponentController.changeColorInfluenceCoordinate(change));
         }
