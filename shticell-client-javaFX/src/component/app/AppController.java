@@ -98,7 +98,7 @@ public class AppController {
             rangesComponentController.init();
             initLoadingStage();
 
-            //cell in focus init
+            //cell in focus init.
             cellInFocus.getDependOn().addListener((ListChangeListener<CoordinateDto>) change -> sheetComponentController.changeColorDependedCoordinate(change));
             cellInFocus.getInfluenceOn().addListener((ListChangeListener<CoordinateDto>) change -> sheetComponentController.changeColorInfluenceCoordinate(change));
         }
@@ -148,7 +148,7 @@ public class AppController {
                 .addFormDataPart("sheet",f.getName(),RequestBody.create(f, MediaType.parse("text/plain")))
                 .build();
 
-        HttpClientUtil.runAsyncPost(UPLOAD_FILE_URL, body, new Callback() {
+        HttpClientUtil.runAsyncPost(SHEET_URL, body, new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 System.err.println("Failed to upload file: " + e.getMessage());
@@ -169,7 +169,7 @@ public class AppController {
         RequestBody body = RequestBody.create(cellInFocus.getOriginalValue().get(), MediaType.parse("text/plain"));
 
         String finalUrl = HttpUrl
-                .parse(UPDATE_CELL_URL)
+                .parse(CELL_URL)
                 .newBuilder()
                 .addQueryParameter("sheetName",currentSheet.getName())
                 .addQueryParameter("target",cellInFocus.getCoordinate().get())
@@ -274,7 +274,7 @@ public class AppController {
     }
     public void viewSheetVersion(String numberOfVersion) {
         String finalUrl = HttpUrl
-                .parse(GET_VERSION_URL)
+                .parse(SHEET_URL)
                 .newBuilder()
                 .addQueryParameter("name",currentSheet.getName())
                 .addQueryParameter("version",numberOfVersion)

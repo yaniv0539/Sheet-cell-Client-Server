@@ -19,13 +19,15 @@ public class Constants {
     private final static String BASE_URL = "http://" + BASE_DOMAIN + ":8080";
     private final static String CONTEXT_PATH = "/shticell";
     private final static String FULL_SERVER_PATH = BASE_URL + CONTEXT_PATH;
-    public final static String UPLOAD_FILE_URL = FULL_SERVER_PATH + "/sheet";
 
+    public final static String SHEET_URL = FULL_SERVER_PATH + "/sheet";
+    public final static String CELL_URL = SHEET_URL + "/cell";
+    public final static String RANGE_URL = SHEET_URL + "/range";
 
-
-    public final static String UPDATE_CELL_URL = UPLOAD_FILE_URL + "/cell";
-    public final static String RANGE_URL = UPLOAD_FILE_URL + "/range";
-    public final static String GET_VERSION_URL = UPDATE_CELL_URL + "/sheet";
+    public final static String GET_BOUNDARIES_URL = RANGE_URL + "/boundaries";
+    public final static String UNIQUE_COL_VALUES_URL = RANGE_URL + "/uniqueColumnValues";
+    public final static String FILTER_SHEET_URL = SHEET_URL + "/filter";
+    public final static String SORT_SHEET_URL = SHEET_URL + "/sort";
 
 
 

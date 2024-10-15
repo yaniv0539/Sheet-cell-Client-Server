@@ -56,21 +56,21 @@ public class RangeServlet extends HttpServlet {
 
             if (sheetName == null) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new ServletException("Sheet name is required");
+                throw new RuntimeException("Sheet name is required");
             }
 
             String rangeName = request.getParameter(Constants.RANGE_NAME_PARAMETER);
 
             if (rangeName == null) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new ServletException("Range name is required");
+                throw new RuntimeException("Range name is required");
             }
 
             String rangeValue = request.getParameter(Constants.RANGE_BOUNDARIES_PARAMETER);
 
             if (rangeValue == null) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new ServletException("Range value is required");
+                throw new RuntimeException("Range value is required");
             }
 
             engine.addRange(sheetName, rangeName, rangeValue);
@@ -87,8 +87,9 @@ public class RangeServlet extends HttpServlet {
 
             response.setStatus(HttpServletResponse.SC_CREATED);
         } catch (IOException e) {
+            response.setContentType("text/plain");
+            response.getWriter().println(e.getMessage());
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().print(e.getMessage());
         }
     }
 
@@ -96,32 +97,28 @@ public class RangeServlet extends HttpServlet {
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             Engine engine = ServletUtils.getEngine(getServletContext());
-            Gson gson = ServletUtils.getGson(getServletContext());
 
             String sheetName = request.getParameter(Constants.SHEET_NAME_PARAMETER);
 
             if (sheetName == null) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new ServletException("Sheet name is required");
+                throw new RuntimeException("Sheet name is required");
             }
 
             String rangeName = request.getParameter("rangeName");
 
             if (rangeName == null) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new ServletException("Range name is required");
+                throw new RuntimeException("Range name is required");
             }
 
-            engine.deleteRange(rangeName);
-
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
-            response.getWriter().print(gson.toJson(engine.getRanges(sheetName)));
+            engine.deleteRange(sheetName, rangeName);
 
             response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-        } catch (IOException e) {
+        } catch (Exception e) {
+            response.setContentType("text/plain");
+            response.getWriter().println(e.getMessage());
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().print(e.getMessage());
         }
     }
 }
