@@ -152,7 +152,7 @@ public class HeaderController {
                 mainController.uploadXml(selectedFileProperty.get());
                 /*
                 here i need to pass the content of the file into the server.
-                then the server open the file.
+                then the server open the file..
                 */
 
 
