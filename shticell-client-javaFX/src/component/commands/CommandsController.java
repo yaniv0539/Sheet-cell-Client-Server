@@ -3,6 +3,8 @@ package component.commands;
 import component.app.AppController;
 import component.commands.operations.filter.FilterController;
 import component.commands.operations.sort.SortController;
+import dto.BoundariesDto;
+import dto.FilterDto;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -69,6 +71,7 @@ public class CommandsController {
     private boolean startSort = true;
     private BooleanProperty isSortPopupClosed = new SimpleBooleanProperty(false);
     private BooleanProperty isFilterPopupClosed = new SimpleBooleanProperty(false);
+    private FilterController filterConroller;
 
     public AppController getMainController() {
         return mainController;
@@ -297,7 +300,7 @@ public class CommandsController {
         Parent popupRoot = fxmlLoader.load(url.openStream());
 
         FilterController filterController = fxmlLoader.getController();
-
+        this.filterConroller = filterController;
         filterController.setMainController(this);
         filterController.init();
 
@@ -312,8 +315,10 @@ public class CommandsController {
         filterStage.show();
     }
 
-    public void filterRange(Boundaries boundariesToFilter, String filteringByColumn, List<String> filteringByValues) {
-        this.mainController.getFilteredSheet(boundariesToFilter, filteringByColumn, filteringByValues);
+    public void filterRange(FilterDto data) {
+        this.mainController.getFilteredSheet(data);
+    }
+    public void filterCommandsControllerRunLater(){
         buttonSort.setDisable(true);
         buttonFilter.setText("Reset Filter");
         filterStage.close();
@@ -335,7 +340,19 @@ public class CommandsController {
         return mainController.isNumericColumn(column,startRow,endRow);
     }
 
-    public List<String> getColumnUniqueValuesInRange(int column, int startRow, int endRow) {
-        return mainController.getColumnUniqueValuesInRange(column, startRow,endRow);
+    public void getColumnUniqueValuesInRange(int column, int startRow, int endRow) {
+        mainController.getColumnUniqueValuesInRange(column, startRow, endRow);
+    }
+
+    public void getBoundriesDto(String text) {
+        mainController.getBoundariesDto(text);
+    }
+
+    public void wrapRunLateForFilterController(BoundariesDto boundariesDto) {
+        filterConroller.textRangeActionRunLater(boundariesDto);
+    }
+
+    public void wrapRunLaterForUniqueValues(List<String> values) {
+        filterConroller.columActionRunLater(values);
     }
 }

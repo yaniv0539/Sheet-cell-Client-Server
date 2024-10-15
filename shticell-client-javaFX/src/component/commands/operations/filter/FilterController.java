@@ -1,6 +1,8 @@
 package component.commands.operations.filter;
 
 import component.commands.CommandsController;
+import dto.BoundariesDto;
+import dto.FilterDto;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
@@ -30,7 +32,7 @@ public class FilterController {
 
     private CommandsController mainController;
 
-    private Boundaries boundariesToFilter = null;
+    private BoundariesDto boundariesToFilter = null;
     private String filteringByColumn = null;
     Tooltip validationTooltip = new Tooltip("Input must be a range in this format:\n" +
             "<top left cell coordinate>..<bottom right cell coordinate>");
@@ -45,26 +47,27 @@ public class FilterController {
     public void init() {
         comboBoxColumn1.disableProperty().bind(validRange.not());
         buttonFilter.disableProperty().bind(anyValueChecked.not());
-        textFieldRange.textProperty().addListener((observableValue, oldValue, newValue) -> handleChangeTextRange(newValue));
+        textFieldRange.setOnAction((ActionEvent event) -> textRangeAction());
+        //textFieldRange.textProperty().addListener((observableValue, oldValue, newValue) -> textRangeAction());
     }
 
-    private void handleChangeTextRange(String newValue) {
-        if (!isInputValid(newValue)) {
-            // Show tooltip if the input is invalid
-            validationTooltip.show(textFieldRange, textFieldRange.getScene().getWindow().getX() + textFieldRange.getLayoutX() + 170,
-                    textFieldRange.getScene().getWindow().getY() + textFieldRange.getLayoutY() + textFieldRange.getHeight() + 45);
-            textFieldRange.setStyle("-fx-border-color: red;");
-            validRange.set(false);
-            comboBoxColumn1.getItems().clear();
+    private void textRangeAction() {
+        comboBoxColumn1.getItems().clear();
+        mainController.getBoundriesDto(textFieldRange.getText());
+    }
 
-        } else {
-            // Hide tooltip if the input is valid
-            validationTooltip.hide();
-            textFieldRange.setStyle("-fx-border-color: lightblue;"); // Reset style
-            comboBoxColumn1.getItems().clear();
-            setColumnOptions(newValue);
-            validRange.set(true);
+    public void textRangeActionRunLater(BoundariesDto boundaries) {
+
+        this.boundariesToFilter = boundaries;
+        List<String> ranges = new ArrayList<>();
+
+        for (int i = boundariesToFilter.getFrom().getColumn(); i <= boundariesToFilter.getTo().getColumn(); i++) {
+            char character = (char) ('A' + i); // Compute the character
+            String str = String.valueOf(character);
+            ranges.add(str);
         }
+        comboBoxColumn1.getItems().addAll(ranges);
+        validRange.set(true);
     }
 
 
@@ -76,16 +79,20 @@ public class FilterController {
             //add them to filter HbOX
             anyValueChecked.set(false);
             flowPaneValues.getChildren().clear();
-            List<String> uniqueValues = mainController.getColumnUniqueValuesInRange(filteringByColumn.toUpperCase().toCharArray()[0] - 'A'
+
+            mainController.getColumnUniqueValuesInRange(filteringByColumn.toUpperCase().toCharArray()[0] - 'A'
                     ,boundariesToFilter.getFrom().getRow()
                     ,boundariesToFilter.getTo().getRow());
+        }
+    }
 
-            for (String uniqueValue : uniqueValues) {
-                CheckBox checkBox = new CheckBox(uniqueValue);
-                checkBox.setWrapText(true);
-                checkBox.selectedProperty().addListener((observable,oldValue,newValue) -> this.handleCheckBoxSelect(uniqueValue,newValue));
-                flowPaneValues.getChildren().add(checkBox);
-            }
+    public void  columActionRunLater(List<String> uniqueValues){
+
+        for (String uniqueValue : uniqueValues) {
+            CheckBox checkBox = new CheckBox(uniqueValue);
+            checkBox.setWrapText(true);
+            checkBox.selectedProperty().addListener((observable,oldValue,newValue) -> this.handleCheckBoxSelect(uniqueValue,newValue));
+            flowPaneValues.getChildren().add(checkBox);
         }
     }
 
@@ -104,22 +111,8 @@ public class FilterController {
 
     @FXML
     void filterAction(ActionEvent event) {
-        this.mainController.filterRange(boundariesToFilter, filteringByColumn, uniqueValuesToFilter);
-    }
-
-    private void setColumnOptions(String rangeValue) {
-
-            boundariesToFilter = BoundariesFactory.toBoundaries(rangeValue);
-            List<String> ranges = new ArrayList<>();
-
-            for (int i = boundariesToFilter.getFrom().getCol(); i <= boundariesToFilter.getTo().getCol(); i++) {
-                char character = (char) ('A' + i); // Compute the character
-                String str = String.valueOf(character);
-                ranges.add(str);
-            }
-            comboBoxColumn1.getItems().addAll(ranges);
-            validRange.set(true);
-
+        FilterDto data = new FilterDto(boundariesToFilter, filteringByColumn, uniqueValuesToFilter);
+        this.mainController.filterRange(data);
     }
 
     private boolean isInputValid(String newValue) {
