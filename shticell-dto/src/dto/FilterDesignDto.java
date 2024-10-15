@@ -16,15 +16,15 @@ public class FilterDesignDto {
         this.filteredArea = boundariesFilter;
     }
 
-    public SheetDto getFilteredSheet() {
+    public SheetDto getSheet() {
         return filteredSheet;
     }
 
-    public Map<CoordinateDto, CoordinateDto> getCoordinateBeforeAndAfterFiltering() {
+    public Map<CoordinateDto, CoordinateDto> getFilterMap() {
         return coordinateBeforeAndAfterFiltering;
     }
 
-    public BoundariesDto getFilteredArea() {
+    public BoundariesDto getBoundariesFilter() {
         return filteredArea;
     }
 }
