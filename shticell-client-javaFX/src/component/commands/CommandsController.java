@@ -5,6 +5,7 @@ import component.commands.operations.filter.FilterController;
 import component.commands.operations.sort.SortController;
 import dto.BoundariesDto;
 import dto.FilterDto;
+import dto.SortDto;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -324,8 +325,11 @@ public class CommandsController {
         filterStage.close();
     }
 
-    public void sortRange(Boundaries boundariesToFilter, List<String> sortingByColumns) {
-        this.mainController.getSortedSheet(boundariesToFilter, sortingByColumns);
+    public void sortRange(SortDto sortDto) {
+        this.mainController.getSortedSheet(sortDto);
+
+    }
+    public void sortCommandsControllerRunLater(){
         buttonFilter.setDisable(true);
         buttonSort.setText("Reset Sort");
         sortStage.close();
@@ -354,5 +358,9 @@ public class CommandsController {
 
     public void wrapRunLaterForUniqueValues(List<String> values) {
         filterConroller.columActionRunLater(values);
+    }
+
+    public void getNumericColumnsInBoundaries(String text) {
+        mainController.getNumericColumnsInBoundaries(text);
     }
 }

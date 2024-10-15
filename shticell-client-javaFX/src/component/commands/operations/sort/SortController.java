@@ -1,5 +1,7 @@
 package component.commands.operations.sort;
 import component.commands.CommandsController;
+import dto.BoundariesDto;
+import dto.SortDto;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -38,6 +40,7 @@ public class SortController {
     SimpleBooleanProperty anyChecked = new SimpleBooleanProperty(false);
     SimpleBooleanProperty validRange = new SimpleBooleanProperty(false);
     private List<String> columToSort = new ArrayList<>();
+    private BoundariesDto boundariesDto;
 
     public void init() {
         buttonSort.disableProperty().bind(anyChecked.not());
@@ -46,28 +49,7 @@ public class SortController {
         validationTooltip.setAutoHide(false);
         Tooltip.install(textFieldRange, validationTooltip);
         validationTooltip.hide();
-        textFieldRange.textProperty().addListener((observable, oldValue, newValue) -> handleChangeTextRange(newValue));
 
-    }
-
-    private void handleChangeTextRange(String newValue) {
-        if (!isInputValid(newValue)) {
-            // Show tooltip if the input is invalid
-            validationTooltip.show(textFieldRange, textFieldRange.getScene().getWindow().getX() + textFieldRange.getLayoutX() + 160,
-                    textFieldRange.getScene().getWindow().getY() + textFieldRange.getLayoutY() + textFieldRange.getHeight() + 55);
-            textFieldRange.setStyle("-fx-border-color: red;");
-            validRange.set(false);
-        } else {
-            // Hide tooltip if the input is valid
-            validationTooltip.hide();
-            textFieldRange.setStyle("-fx-border-color: lightblue;"); // Reset style
-            validRange.set(true);
-        }
-    }
-
-    private boolean isInputValid(String newValue) {
-        return (BoundariesFactory.isValidBoundariesFormat(newValue) &&
-                mainController.isBoundariesValidForCurrentSheet(BoundariesFactory.toBoundaries(newValue)));
     }
 
     @FXML
@@ -78,25 +60,38 @@ public class SortController {
     }
     @FXML
     void buttonGetColumnsAction(ActionEvent event) {
-       //to add check box to the hbox.
+        mainController.getNumericColumnsInBoundaries(textFieldRange.getText());
+    }
+
+    public void buttonGetColumnsActionRunLater(SortDto sortDto){
+        //to add check box to the hbox.
         flowPaneColumns.getChildren().clear();
         anyChecked.setValue(false);
         columToSort.clear();
-        Boundaries boundariesToSort = BoundariesFactory.toBoundaries(textFieldRange.getText());
+        boundariesDto = sortDto.getBoundariesDto();
+        //adding all possible numeric column
+        sortDto.getSortByColumns().forEach(columnLetter -> {
+            CheckBox checkBox = new CheckBox(columnLetter);
+            checkBox.selectedProperty().addListener((observable,oldValue,newValue) -> this.handleCheckBoxSelect(columnLetter,newValue));
+            flowPaneColumns.getChildren().add(checkBox);
+        });
 
-        for (int i = boundariesToSort.getFrom().getCol(); i <= boundariesToSort.getTo().getCol(); i++) {
-            if(mainController.isNumericColumn(i ,boundariesToSort.getFrom().getRow(),boundariesToSort.getTo().getRow())){
-                char character = (char) ('A' + i); // Compute the character
-                String column = String.valueOf(character);
-                CheckBox checkBox = new CheckBox(column);
-                checkBox.selectedProperty().addListener((observable,oldValue,newValue) -> this.handleCheckBoxSelect(column,newValue));
-                flowPaneColumns.getChildren().add(checkBox);
-            }
-        }
+        //todo: logic for serverlet.
+//        for (int i = boundariesDto.getFrom().getColumn(); i <= boundariesDto.getTo().getColumn(); i++) {
+//            if(mainController.isNumericColumn(i ,boundariesDto.getFrom().getRow(),boundariesDto.getTo().getRow())){
+//                char character = (char) ('A' + i); // Compute the character
+//                String column = String.valueOf(character);
+//                CheckBox checkBox = new CheckBox(column);
+//                checkBox.selectedProperty().addListener((observable,oldValue,newValue) -> this.handleCheckBoxSelect(column,newValue));
+//                flowPaneColumns.getChildren().add(checkBox);
+//            }
+//        }
+
         if(flowPaneColumns.getChildren().isEmpty()){
             Label label = new Label("No numeric columns in range !");
             flowPaneColumns.getChildren().add(label);
         }
+
     }
 
     @FXML
