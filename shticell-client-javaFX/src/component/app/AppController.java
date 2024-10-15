@@ -141,7 +141,7 @@ public class AppController {
 
 
     //ToDo: HTTP request.
-    //Done:
+    //todo:Done:
     public void uploadXml(String path) {
         File f = new File(path);
         RequestBody body = new MultipartBody.Builder()
@@ -240,7 +240,7 @@ public class AppController {
             }
         });
     }
-    //check:
+    //todo:check:
     public void deleteRange(RangeDto range) {
 
         RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
@@ -310,6 +310,8 @@ public class AppController {
             }
         });
     }
+
+    //todo:filter requests.need to check
     public void getBoundariesDto(String text) {
 
         String finalUrl = HttpUrl
@@ -362,10 +364,10 @@ public class AppController {
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
                 String jsonResponse = response.body().string();
+
                 List<String> values = gson.fromJson(jsonResponse, new TypeToken<List<String>>(){}.getType());
 
                 Platform.runLater(() -> commandsComponentController.wrapRunLaterForUniqueValues(values));
-
             }
         });
 
@@ -406,14 +408,72 @@ public class AppController {
 
     }
     //Undone:
+    public void getNumericColumnsInBoundaries(String text) {
+        String finalUrl = HttpUrl
+                .parse(FILTER_SHEET_URL)
+                .newBuilder()
+                .addQueryParameter("sheetName",currentSheet.getName())
+                .addQueryParameter("version", String.valueOf(currentSheet.getVersion()))
+                .addQueryParameter("boundaries", text)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsync(finalUrl, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+
+            }
+        });
+
+    }
+    public void getSortedSheet(SortDto sortDto) {
+
+        String jsonString = GSON_INSTANCE.toJson(sortDto);
+        RequestBody body = RequestBody.create(jsonString, MediaType.parse("text/plain"));
+
+        String finalUrl = HttpUrl
+                .parse(FILTER_SHEET_URL)
+                .newBuilder()
+                .addQueryParameter("sheetName",currentSheet.getName())
+                .addQueryParameter("version", String.valueOf(currentSheet.getVersion()))
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsyncPost(finalUrl, body, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> showAlertPopup(new Exception(),"get Filtered Sheet"));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                String jsonResponse = response.body().string();
+
+                if(response.code() != 201){
+                    Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"get Filtered Sheet"));
+                }
+                else{
+                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
+                    SortDesignDto responseDto = gson.fromJson(jsonResponse, SortDesignDto.class);
+                    Platform.runLater(() -> getSortedSheetRunLater(responseDto));
+                }
+            }
+        });
+    }
 
 
 
 
-
+    //todo:run later function.
     public void getFilteredSheetRunLater(FilterDesignDto responseDto) {
 
         OperationView = true;
+        commandsComponentController.filterCommandsControllerRunLater();
         SheetDto filteredSheet = responseDto.getSheet();
         EffectiveValuesPoolProperty effectiveValuesPoolProperty = new EffectiveValuesPoolPropertyImpl();
         setEffectiveValuesPoolProperty(filteredSheet, effectiveValuesPoolProperty);
@@ -468,77 +528,6 @@ public class AppController {
         headerComponentController.getSplitMenuButtonSelectVersion().setDisable(true);
         commandsComponentController.getButtonFilter().setDisable(false);
     }
-
-    public void getSortedSheet(Boundaries boundariesToSort, List<String> sortingByColumns) {
-
-        OperationView = true;
-
-//        SheetGetters GsortedSheet = engine.sortSheet(boundariesToSort, sortingByColumns, currentSheet.getVersion());
-//
-//        SheetDto sortedSheet = new SheetDto(GsortedSheet);
-//        EffectiveValuesPoolProperty effectiveValuesPoolProperty = new EffectiveValuesPoolPropertyImpl();
-//        setEffectiveValuesPoolProperty(sortedSheet, effectiveValuesPoolProperty);
-//
-//        SheetController sortedSheetComponentController = new SheetController();
-//        sortedSheetComponentController.setMainController(this);
-//        ScrollPane sheetComponent = sortedSheetComponentController.getInitializedSheet(sortedSheet.getLayout(),effectiveValuesPoolProperty);
-//
-//        //design the cells
-//        VersionDesignManager.VersionDesign design;
-//
-//
-//        if(currentSheet.getVersion() == engine.getVersionsManagerStatus().getVersions().size()){
-//            design = versionDesignManager.getVersionDesign(currentSheet.getVersion() + 1 );
-//        }else{
-//            design = versionDesignManager.getVersionDesign(currentSheet.getVersion());
-//        }
-//
-//        sortedSheetComponentController.setColumnsDesign(design.getColumnsLayoutVersion());
-//        sortedSheetComponentController.setRowsDesign(design.getRowsLayoutVersion());
-//
-//        List<List<CellGetters>> sortedCellsInRange = engine.sortCellsInRange(boundariesToSort, sortingByColumns, currentSheet.getVersion());
-//
-//        for(int row = 0; row <= sortedSheet.getLayout().getRows() ; row++){
-//            List<CellGetters> sortedCells = new ArrayList<>();
-//            if(row >= boundariesToSort.getFrom().getRow() && row <= boundariesToSort.getTo().getRow()){
-//                 sortedCells = sortedCellsInRange.get(row - boundariesToSort.getFrom().getRow());
-//            }
-//
-//            for(int col = 0; col <= sortedSheet.getLayout().getColumns() ; col++){
-//                Coordinate dest = CoordinateFactory.createCoordinate(row, col);
-//                int indexDesign;
-//                if(row >= boundariesToSort.getFrom().getRow() && row <= boundariesToSort.getTo().getRow() &&
-//                        col >= boundariesToSort.getFrom().getCol() && col <= boundariesToSort.getTo().getCol()){
-//
-//                    Coordinate source = sortedCells.get(col - boundariesToSort.getFrom().getCol()).getCoordinate();
-//                    indexDesign = sortedSheetComponentController.getIndexDesign(source);
-//
-//                    sortedSheetComponentController.setCoordinateDesign(dest,design.getCellDesignsVersion()
-//                            .get(indexDesign));
-//
-//                }
-//                else{
-//                    indexDesign = sortedSheetComponentController.getIndexDesign(dest);
-//                    sortedSheetComponentController.setCoordinateDesign(dest,design.getCellDesignsVersion()
-//                            .get(indexDesign));
-//                }
-//
-//            }
-//        }
-//
-//        //finish design
-//        appBorderPane.setCenter(sheetComponent);
-//
-//        showHeaders.set(false);
-//        showRanges.set(false);
-//        showCommands.set(false);
-//        headerComponentController.getSplitMenuButtonSelectVersion().setDisable(true);
-//        commandsComponentController.getButtonSort().setDisable(false);
-    }
-
-
-
-
     private void onFinishLoadingFile(SheetDto sheetDto) {
         //methode
         showHeaders.set(true);
@@ -560,14 +549,79 @@ public class AppController {
         saveDesignVersion(sheetComponentController.getGridPane());
         versionDesignManager.addVersion();
     }
+    public void getSortedSheetRunLater(SortDesignDto sortDesignDto) {
+        OperationView = true;
+        commandsComponentController.sortCommandsControllerRunLater();
+        SheetDto sortedSheet = sortDesignDto.getSheetDto();
+        EffectiveValuesPoolProperty effectiveValuesPoolProperty = new EffectiveValuesPoolPropertyImpl();
+        setEffectiveValuesPoolProperty(sortedSheet, effectiveValuesPoolProperty);
 
+        SheetController sortedSheetComponentController = new SheetController();
+        sortedSheetComponentController.setMainController(this);
+        ScrollPane sheetComponent = sortedSheetComponentController.getInitializedSheet(sortedSheet.getLayout(),effectiveValuesPoolProperty);
+
+        //design the cells
+        VersionDesignManager.VersionDesign design;
+
+
+        if(currentSheet.getVersion() == mostUpdatedVersionNumber){
+            design = versionDesignManager.getVersionDesign(currentSheet.getVersion() + 1 );
+        }else{
+            design = versionDesignManager.getVersionDesign(currentSheet.getVersion());
+        }
+
+        sortedSheetComponentController.setColumnsDesign(design.getColumnsLayoutVersion());
+        sortedSheetComponentController.setRowsDesign(design.getRowsLayoutVersion());
+
+        List<List<CoordinateDto>> sortedCellsInRange = sortDesignDto.getCoordinateDtos();
+        BoundariesDto boundariesToSort = sortDesignDto.getBoundariesDto();
+
+        for(int row = 0; row <= sortedSheet.getLayout().getRows() ; row++){
+            List<CoordinateDto> sortedCells = new ArrayList<>();
+            if(row >= boundariesToSort.getFrom().getRow() && row <= boundariesToSort.getTo().getRow()){
+                sortedCells = sortedCellsInRange.get(row - boundariesToSort.getFrom().getRow());
+            }
+
+            for(int col = 0; col <= sortedSheet.getLayout().getColumns() ; col++){
+                CoordinateDto dest = new CoordinateDto(row, col);
+                int indexDesign;
+                if(row >= boundariesToSort.getFrom().getRow() && row <= boundariesToSort.getTo().getRow() &&
+                        col >= boundariesToSort.getFrom().getColumn() && col <= boundariesToSort.getTo().getColumn()){
+
+                    CoordinateDto source = sortedCells.get(col - boundariesToSort.getFrom().getColumn());
+                    indexDesign = sortedSheetComponentController.getIndexDesign(source);
+
+                    sortedSheetComponentController.setCoordinateDesign(dest,design.getCellDesignsVersion()
+                            .get(indexDesign));
+
+                }
+                else{
+                    indexDesign = sortedSheetComponentController.getIndexDesign(dest);
+                    sortedSheetComponentController.setCoordinateDesign(dest,design.getCellDesignsVersion()
+                            .get(indexDesign));
+                }
+
+            }
+        }
+
+        //finish design
+        appBorderPane.setCenter(sheetComponent);
+
+        showHeaders.set(false);
+        showRanges.set(false);
+        showCommands.set(false);
+        headerComponentController.getSplitMenuButtonSelectVersion().setDisable(true);
+        commandsComponentController.getButtonSort().setDisable(false);
+    }
+
+
+    //todo:other function.
     private void setSheet(SheetDto sheetDto) {
         sheetComponentController = new SheetController();
         sheetComponentController.setMainController(this);
         sheetComponent = sheetComponentController.getInitializedSheet(sheetDto.getLayout(), effectiveValuesPool);
         appBorderPane.setCenter(sheetComponent);
     }
-
     private void setEffectiveValuesPoolProperty(SheetDto sheetToView, EffectiveValuesPoolProperty effectiveValuesPool) {
 
         Map<String, CellDto> map = sheetToView.getActiveCells();
@@ -585,7 +639,6 @@ public class AppController {
             }
         }
     }
-
     public void focusChanged(boolean newValue, String coordinateString) {
 
         if (newValue && !OperationView )
@@ -615,18 +668,28 @@ public class AppController {
             cellInFocus.setInfluenceOn(new HashSet<>());
         }
     }
-
     private void saveDesignVersion(GridPane gridPane) {
         versionDesignManager.saveVersionDesign(gridPane);
     }
-
-
-
     private void resetSheetToVersionDesign(int numberOfVersion) {
         if(numberOfVersion == mostUpdatedVersionNumber){
             numberOfVersion++;
         }
         sheetComponentController.setGridPaneDesign(versionDesignManager.getVersionDesign(numberOfVersion));
+    }
+
+    public void resetFilter() {
+
+        OperationView = false;
+        viewSheetVersion(String.valueOf(currentSheet.getVersion()));
+        headerComponentController.getSplitMenuButtonSelectVersion().setDisable(false);
+        appBorderPane.setCenter(sheetComponent);
+    }
+    public void resetSort() {
+        OperationView = false;
+        viewSheetVersion(String.valueOf(currentSheet.getVersion()));
+        headerComponentController.getSplitMenuButtonSelectVersion().setDisable(false);
+        appBorderPane.setCenter(sheetComponent);
     }
 
     public void changeCommandsColumnWidth(double prefWidth) {
@@ -725,60 +788,12 @@ public class AppController {
         this.sheetComponentController.paintRangeOnSheet(range, color);
     }
 
-//todo:helper function with logic maybe servelt need it.
-
-//    public RangeGetters getRange(String name) {
-//        return engine.getRange(name);
-//    }
-
-
-//
-//    private Collection<Coordinate> rangeUses(RangeDto range) {
-//
-//        return this.currentSheet.rangeUses(range);
-//    }
-
-
-
-
-
-    public void resetFilter() {
-
-        OperationView = false;
-        viewSheetVersion(String.valueOf(currentSheet.getVersion()));
-        headerComponentController.getSplitMenuButtonSelectVersion().setDisable(false);
-        appBorderPane.setCenter(sheetComponent);
-    }
-    public void resetSort() {
-        OperationView = false;
-        viewSheetVersion(String.valueOf(currentSheet.getVersion()));
-        headerComponentController.getSplitMenuButtonSelectVersion().setDisable(false);
-        appBorderPane.setCenter(sheetComponent);
-    }
-
-    public boolean isBoundariesValidForCurrentSheet(Boundaries boundaries) {
-        //function in sheet impl.
-       //return currentSheet.isRangeInBoundaries(boundaries);
-        return true;
-    }
-
     public Color getBackground(TextField tf) {
         return sheetComponentController.getTextFieldBackgroundColor(tf.getBackground());
     }
-
     public void resetRangeOnSheet(RangeDto selectedItem) {
         sheetComponentController.resetRangeOnSheet(selectedItem);
     }
-
-
-
-    public boolean isNumericColumn(int column, int startRow, int endRow) {
-//        return currentSheet.isColumnNumericInRange(column,startRow,endRow);
-        return true;
-    }
-
-
-
     public void showAlertPopup(Throwable exception,String error) {
         // Create a new alert dialog for the error
         Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -805,6 +820,18 @@ public class AppController {
 
         alert.showAndWait();  // Display the popup
 
+    }
+
+
+    //todo: function that will be deleted eventually.
+    public boolean isBoundariesValidForCurrentSheet(Boundaries boundaries) {
+        //function in sheet impl.
+        //return currentSheet.isRangeInBoundaries(boundaries);
+        return true;
+    }
+    public boolean isNumericColumn(int column, int startRow, int endRow) {
+//        return currentSheet.isColumnNumericInRange(column,startRow,endRow);
+        return true;
     }
 
 
