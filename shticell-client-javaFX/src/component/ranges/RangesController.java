@@ -66,17 +66,9 @@ public class RangesController {
 
     @FXML
     void deleteRangeAction(ActionEvent event) {
-//        RangeDto selectedRange = tableViewActiveRanges.getSelectionModel().getSelectedItem();
-//        try{
-//            if (selectedRange != null) {
-//               this.mainController.deleteRange(selectedRange);
-//                this.ranges.remove(selectedRange);
-//            }
-//
-//        }
-//        catch(Exception e){
-//            mainController.showAlertPopup(e,"Delete Range");
-//        }
+        RangeDto selectedRange = tableViewActiveRanges.getSelectionModel().getSelectedItem();
+        this.mainController.deleteRange(selectedRange);
+
     }
 
     void activateRangeAction(String resource, String title) throws IOException {
@@ -155,4 +147,7 @@ public class RangesController {
         tableViewActiveRanges.refresh();
     }
 
+    public void runLaterRemoveRange(RangeDto range) {
+        this.ranges.remove(range);
+    }
 }
