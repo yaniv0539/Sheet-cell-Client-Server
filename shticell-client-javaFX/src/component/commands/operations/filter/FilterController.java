@@ -48,7 +48,6 @@ public class FilterController {
         comboBoxColumn1.disableProperty().bind(validRange.not());
         buttonFilter.disableProperty().bind(anyValueChecked.not());
         textFieldRange.setOnAction((ActionEvent event) -> textRangeAction());
-        //textFieldRange.textProperty().addListener((observableValue, oldValue, newValue) -> textRangeAction());
     }
 
     private void textRangeAction() {

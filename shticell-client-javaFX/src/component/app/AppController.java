@@ -174,6 +174,7 @@ public class AppController {
                 .parse(CELL_URL)
                 .newBuilder()
                 .addQueryParameter("sheetName",currentSheet.getName())
+                .addQueryParameter("sheetVersion",String.valueOf(mostUpdatedVersionNumber))
                 .addQueryParameter("target",cellInFocus.getCoordinate().get())
                 .build()
                 .toString();
@@ -196,48 +197,76 @@ public class AppController {
                     SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
                     Platform.runLater(() ->{
                         currentSheet = sheetDto;
+                        mostUpdatedVersionNumber = currentSheet.getVersion();
                         setEffectiveValuesPoolProperty(currentSheet, effectiveValuesPool);
                         versionDesignManager.addVersion();
                         //check this line
-                        headerComponentController.addMenuOptionToVersionSelection(String.valueOf(currentSheet.getVersion() + 1));
+                        headerComponentController.addMenuOptionToVersionSelection(String.valueOf(currentSheet.getVersion()));
                     });
                 }
             }
         });
 
     }
-    public void addRange(String name, String boundaries) {
-
-        RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
-
+    public void viewSheetVersion(String numberOfVersion) {
         String finalUrl = HttpUrl
-                .parse(RANGE_URL)
+                .parse(SHEET_URL)
                 .newBuilder()
                 .addQueryParameter("sheetName",currentSheet.getName())
-                .addQueryParameter("rangeName", name)
-                .addQueryParameter("boundaries", boundaries)
+                .addQueryParameter("sheetVersion",numberOfVersion)
                 .build()
                 .toString();
 
-        HttpClientUtil.runAsyncPost(finalUrl, body, new Callback() {
+        HttpClientUtil.runAsync(finalUrl,new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(() -> showAlertPopup(new Exception(),"add range"));
+                Platform.runLater(() -> showAlertPopup(new Exception(),"show version"));
             }
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 String jsonResponse = response.body().string();
 
-                if(response.code() != 201) {
-                    Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"add range"));
+                if(response.code() != 200){
+                    showAlertPopup(new Exception(GSON_INSTANCE.fromJson(jsonResponse,String.class)), "show version: " + numberOfVersion);
                 }
-                else {
-                    RangeDto rangeDto = GSON_INSTANCE.fromJson(jsonResponse, RangeDto.class);
+                else{
+                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
+                    SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
 
-                    Platform.runLater(()->{
-                        rangesComponentController.runLaterAddRange(rangeDto);
-                    });
+                    Platform.runLater(() -> getViewSheetVersionRunLater(sheetDto));
+                }
+            }
+        });
+    }
+
+    //filter http request.works
+    public void getBoundariesDto(String text) {
+
+        String finalUrl = HttpUrl
+                .parse(GET_BOUNDARIES_URL)
+                .newBuilder()
+                .addQueryParameter("sheetName",currentSheet.getName())
+                .addQueryParameter("boundaries", text)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsync(finalUrl, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> showAlertPopup(new Exception(),"get Boundaries Dto"));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                String jsonResponse = response.body().string();
+                if(response.code() != 200){
+                    Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"get Boundaries Dto"));
+                }
+                else{
+                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
+                    BoundariesDto boundariesDto = gson.fromJson(jsonResponse, BoundariesDto.class);
+                    Platform.runLater(() -> commandsComponentController.wrapRunLateForFilterController(boundariesDto));
                 }
             }
         });
@@ -276,111 +305,6 @@ public class AppController {
         });
 
     }
-    //filter http request
-    public void getBoundariesDto(String text) {
-
-        String finalUrl = HttpUrl
-                .parse(GET_BOUNDARIES_URL)
-                .newBuilder()
-                .addQueryParameter("sheetName",currentSheet.getName())
-                .addQueryParameter("boundaries", text)
-                .build()
-                .toString();
-
-        HttpClientUtil.runAsync(finalUrl, new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(() -> showAlertPopup(new Exception(),"get Boundaries Dto"));
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                String jsonResponse = response.body().string();
-                if(response.code() != 200){
-                    Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"get Boundaries Dto"));
-                }
-                else{
-                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
-                    BoundariesDto boundariesDto = gson.fromJson(jsonResponse, BoundariesDto.class);
-                    Platform.runLater(() -> commandsComponentController.wrapRunLateForFilterController(boundariesDto));
-                }
-            }
-        });
-    }
-    //todo:check:
-    public void deleteRange(RangeDto range) {
-
-        RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
-        String finalUrl = HttpUrl
-                .parse(RANGE_URL)
-                .newBuilder()
-                .addQueryParameter("sheetName",this.currentSheet.getName())
-                .addQueryParameter("rangeName",range.getName())
-                .build()
-                .toString();
-
-        HttpClientUtil.runAsyncDelete(finalUrl, body, new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(() -> showAlertPopup(new Exception(),"add range"));
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                String jsonResponse = response.body().string();
-
-                if(response.code() != 204){
-                    Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"add range"));
-                }
-                else{
-                    Platform.runLater(() -> rangesComponentController.runLaterRemoveRange(range));
-                }
-
-            }
-        });
-    }
-    public void viewSheetVersion(String numberOfVersion) {
-        String finalUrl = HttpUrl
-                .parse(SHEET_URL)
-                .newBuilder()
-                .addQueryParameter("name",currentSheet.getName())
-                .addQueryParameter("version",numberOfVersion)
-                .build()
-                .toString();
-
-        HttpClientUtil.runAsync(finalUrl,new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(() -> showAlertPopup(new Exception(),"show version"));
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                String jsonResponse = response.body().string();
-
-                if(response.code() != 200){
-                    showAlertPopup(new Exception(GSON_INSTANCE.fromJson(jsonResponse,String.class)), "show version: " + numberOfVersion);
-                }
-                else{
-                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
-                    SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
-
-                    Platform.runLater(() -> {
-                        currentSheet = sheetDto;
-                        showCommands.set(Integer.parseInt(numberOfVersion) == mostUpdatedVersionNumber);
-                        showRanges.set(Integer.parseInt(numberOfVersion) == mostUpdatedVersionNumber);
-                        showHeaders.set(Integer.parseInt(numberOfVersion) == mostUpdatedVersionNumber);
-                        setEffectiveValuesPoolProperty(currentSheet, effectiveValuesPool);
-                        resetSheetToVersionDesign(Integer.parseInt(numberOfVersion));
-                    });
-                }
-            }
-        });
-    }
-
-    //todo:filter requests.need to check
-
-
     public void getFilteredSheet(FilterDto data) {
 
         String jsonString = GSON_INSTANCE.toJson(data);
@@ -419,13 +343,85 @@ public class AppController {
         });
 
     }
-    //Undone:
-    public void getNumericColumnsInBoundaries(String text) {
+    //todo:check:
+    public void deleteRange(RangeDto range) {
+
+        RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
         String finalUrl = HttpUrl
-                .parse(FILTER_SHEET_URL)
+                .parse(RANGE_URL)
+                .newBuilder()
+                .addQueryParameter("sheetName",this.currentSheet.getName())
+                //to check if it is really the most update sheet: itay.
+                .addQueryParameter("sheetVersion", String.valueOf(currentSheet.getVersion()))
+                .addQueryParameter("rangeName",range.getName())
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsyncDelete(finalUrl, body, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> showAlertPopup(new Exception(),"add range"));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                String jsonResponse = response.body().string();
+
+                if(response.code() != 204){
+                    Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"add range"));
+                }
+                else{
+                    Platform.runLater(() -> rangesComponentController.runLaterRemoveRange(range));
+                }
+
+            }
+        });
+    }
+    public void addRange(String name, String boundaries) {
+
+        RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
+
+        String finalUrl = HttpUrl
+                .parse(RANGE_URL)
                 .newBuilder()
                 .addQueryParameter("sheetName",currentSheet.getName())
-                .addQueryParameter("version", String.valueOf(currentSheet.getVersion()))
+                .addQueryParameter("sheetVersion",String.valueOf(currentSheet.getVersion()))
+                .addQueryParameter("rangeName", name)
+                .addQueryParameter("boundaries", boundaries)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsyncPost(finalUrl, body, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> showAlertPopup(new Exception(),"add range"));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                String jsonResponse = response.body().string();
+
+                if(response.code() != 201) {
+                    Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"add range"));
+                }
+                else {
+                    RangeDto rangeDto = GSON_INSTANCE.fromJson(jsonResponse, RangeDto.class);
+
+                    Platform.runLater(()->{
+                        rangesComponentController.runLaterAddRange(rangeDto);
+                    });
+                }
+            }
+        });
+    }
+
+    //sort requests.need to check
+    public void getNumericColumnsInBoundaries(String text) {
+        String finalUrl = HttpUrl
+                .parse(GET_NUMERIC_COLUMNS_IN_RANGE_URL)
+                .newBuilder()
+                .addQueryParameter("sheetName",currentSheet.getName())
+                .addQueryParameter("sheetVersion", String.valueOf(currentSheet.getVersion()))
                 .addQueryParameter("boundaries", text)
                 .build()
                 .toString();
@@ -433,12 +429,20 @@ public class AppController {
         HttpClientUtil.runAsync(finalUrl, new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-
+                Platform.runLater(() -> showAlertPopup(new Exception(),"get Filtered Sheet"));
             }
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                String jsonResponse = response.body().string();
 
+                if(response.code() != 200){
+                    Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"get Numeric columns"));
+                }
+                else{
+                    SortDto sortDto = GSON_INSTANCE.fromJson(jsonResponse, SortDto.class);
+                    Platform.runLater(()-> getNumericColumnsInBoundariesRunLater(sortDto));
+                }
             }
         });
 
@@ -449,10 +453,10 @@ public class AppController {
         RequestBody body = RequestBody.create(jsonString, MediaType.parse("text/plain"));
 
         String finalUrl = HttpUrl
-                .parse(FILTER_SHEET_URL)
+                .parse(SORT_SHEET_URL)
                 .newBuilder()
                 .addQueryParameter("sheetName",currentSheet.getName())
-                .addQueryParameter("version", String.valueOf(currentSheet.getVersion()))
+                .addQueryParameter("sheetVersion", String.valueOf(currentSheet.getVersion()))
                 .build()
                 .toString();
 
@@ -477,9 +481,6 @@ public class AppController {
             }
         });
     }
-
-
-
 
     //todo:run later function.
     public void getFilteredSheetRunLater(FilterDesignDto responseDto) {
@@ -625,6 +626,19 @@ public class AppController {
         headerComponentController.getSplitMenuButtonSelectVersion().setDisable(true);
         commandsComponentController.getButtonSort().setDisable(false);
     }
+    public void getViewSheetVersionRunLater(SheetDto sheetDto){
+        currentSheet = sheetDto;
+        int numberOfVersion = currentSheet.getVersion();
+
+        showCommands.set(numberOfVersion == mostUpdatedVersionNumber);
+        showRanges.set(numberOfVersion == mostUpdatedVersionNumber);
+        showHeaders.set(numberOfVersion == mostUpdatedVersionNumber);
+        setEffectiveValuesPoolProperty(currentSheet, effectiveValuesPool);
+        resetSheetToVersionDesign(numberOfVersion);
+    }
+    public void getNumericColumnsInBoundariesRunLater(SortDto sortDto){
+        commandsComponentController.wrapSortGetNumericColumnsInBoundariesRunLater(sortDto);
+    }
 
 
     //todo:other function.
@@ -690,16 +704,13 @@ public class AppController {
         sheetComponentController.setGridPaneDesign(versionDesignManager.getVersionDesign(numberOfVersion));
     }
 
-    public void resetFilter() {
+    public void resetOperationView() {
 
         OperationView = false;
-        viewSheetVersion(String.valueOf(currentSheet.getVersion()));
-        headerComponentController.getSplitMenuButtonSelectVersion().setDisable(false);
-        appBorderPane.setCenter(sheetComponent);
-    }
-    public void resetSort() {
-        OperationView = false;
-        viewSheetVersion(String.valueOf(currentSheet.getVersion()));
+        int numberOfVersion = currentSheet.getVersion();
+        showCommands.set(numberOfVersion == mostUpdatedVersionNumber);
+        showRanges.set(numberOfVersion == mostUpdatedVersionNumber);
+        showHeaders.set(numberOfVersion == mostUpdatedVersionNumber);
         headerComponentController.getSplitMenuButtonSelectVersion().setDisable(false);
         appBorderPane.setCenter(sheetComponent);
     }

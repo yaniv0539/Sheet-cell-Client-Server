@@ -54,9 +54,7 @@ public class SortController {
 
     @FXML
     void buttonSortAction(ActionEvent event) {
-        Boundaries BoundariesToSort = BoundariesFactory.toBoundaries(textFieldRange.getText());
-
-        //mainController.sortRange(BoundariesToSort,columToSort);
+        mainController.sortRange(new SortDto(boundariesDto, columToSort));
     }
     @FXML
     void buttonGetColumnsAction(ActionEvent event) {
@@ -91,7 +89,6 @@ public class SortController {
             Label label = new Label("No numeric columns in range !");
             flowPaneColumns.getChildren().add(label);
         }
-
     }
 
     @FXML

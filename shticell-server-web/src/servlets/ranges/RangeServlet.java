@@ -14,7 +14,7 @@ import utils.ServletUtils;
 
 import java.io.IOException;
 
-@WebServlet(name = "RangeServlet", urlPatterns = "/sheet/range")
+@WebServlet(name = "RangeServlet", urlPatterns = "/sheet/ranges")
 public class RangeServlet extends HttpServlet {
 
     @Override
