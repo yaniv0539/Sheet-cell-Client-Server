@@ -2,6 +2,7 @@ package component.ranges;
 
 import component.app.AppController;
 import dto.RangeDto;
+import dto.SheetDto;
 import javafx.beans.property.BooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -135,8 +136,7 @@ public class RangesController {
     public void addRange(String name, String boundaries) {
             this.mainController.addRange(name, boundaries);
     }
-    public void runLaterAddRange(RangeDto rangeDto){
-        ranges.add(rangeDto);
+    public void runLaterAddRange(){
         popupStage.close();
         tableViewActiveRanges.refresh();
     }

@@ -195,14 +195,7 @@ public class AppController {
                 else{
                     Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
                     SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
-                    Platform.runLater(() ->{
-                        currentSheet = sheetDto;
-                        mostUpdatedVersionNumber = currentSheet.getVersion();
-                        setEffectiveValuesPoolProperty(currentSheet, effectiveValuesPool);
-                        versionDesignManager.addVersion();
-                        //check this line
-                        headerComponentController.addMenuOptionToVersionSelection(String.valueOf(currentSheet.getVersion()));
-                    });
+                    Platform.runLater(() -> updateCellRunLater(sheetDto));
                 }
             }
         });
@@ -405,10 +398,15 @@ public class AppController {
                     Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"add range"));
                 }
                 else {
-                    RangeDto rangeDto = GSON_INSTANCE.fromJson(jsonResponse, RangeDto.class);
+                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
+                    SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
 
                     Platform.runLater(()->{
-                        rangesComponentController.runLaterAddRange(rangeDto);
+                        rangesComponentController.uploadRanges(sheetDto.getRanges());
+                        if(sheetDto.getVersion() != currentSheet.getVersion()){
+                            updateCellRunLater(sheetDto);
+                        }
+                        rangesComponentController.runLaterAddRange();
                     });
                 }
             }
@@ -638,6 +636,13 @@ public class AppController {
     }
     public void getNumericColumnsInBoundariesRunLater(SortDto sortDto){
         commandsComponentController.wrapSortGetNumericColumnsInBoundariesRunLater(sortDto);
+    }
+    public void updateCellRunLater(SheetDto sheetDto){
+        currentSheet = sheetDto;
+        mostUpdatedVersionNumber = currentSheet.getVersion();
+        setEffectiveValuesPoolProperty(currentSheet, effectiveValuesPool);
+        versionDesignManager.addVersion();
+        headerComponentController.addMenuOptionToVersionSelection(String.valueOf(currentSheet.getVersion()));
     }
 
 
