@@ -73,6 +73,7 @@ public class CommandsController {
     private BooleanProperty isSortPopupClosed = new SimpleBooleanProperty(false);
     private BooleanProperty isFilterPopupClosed = new SimpleBooleanProperty(false);
     private FilterController filterConroller;
+    private SortController sortController;
 
     public AppController getMainController() {
         return mainController;
@@ -168,7 +169,7 @@ public class CommandsController {
             activateFilterPopup(FILTER_POPUP_FXML_INCLUDE_RESOURCE, "Filter");
             startFilter = false;
         } else {
-            mainController.resetFilter();
+            mainController.resetOperationView();
             buttonSort.setDisable(false);
             resetButtonFilter();
         }
@@ -184,7 +185,7 @@ public class CommandsController {
             activateSortPopup(SORT_POPUP_FXML_INCLUDE_RESOURCE, "Sort");
             startSort = false;
         } else {
-            mainController.resetSort();
+            mainController.resetOperationView();
             buttonFilter.setDisable(false);
             resetButtonSort();
         }
@@ -198,6 +199,7 @@ public class CommandsController {
         Parent popupRoot = fxmlLoader.load(url.openStream());
 
         SortController sortController = fxmlLoader.getController();
+        this.sortController = sortController;
 
         sortController.setMainController(this);
         sortController.init();
@@ -319,6 +321,7 @@ public class CommandsController {
     public void filterRange(FilterDto data) {
         this.mainController.getFilteredSheet(data);
     }
+
     public void filterCommandsControllerRunLater(){
         buttonSort.setDisable(true);
         buttonFilter.setText("Reset Filter");
@@ -329,6 +332,7 @@ public class CommandsController {
         this.mainController.getSortedSheet(sortDto);
 
     }
+
     public void sortCommandsControllerRunLater(){
         buttonFilter.setDisable(true);
         buttonSort.setText("Reset Sort");
@@ -362,5 +366,9 @@ public class CommandsController {
 
     public void getNumericColumnsInBoundaries(String text) {
         mainController.getNumericColumnsInBoundaries(text);
+    }
+
+    public void wrapSortGetNumericColumnsInBoundariesRunLater(SortDto sortDto) {
+        sortController.buttonGetColumnsActionRunLater(sortDto);
     }
 }

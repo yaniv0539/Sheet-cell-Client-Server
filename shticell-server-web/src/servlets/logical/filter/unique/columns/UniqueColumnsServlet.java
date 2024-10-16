@@ -14,7 +14,7 @@ import utils.ServletUtils;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "FilterServlet", urlPatterns = "/sheet/filter/uniqueColumnValues")
+@WebServlet(name = "UniqueColumnsServlet", urlPatterns = "/sheet/filter/uniqueColumnValues")
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 1024 * 1024 * 5, maxRequestSize = 1024 * 1024 * 5 * 5)
 public class UniqueColumnsServlet extends HttpServlet {
 

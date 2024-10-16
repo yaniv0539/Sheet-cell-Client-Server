@@ -40,7 +40,7 @@ public class FilterServlet extends HttpServlet {
 
             if (sheetVersion == null) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new RuntimeException("Range name is required");
+                throw new RuntimeException("Sheet version is required");
             }
 
             StringBuilder jsonBody = new StringBuilder();
