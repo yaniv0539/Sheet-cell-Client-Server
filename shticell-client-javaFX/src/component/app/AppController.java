@@ -240,6 +240,37 @@ public class AppController {
             }
         });
     }
+    //filter http request
+    public void getBoundariesDto(String text) {
+
+        String finalUrl = HttpUrl
+                .parse(GET_BOUNDARIES_URL)
+                .newBuilder()
+                .addQueryParameter("sheetName",currentSheet.getName())
+                .addQueryParameter("boundaries", text)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsync(finalUrl, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> showAlertPopup(new Exception(),"get Boundaries Dto"));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                String jsonResponse = response.body().string();
+                if(response.code() != 200){
+                    Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"get Boundaries Dto"));
+                }
+                else{
+                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
+                    BoundariesDto boundariesDto = gson.fromJson(jsonResponse, BoundariesDto.class);
+                    Platform.runLater(() -> commandsComponentController.wrapRunLateForFilterController(boundariesDto));
+                }
+            }
+        });
+    }
     //todo:check:
     public void deleteRange(RangeDto range) {
 
@@ -312,42 +343,13 @@ public class AppController {
     }
 
     //todo:filter requests.need to check
-    public void getBoundariesDto(String text) {
 
-        String finalUrl = HttpUrl
-                .parse(GET_BOUNDARIES_URL)
-                .newBuilder()
-                .addQueryParameter("sheetName",currentSheet.getName())
-                .addQueryParameter("boundaries", text)
-                .build()
-                .toString();
-
-        HttpClientUtil.runAsync(finalUrl, new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(() -> showAlertPopup(new Exception(),"get Boundaries Dto"));
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                String jsonResponse = response.body().string();
-                if(response.code() != 200){
-                    Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"get Boundaries Dto"));
-                }
-                else{
-                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
-                    BoundariesDto boundariesDto = gson.fromJson(jsonResponse, BoundariesDto.class);
-                    Platform.runLater(() -> commandsComponentController.wrapRunLateForFilterController(boundariesDto));
-                }
-            }
-        });
-    }
     public void getColumnUniqueValuesInRange(int column, int startRow, int endRow) {
         String finalUrl = HttpUrl
                 .parse(UNIQUE_COL_VALUES_URL)
                 .newBuilder()
                 .addQueryParameter("sheetName",currentSheet.getName())
-                .addQueryParameter("version", String.valueOf(currentSheet.getVersion()))
+                .addQueryParameter("sheetVersion", String.valueOf(currentSheet.getVersion()))
                 .addQueryParameter("column", String.valueOf(column))
                 .addQueryParameter("startRow", String.valueOf(startRow))
                 .addQueryParameter("endRow", String.valueOf(endRow))
@@ -364,10 +366,14 @@ public class AppController {
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
                 String jsonResponse = response.body().string();
+                if(response.code() != 200){
+                    Platform.runLater(()->showAlertPopup(new Exception(jsonResponse),"get column unique values"));
+                }
+                else{
+                    List<String> values = gson.fromJson(jsonResponse, new TypeToken<List<String>>(){}.getType());
 
-                List<String> values = gson.fromJson(jsonResponse, new TypeToken<List<String>>(){}.getType());
-
-                Platform.runLater(() -> commandsComponentController.wrapRunLaterForUniqueValues(values));
+                    Platform.runLater(() -> commandsComponentController.wrapRunLaterForUniqueValues(values));
+                }
             }
         });
 

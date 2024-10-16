@@ -459,7 +459,19 @@ public class EngineImpl implements Engine, Serializable {
 
         Sheet lastVersion = versionManager.getLastVersion();
 
-        lastVersion.isRangeInBoundaries(boundaries1);
+        if(!lastVersion.isCoordinateInBoundaries(boundaries1.getFrom())) {
+            throw new RuntimeException("coordinate " + boundaries1.getFrom() + "out of boundaries");
+        }
+        if(!lastVersion.isCoordinateInBoundaries(boundaries1.getTo())) {
+            throw new RuntimeException("coordinate " + boundaries1.getTo() + "out of boundaries");
+        }
+        if(!lastVersion.isCoordinateInBoundaries(boundaries1.getFrom())) {
+            throw new RuntimeException("coordinate " + boundaries1.getFrom() + "out of boundaries");
+        }
+        if(!CoordinateFactory.isGreaterThen(boundaries1.getTo(),boundaries1.getFrom()))
+        {
+            throw new RuntimeException("coordinate " + boundaries1.getFrom() + " > " + boundaries1.getTo());
+        }
 
         return new BoundariesDto(boundaries1);
     }
