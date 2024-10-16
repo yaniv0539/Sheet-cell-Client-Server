@@ -7,6 +7,8 @@ import component.commands.CommandsController;
 import dto.*;
 import component.header.HeaderController;
 import dto.deserializer.CellDtoDeserializer;
+import dto.deserializer.CoordinateMapDeserializer;
+import dto.serializer.CoordinateMapSerializer;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
@@ -240,6 +242,40 @@ public class AppController {
             }
         });
     }
+    public void getColumnUniqueValuesInRange(int column, int startRow, int endRow) {
+        String finalUrl = HttpUrl
+                .parse(UNIQUE_COL_VALUES_URL)
+                .newBuilder()
+                .addQueryParameter("sheetName",currentSheet.getName())
+                .addQueryParameter("sheetVersion", String.valueOf(currentSheet.getVersion()))
+                .addQueryParameter("column", String.valueOf(column))
+                .addQueryParameter("startRow", String.valueOf(startRow))
+                .addQueryParameter("endRow", String.valueOf(endRow))
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsync(finalUrl,new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> showAlertPopup(new Exception(),"get column unique values"));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
+                String jsonResponse = response.body().string();
+                if(response.code() != 200){
+                    Platform.runLater(()->showAlertPopup(new Exception(jsonResponse),"get column unique values"));
+                }
+                else{
+                    List<String> values = gson.fromJson(jsonResponse, new TypeToken<List<String>>(){}.getType());
+
+                    Platform.runLater(() -> commandsComponentController.wrapRunLaterForUniqueValues(values));
+                }
+            }
+        });
+
+    }
     //filter http request
     public void getBoundariesDto(String text) {
 
@@ -344,40 +380,7 @@ public class AppController {
 
     //todo:filter requests.need to check
 
-    public void getColumnUniqueValuesInRange(int column, int startRow, int endRow) {
-        String finalUrl = HttpUrl
-                .parse(UNIQUE_COL_VALUES_URL)
-                .newBuilder()
-                .addQueryParameter("sheetName",currentSheet.getName())
-                .addQueryParameter("sheetVersion", String.valueOf(currentSheet.getVersion()))
-                .addQueryParameter("column", String.valueOf(column))
-                .addQueryParameter("startRow", String.valueOf(startRow))
-                .addQueryParameter("endRow", String.valueOf(endRow))
-                .build()
-                .toString();
 
-        HttpClientUtil.runAsync(finalUrl,new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(() -> showAlertPopup(new Exception(),"get column unique values"));
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
-                String jsonResponse = response.body().string();
-                if(response.code() != 200){
-                    Platform.runLater(()->showAlertPopup(new Exception(jsonResponse),"get column unique values"));
-                }
-                else{
-                    List<String> values = gson.fromJson(jsonResponse, new TypeToken<List<String>>(){}.getType());
-
-                    Platform.runLater(() -> commandsComponentController.wrapRunLaterForUniqueValues(values));
-                }
-            }
-        });
-
-    }
     public void getFilteredSheet(FilterDto data) {
 
         String jsonString = GSON_INSTANCE.toJson(data);
@@ -387,7 +390,7 @@ public class AppController {
                 .parse(FILTER_SHEET_URL)
                 .newBuilder()
                 .addQueryParameter("sheetName",currentSheet.getName())
-                .addQueryParameter("version", String.valueOf(currentSheet.getVersion()))
+                .addQueryParameter("sheetVersion", String.valueOf(currentSheet.getVersion()))
                 .build()
                 .toString();
 
@@ -400,15 +403,18 @@ public class AppController {
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 String jsonResponse = response.body().string();
-                if(response.code() != 201){
+                if(response.code() != 200){
                     Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"get Filtered Sheet"));
                 }
                 else{
-                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
+                    Gson gson = new GsonBuilder()
+                            .registerTypeAdapter(CellDto.class,new CellDtoDeserializer())
+                            .registerTypeAdapter(new TypeToken<Map<CoordinateDto, CoordinateDto>>(){}.getType(), new CoordinateMapSerializer())
+                            .registerTypeAdapter(new TypeToken<Map<CoordinateDto, CoordinateDto>>(){}.getType(), new CoordinateMapDeserializer())
+                            .create();
                     FilterDesignDto responseDto = gson.fromJson(jsonResponse, FilterDesignDto.class);
                     Platform.runLater(() -> getFilteredSheetRunLater(responseDto));
                 }
-
             }
         });
 

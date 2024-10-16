@@ -2,12 +2,18 @@ package utils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import dto.CellDto;
+import dto.CoordinateDto;
 import dto.deserializer.CellDtoDeserializer;
+import dto.deserializer.CoordinateMapDeserializer;
 import dto.serializer.CellDtoSerializer;
+import dto.serializer.CoordinateMapSerializer;
 import engine.api.Engine;
 import engine.impl.EngineImpl;
 import jakarta.servlet.ServletContext;
+
+import java.util.Map;
 
 public class ServletUtils {
 
@@ -35,6 +41,8 @@ public class ServletUtils {
                         .setPrettyPrinting()
                         .registerTypeAdapter(CellDto.class,new CellDtoSerializer())
                         .registerTypeAdapter(CellDto.class,new CellDtoDeserializer())
+                        .registerTypeAdapter(new TypeToken<Map<CoordinateDto, CoordinateDto>>(){}.getType(), new CoordinateMapSerializer())
+                        .registerTypeAdapter(new TypeToken<Map<CoordinateDto, CoordinateDto>>(){}.getType(), new CoordinateMapDeserializer())
                         .create());
             }
         }
