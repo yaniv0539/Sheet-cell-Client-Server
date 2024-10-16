@@ -331,7 +331,7 @@ public class AppController {
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 String jsonResponse = response.body().string();
-                if(response.code() != 201){
+                if(response.code() != 200){
                     Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"get Boundaries Dto"));
                 }
                 else{
