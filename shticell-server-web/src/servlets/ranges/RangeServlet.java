@@ -77,13 +77,9 @@ public class RangeServlet extends HttpServlet {
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
 
-//            RangeDto rangeDto = sheetDTO.ranges.stream()
-//                    .filter(rangeDto1 -> rangeDto1.name.equals(rangeName.toUpperCase()))
-//                    .findFirst().get();
-
             response.getWriter().print(gson.toJson(sheetDTO));
             response.setStatus(HttpServletResponse.SC_CREATED);
-        } catch (IOException e) {
+        } catch (Exception e) {
             response.setContentType("text/plain");
             response.getWriter().println(e.getMessage());
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

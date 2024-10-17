@@ -419,7 +419,7 @@ public class EngineImpl implements Engine, Serializable {
 
         } catch (Exception e) {
             versionManager.deleteLastVersion();
-            throw new RuntimeException(e);
+            throw e;
         }
     }
 
