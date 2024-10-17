@@ -36,50 +36,12 @@ public class EngineImpl implements Engine, Serializable {
 
     private final Map<String, VersionManager> versionManagers;
 
-    private Sheet sheet;
-    private final VersionManager versionManager;
-
     private EngineImpl() {
         this.versionManagers = new HashMap<>();
-        this.versionManager = VersionManagerImpl.create();
     }
 
     public static EngineImpl create() {
         return new EngineImpl();
-    }
-
-    @Override
-    public void readXMLInitFile(String filename) {
-        try {
-            if (!filename.endsWith(".xml")) {
-                throw new FileNotFoundException("File name has to end with '.xml'");
-            }
-
-            InputStream inputStream = new FileInputStream(new File(filename));
-            readXMLInitFile(inputStream);
-
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException("Failed to read XML file", e);
-        }
-    }
-
-    @Override
-    public void readXMLInitFile(InputStream inputStream) {
-        try {
-            STLSheet stlSheet = deserializeFrom(inputStream);
-            Sheet sheet = STLSheetToSheet.generate(stlSheet);
-
-            if (!isValidLayout(sheet.getLayout())) {
-                throw new IndexOutOfBoundsException("Layout is invalid !" + "\n" +
-                        "valid scale: rows <= 50 , columns <= 20");
-            }
-
-            this.sheet = sheet;
-            versionManager.init(this.sheet);
-
-        } catch (JAXBException e) {
-            throw new RuntimeException("Failed to read XML file", e);
-        }
     }
 
     @Override
@@ -404,22 +366,17 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public boolean addRange(String sheetName, String name, String boundariesString) {
+    public void addRange(String sheetName, String name, String boundariesString) {
         VersionManager versionManager = this.versionManagers.get(sheetName);
 
         versionManager.makeNewVersion();
 
         try {
-            return versionManager.getLastVersion().addRange(name, BoundariesFactory.toBoundaries(boundariesString));
+            versionManager.getLastVersion().addRange(name, BoundariesFactory.toBoundaries(boundariesString));
         } catch (Exception e) {
             versionManager.deleteLastVersion();
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public RangeDto getRangeDTO(String name) {
-        return new RangeDto(sheet.getRange(name));
     }
 
     @Override

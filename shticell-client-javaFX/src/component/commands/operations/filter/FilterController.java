@@ -10,8 +10,6 @@ import javafx.fxml.FXML;
 
 import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
-import sheet.range.boundaries.api.Boundaries;
-import sheet.range.boundaries.impl.BoundariesFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,18 +25,21 @@ public class FilterController {
 
     @FXML
     private TextField textFieldRange;
+
     @FXML
     private FlowPane flowPaneValues;
 
     private CommandsController mainController;
 
-    private BoundariesDto boundariesToFilter = null;
-    private String filteringByColumn = null;
-    Tooltip validationTooltip = new Tooltip("Input must be a range in this format:\n" +
-            "<top left cell coordinate>..<bottom right cell coordinate>");
-    private List<String> uniqueValuesToFilter = new ArrayList<>();
     private BooleanProperty anyValueChecked = new SimpleBooleanProperty(false);
     private BooleanProperty validRange = new SimpleBooleanProperty(false);
+
+    private BoundariesDto boundariesToFilter = null;
+    private String filteringByColumn = null;
+    private List<String> uniqueValuesToFilter = new ArrayList<>();
+
+//    Tooltip validationTooltip = new Tooltip("Input must be a range in this format:\n" +
+//            "<top left cell coordinate>..<bottom right cell coordinate>");
 
     public void setMainController(CommandsController mainController) {
         this.mainController = mainController;
@@ -49,26 +50,6 @@ public class FilterController {
         buttonFilter.disableProperty().bind(anyValueChecked.not());
         textFieldRange.setOnAction((ActionEvent event) -> textRangeAction());
     }
-
-    private void textRangeAction() {
-        comboBoxColumn1.getItems().clear();
-        mainController.getBoundriesDto(textFieldRange.getText());
-    }
-
-    public void textRangeActionRunLater(BoundariesDto boundaries) {
-
-        this.boundariesToFilter = boundaries;
-        List<String> ranges = new ArrayList<>();
-
-        for (int i = boundariesToFilter.getFrom().getColumn(); i <= boundariesToFilter.getTo().getColumn(); i++) {
-            char character = (char) ('A' + i); // Compute the character
-            String str = String.valueOf(character);
-            ranges.add(str);
-        }
-        comboBoxColumn1.getItems().addAll(ranges);
-        validRange.set(true);
-    }
-
 
     @FXML
     void columnAction(ActionEvent event) {
@@ -85,7 +66,27 @@ public class FilterController {
         }
     }
 
-    public void  columActionRunLater(List<String> uniqueValues){
+    @FXML
+    void filterAction(ActionEvent event) {
+        FilterDto data = new FilterDto(boundariesToFilter, filteringByColumn, uniqueValuesToFilter);
+        this.mainController.filterRange(data);
+    }
+
+    public void textRangeActionRunLater(BoundariesDto boundaries) {
+
+        this.boundariesToFilter = boundaries;
+        List<String> ranges = new ArrayList<>();
+
+        for (int i = boundariesToFilter.getFrom().getColumn(); i <= boundariesToFilter.getTo().getColumn(); i++) {
+            char character = (char) ('A' + i); // Compute the character
+            String str = String.valueOf(character);
+            ranges.add(str);
+        }
+        comboBoxColumn1.getItems().addAll(ranges);
+        validRange.set(true);
+    }
+
+    public void columActionRunLater(List<String> uniqueValues) {
 
         for (String uniqueValue : uniqueValues) {
             CheckBox checkBox = new CheckBox(uniqueValue);
@@ -108,15 +109,15 @@ public class FilterController {
         anyValueChecked.set(!uniqueValuesToFilter.isEmpty());
     }
 
-    @FXML
-    void filterAction(ActionEvent event) {
-        FilterDto data = new FilterDto(boundariesToFilter, filteringByColumn, uniqueValuesToFilter);
-        this.mainController.filterRange(data);
+    private void textRangeAction() {
+        comboBoxColumn1.getItems().clear();
+        mainController.getBoundriesDto(textFieldRange.getText());
     }
 
-    private boolean isInputValid(String newValue) {
-        return (BoundariesFactory.isValidBoundariesFormat(newValue) &&
-                mainController.isBoundariesValidForCurrentSheet(BoundariesFactory.toBoundaries(newValue)));
-    }
+    // TODO: functions that will be deleted eventually.
+//    private boolean isInputValid(String newValue) {
+//        return (BoundariesFactory.isValidBoundariesFormat(newValue) &&
+//                mainController.isBoundariesValidForCurrentSheet(BoundariesFactory.toBoundaries(newValue)));
+//    }
 
 }

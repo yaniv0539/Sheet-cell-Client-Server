@@ -19,16 +19,11 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import sheet.coordinate.api.Coordinate;
 import sheet.coordinate.impl.CoordinateFactory;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import sheet.range.api.RangeGetters;
-import sheet.range.boundaries.api.Boundaries;
 
 
 public class SheetController {
@@ -37,15 +32,23 @@ public class SheetController {
 
     private ScrollPane scrollPane;
     private GridPane gridPane;
+
     private final Map<String, TextField> cellsTextFieldMap = new HashMap<>();
     private final Map<String, Background> previousBackgrounds = new HashMap<>();
+
     private int defaultRowHeight;
     private int defaultColWidth;
+
+
+    // Constructor
 
     public SheetController() {
         scrollPane = new ScrollPane();
         gridPane = new GridPane();
     }
+
+
+    // Initializers
 
     public void setMainController(AppController mainController) {
         this.mainController = mainController;
@@ -165,6 +168,36 @@ public class SheetController {
         scrollPane.setContent(gridPane);
     }
 
+    public Color getTextFieldBackgroundColor(Background background) {
+
+        if (background != null && !background.getFills().isEmpty()) {
+            for (BackgroundFill fill : background.getFills().reversed()) {
+                if (fill.getFill() instanceof Color) {
+                    return (Color) fill.getFill();
+                }
+            }
+        }
+        return null; // No background color found
+    }
+
+    private Color getTextFieldTextColor(TextField textField) {
+        Text text = (Text) textField.lookup(".text");
+        if (text != null) {
+            return (Color) text.getFill();
+        }
+        return Color.BLACK; // Default color if not set
+    }
+
+
+    // Getters
+
+    public GridPane getGridPane() {
+        return gridPane;
+    }
+
+
+    // On change functions
+
     public void changeColorDependedCoordinate(ListChangeListener.Change<? extends CoordinateDto> change) {
         while (change.next()) {
             if (change.wasAdded()) {
@@ -228,26 +261,6 @@ public class SheetController {
         });
     }
 
-    public Color getTextFieldBackgroundColor(Background background) {
-
-        if (background != null && !background.getFills().isEmpty()) {
-            for (BackgroundFill fill : background.getFills().reversed()) {
-                if (fill.getFill() instanceof Color) {
-                    return (Color) fill.getFill();
-                }
-            }
-        }
-        return null; // No background color found
-    }
-
-    private Color getTextFieldTextColor(TextField textField) {
-        Text text = (Text) textField.lookup(".text");
-        if (text != null) {
-            return (Color) text.getFill();
-        }
-        return Color.BLACK; // Default color if not set
-    }
-
     public void changeCellBackgroundColor(Color color) {
         if(color != null)
              Objects.requireNonNull(cellsTextFieldMap.get(CoordinateFactory.toCoordinate(mainController.getCellInFocus().getCoordinate().get()).toString())).setBackground(
@@ -259,41 +272,8 @@ public class SheetController {
             Objects.requireNonNull(cellsTextFieldMap.get(CoordinateFactory.toCoordinate(mainController.getCellInFocus().getCoordinate().get()).toString())).setStyle("-fx-text-fill: " + toHexString(color) + ";");
     }
 
-    public String toHexString(Color color) {
-        int red = (int) (color.getRed() * 255);
-        int green = (int) (color.getGreen() * 255);
-        int blue = (int) (color.getBlue() * 255);
 
-        return String.format("#%02X%02X%02X", red, green, blue);
-    }
-
-    public void resetCellsToDefault(CoordinateDto focusrdCellCoordinate) {
-        TextField textField = cellsTextFieldMap.get(focusrdCellCoordinate.toString());
-
-        if (textField != null) {
-            textField.setStyle("-fx-text-fill: black;");
-            textField.setBackground(new Background(new BackgroundFill(Paint.valueOf("white"), CornerRadii.EMPTY, null)));
-        }
-    }
-
-    public void paintRangeOnSheet(RangeDto range, Color color) {
-        BoundariesDto boundaries = range.getBoundaries();
-        CoordinateDto to = boundaries.getTo();
-        CoordinateDto from = boundaries.getFrom();
-
-        for (int i = from.getRow(); i <= to.getRow(); i++) {
-            for (int j = from.getColumn(); j <= to.getColumn(); j++) {
-                String coordinateString = CoordinateFactory.createCoordinate(i, j).toString();
-                TextField textField = cellsTextFieldMap.get(coordinateString);
-                if (textField != null) {
-                    previousBackgrounds.put(coordinateString,textField.getBackground());
-                    BackgroundFill backgroundFill = new BackgroundFill(color, CornerRadii.EMPTY, null);
-                    Background background = new Background(backgroundFill);
-                    textField.setBackground(background);
-                }
-            }
-        }
-    }
+    // Other functions
 
     public void resetRangeOnSheet(RangeDto range) {
         BoundariesDto boundaries = range.getBoundaries();
@@ -313,31 +293,16 @@ public class SheetController {
 
     }
 
-    public void filterRange(Boundaries boundariesToFilter, String filteringByColumn, List<String> filteringByValues) {
+    public String toHexString(Color color) {
+        int red = (int) (color.getRed() * 255);
+        int green = (int) (color.getGreen() * 255);
+        int blue = (int) (color.getBlue() * 255);
 
-    }
-///Todo: the method that need to be deleted.
-    public void resetSheetToDefault() {
-        restRowsHeight();
-        resetColWidth();
-    }
-
-    private void restRowsHeight() {
-        for(int i = 1 ; i < gridPane.getRowCount(); i++){
-            changeRowHeight(i,defaultRowHeight);
-        }
+        return String.format("#%02X%02X%02X", red, green, blue);
     }
 
-    private void resetColWidth() {
-        for(int i = 1 ; i < gridPane.getColumnCount(); i++){
-            changeColumnWidth(i,defaultColWidth);
-        }
-    }
 
-    public GridPane getGridPane() {
-     return gridPane;
-    }
-
+    // Design functions
 
     public void setGridPaneDesign(VersionDesignManager.VersionDesign versionDesign) {
         setNodeDesign(versionDesign.getCellDesignsVersion());
@@ -408,6 +373,54 @@ public class SheetController {
         //should not get here.
         return -1;
     }
+
+    public void paintRangeOnSheet(RangeDto range, Color color) {
+        BoundariesDto boundaries = range.getBoundaries();
+        CoordinateDto to = boundaries.getTo();
+        CoordinateDto from = boundaries.getFrom();
+
+        for (int i = from.getRow(); i <= to.getRow(); i++) {
+            for (int j = from.getColumn(); j <= to.getColumn(); j++) {
+                String coordinateString = CoordinateFactory.createCoordinate(i, j).toString();
+                TextField textField = cellsTextFieldMap.get(coordinateString);
+                if (textField != null) {
+                    previousBackgrounds.put(coordinateString,textField.getBackground());
+                    BackgroundFill backgroundFill = new BackgroundFill(color, CornerRadii.EMPTY, null);
+                    Background background = new Background(backgroundFill);
+                    textField.setBackground(background);
+                }
+            }
+        }
+    }
+
+
+    // TODO: functions that will be deleted eventually.
+
+//    public void resetSheetToDefault() {
+//        restRowsHeight();
+//        resetColWidth();
+//    }
+//
+//    private void restRowsHeight() {
+//        for(int i = 1 ; i < gridPane.getRowCount(); i++){
+//            changeRowHeight(i,defaultRowHeight);
+//        }
+//    }
+//
+//    private void resetColWidth() {
+//        for(int i = 1 ; i < gridPane.getColumnCount(); i++){
+//            changeColumnWidth(i,defaultColWidth);
+//        }
+//    }
+//
+//    public void resetCellsToDefault(CoordinateDto focusrdCellCoordinate) {
+//        TextField textField = cellsTextFieldMap.get(focusrdCellCoordinate.toString());
+//
+//        if (textField != null) {
+//            textField.setStyle("-fx-text-fill: black;");
+//            textField.setBackground(new Background(new BackgroundFill(Paint.valueOf("white"), CornerRadii.EMPTY, null)));
+//        }
+//    }
 
 }
 

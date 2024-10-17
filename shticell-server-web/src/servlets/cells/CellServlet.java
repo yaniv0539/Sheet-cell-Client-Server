@@ -1,7 +1,7 @@
 package servlets.cells;
 
 import com.google.gson.Gson;
-import constants.Constants;
+import utils.Constants;
 import dto.CellDto;
 import dto.SheetDto;
 import engine.api.Engine;

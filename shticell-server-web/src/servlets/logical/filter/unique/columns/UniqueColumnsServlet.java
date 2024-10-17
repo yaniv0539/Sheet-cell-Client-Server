@@ -1,7 +1,7 @@
 package servlets.logical.filter.unique.columns;
 
 import com.google.gson.Gson;
-import constants.Constants;
+import utils.Constants;
 import engine.api.Engine;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;

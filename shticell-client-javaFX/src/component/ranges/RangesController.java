@@ -45,19 +45,65 @@ public class RangesController {
 
     private AppController mainController;
 
-    private final ObservableList<RangeDto> ranges;
-
     private Stage popupStage;
 
+    private final ObservableList<RangeDto> ranges;
     private RangeDto lastClickedItem = null;
+
+
+    // Constructor
 
     public RangesController() {
         ranges = FXCollections.observableArrayList();
     }
 
+
+    // Initializers
+
     public void setMainController(AppController mainController) {
         this.mainController = mainController;
     }
+
+    public void init() {
+        BooleanProperty showRangesProperty = this.mainController.showRangesProperty();
+        Map<Integer, TableCell<RangeGetters, String>> cellMap = new HashMap<>();
+
+        buttonAddRange.disableProperty().bind(showRangesProperty.not());
+        buttonDeleteRange.disableProperty().bind(showRangesProperty.not());
+        tableViewActiveRanges.disableProperty().bind(showRangesProperty.not());
+
+        tableActiveRanges.setCellValueFactory(new PropertyValueFactory<>("name"));
+
+        tableViewActiveRanges.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            TableView.TableViewSelectionModel<RangeDto> selectionModel = tableViewActiveRanges.getSelectionModel();
+            RangeDto selectedItem = selectionModel.getSelectedItem();
+
+            if (lastClickedItem != null && !newValue) {
+                this.mainController.resetRangeOnSheet(lastClickedItem);
+                //selectionModel.clearSelection();
+            }
+        });
+
+        tableViewActiveRanges.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 1 && !event.isConsumed()) {
+                // Find the clicked row
+                TableView.TableViewSelectionModel<RangeDto> selectionModel = tableViewActiveRanges.getSelectionModel();
+                RangeDto selectedItem = selectionModel.getSelectedItem();
+
+                if (selectedItem != null) {
+                    if (lastClickedItem != null) {
+                        //return all the cells in the range to the previuos background
+                        this.mainController.resetRangeOnSheet(lastClickedItem);
+                    }
+                    this.mainController.paintRangeOnSheet(selectedItem, Color.rgb(251, 238, 166));
+                    lastClickedItem = selectedItem;
+                }
+            }
+        });
+
+        tableViewActiveRanges.setItems(ranges);
+    }
+
 
     @FXML
     void addRangeAction(ActionEvent event) throws IOException {
@@ -92,58 +138,19 @@ public class RangesController {
         popupStage.showAndWait();
     }
 
-    public void init() {
-        BooleanProperty showRangesProperty = this.mainController.showRangesProperty();
-        Map<Integer, TableCell<RangeGetters, String>> cellMap = new HashMap<>();
-
-        buttonAddRange.disableProperty().bind(showRangesProperty.not());
-        buttonDeleteRange.disableProperty().bind(showRangesProperty.not());
-        tableViewActiveRanges.disableProperty().bind(showRangesProperty.not());
-
-        tableActiveRanges.setCellValueFactory(new PropertyValueFactory<>("name"));
-
-        tableViewActiveRanges.focusedProperty().addListener((observable, oldValue, newValue) -> {
-            TableView.TableViewSelectionModel<RangeDto> selectionModel = tableViewActiveRanges.getSelectionModel();
-            RangeDto selectedItem = selectionModel.getSelectedItem();
-
-            if (lastClickedItem != null && !newValue) {
-                this.mainController.resetRangeOnSheet(lastClickedItem);
-                //selectionModel.clearSelection();
-            }
-        });
-
-        tableViewActiveRanges.setOnMouseClicked(event -> {
-           if (event.getClickCount() == 1 && !event.isConsumed()) {
-                // Find the clicked row
-                TableView.TableViewSelectionModel<RangeDto> selectionModel = tableViewActiveRanges.getSelectionModel();
-                RangeDto selectedItem = selectionModel.getSelectedItem();
-
-                if (selectedItem != null) {
-                    if (lastClickedItem != null) {
-                        //return all the cells in the range to the previuos background
-                        this.mainController.resetRangeOnSheet(lastClickedItem);
-                    }
-                    this.mainController.paintRangeOnSheet(selectedItem, Color.rgb(251, 238, 166));
-                    lastClickedItem = selectedItem;
-                }
-            }
-        });
-
-        tableViewActiveRanges.setItems(ranges);
-    }
-
     public void addRange(String name, String boundaries) {
             this.mainController.addRange(name, boundaries);
-    }
-    public void runLaterAddRange(RangeDto rangeDto){
-        ranges.add(rangeDto);
-        popupStage.close();
-        tableViewActiveRanges.refresh();
     }
 
     public void uploadRanges(Set<RangeDto> ranges) {
         this.ranges.clear();
         this.ranges.addAll(ranges);
+        tableViewActiveRanges.refresh();
+    }
+
+    public void runLaterAddRange(RangeDto rangeDto){
+        ranges.add(rangeDto);
+        popupStage.close();
         tableViewActiveRanges.refresh();
     }
 

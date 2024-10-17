@@ -1,8 +1,7 @@
-package servlets.ranges.boundaries;
+package servlets.logical.sort.numeric.colimns;
 
 import com.google.gson.Gson;
 import utils.Constants;
-import dto.BoundariesDto;
 import engine.api.Engine;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -14,10 +13,9 @@ import utils.ServletUtils;
 
 import java.io.IOException;
 
-@WebServlet(name = "BoundariesServlet", urlPatterns = "/sheet/ranges/boundaries")
+@WebServlet(name = "NumericColumnsServlet", urlPatterns = "/sheet/sort/numericColumns")
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 1024 * 1024 * 5, maxRequestSize = 1024 * 1024 * 5 * 5)
-public class BoundariesServlet extends HttpServlet {
-
+public class NumericColumnsServlet  extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
@@ -31,18 +29,25 @@ public class BoundariesServlet extends HttpServlet {
                 throw new RuntimeException("Sheet name is required");
             }
 
-            String boundaries = request.getParameter(Constants.RANGE_BOUNDARIES_PARAMETER);
+            String sheetVersion = request.getParameter(Constants.SHEET_VERSION_PARAMETER);
 
-            if (boundaries == null) {
+            if (sheetVersion == null) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new RuntimeException("Boundaries is required");
+                throw new RuntimeException("Range name is required");
             }
 
-            BoundariesDto boundariesDto = engine.getBoundaries(sheetName, boundaries);
+            String column = request.getParameter(Constants.SHEET_COLUMN_PARAMETER);
+
+            if (column == null) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                throw new RuntimeException("Column name is required");
+            }
+
+            // TODO: Call the right function from the engine and return it as json.
 
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
-            response.getWriter().print(gson.toJson(boundariesDto));
+//            response.getWriter().print(gson.toJson(null));
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (Exception e) {
             response.setContentType("text/plain");

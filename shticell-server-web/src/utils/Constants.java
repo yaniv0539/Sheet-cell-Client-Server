@@ -1,4 +1,4 @@
-package constants;
+package utils;
 
 public class Constants {
     public static final String SHEET_NAME_PARAMETER = "sheetName";
