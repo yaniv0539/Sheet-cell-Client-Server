@@ -406,11 +406,17 @@ public class EngineImpl implements Engine, Serializable {
     @Override
     public boolean addRange(String sheetName, String name, String boundariesString) {
         VersionManager versionManager = this.versionManagers.get(sheetName);
-
         versionManager.makeNewVersion();
-
         try {
-            return versionManager.getLastVersion().addRange(name, BoundariesFactory.toBoundaries(boundariesString));
+            Boundaries boundaries = BoundariesFactory.toBoundaries(boundariesString);
+            boolean sheetChanged = versionManager.getLastVersion().addRange(name, boundaries);
+            if(!sheetChanged)
+            {
+                versionManager.deleteLastVersion();
+                versionManager.getLastVersion().addRange(name, boundaries);
+            }
+            return sheetChanged;
+
         } catch (Exception e) {
             versionManager.deleteLastVersion();
             throw new RuntimeException(e);

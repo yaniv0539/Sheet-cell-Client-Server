@@ -2,6 +2,7 @@ package component.ranges;
 
 import component.app.AppController;
 import dto.RangeDto;
+import dto.SheetDto;
 import javafx.beans.property.BooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
