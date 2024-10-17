@@ -136,7 +136,8 @@ public class RangesController {
     public void addRange(String name, String boundaries) {
             this.mainController.addRange(name, boundaries);
     }
-    public void runLaterAddRange(){
+    public void runLaterAddRange(RangeDto rangeDto){
+        ranges.add(rangeDto);
         popupStage.close();
         tableViewActiveRanges.refresh();
     }

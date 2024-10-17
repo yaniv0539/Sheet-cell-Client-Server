@@ -402,11 +402,16 @@ public class AppController {
                     SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
 
                     Platform.runLater(()->{
-                        rangesComponentController.uploadRanges(sheetDto.getRanges());
+
                         if(sheetDto.getVersion() != currentSheet.getVersion()){
                             updateCellRunLater(sheetDto);
                         }
-                        rangesComponentController.runLaterAddRange();
+                        RangeDto rangeDto = sheetDto.ranges.stream()
+                                .filter(rangeDto1 -> rangeDto1.name.equals(name.toUpperCase()))
+                                .findFirst().get();
+
+                        rangesComponentController.runLaterAddRange(rangeDto);
+
                     });
                 }
             }

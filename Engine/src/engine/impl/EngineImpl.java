@@ -408,10 +408,12 @@ public class EngineImpl implements Engine, Serializable {
         VersionManager versionManager = this.versionManagers.get(sheetName);
         versionManager.makeNewVersion();
         try {
-            boolean sheetChanged = versionManager.getLastVersion().addRange(name, BoundariesFactory.toBoundaries(boundariesString));
+            Boundaries boundaries = BoundariesFactory.toBoundaries(boundariesString);
+            boolean sheetChanged = versionManager.getLastVersion().addRange(name, boundaries);
             if(!sheetChanged)
             {
                 versionManager.deleteLastVersion();
+                versionManager.getLastVersion().addRange(name, boundaries);
             }
             return sheetChanged;
 
