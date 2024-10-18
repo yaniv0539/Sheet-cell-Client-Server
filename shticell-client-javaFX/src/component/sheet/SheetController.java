@@ -19,6 +19,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import sheet.coordinate.api.Coordinate;
 import sheet.coordinate.impl.CoordinateFactory;
 
 import java.util.HashMap;
@@ -114,7 +115,7 @@ public class SheetController {
                 textField.setMaxWidth(Double.MAX_VALUE);  // Allow TextField to stretch horizontally
                 textField.setMaxHeight(Double.MAX_VALUE);  // Allow TextField to stretch vertically
                 textField.setBorder(Border.stroke(Paint.valueOf("gray")));
-                textField.setBackground(Background.fill(Paint.valueOf("white")));
+                textField.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, null)));
                 textField.setStyle("-fx-text-fill: black;");
 
                 // Set font size and alignment to match FXML
@@ -211,7 +212,7 @@ public class SheetController {
             if (change.wasRemoved()) {
                 for (CoordinateDto coordinate : change.getRemoved()) {
                     TextField textField = Objects.requireNonNull(cellsTextFieldMap.get(coordinate.toString()));
-                    Background previousBackground = previousBackgrounds.remove(coordinate.toString());
+                    Background previousBackground = previousBackgrounds.get(coordinate.toString());
                     textField.setBackground(Objects.requireNonNullElseGet(previousBackground, () -> new Background(new BackgroundFill(Paint.valueOf("white"), CornerRadii.EMPTY, null))));
                 }
             }
@@ -232,7 +233,7 @@ public class SheetController {
             if (change.wasRemoved()) {
                 for (CoordinateDto coordinate : change.getRemoved()) {
                     TextField textField = Objects.requireNonNull(cellsTextFieldMap.get(coordinate.toString()));
-                    Background previousBackground = previousBackgrounds.remove(coordinate.toString());
+                    Background previousBackground = previousBackgrounds.get(coordinate.toString());
                     textField.setBackground(Objects.requireNonNullElseGet(previousBackground, () -> new Background(new BackgroundFill(Paint.valueOf("white"), CornerRadii.EMPTY, null))));
                 }
             }
@@ -262,9 +263,13 @@ public class SheetController {
     }
 
     public void changeCellBackgroundColor(Color color) {
-        if(color != null)
-             Objects.requireNonNull(cellsTextFieldMap.get(CoordinateFactory.toCoordinate(mainController.getCellInFocus().getCoordinate().get()).toString())).setBackground(
-                     new Background(new BackgroundFill(color, CornerRadii.EMPTY, null)));
+        Background background = new Background(new BackgroundFill(color, CornerRadii.EMPTY, null));
+        Coordinate coordinate = CoordinateFactory.toCoordinate(mainController.getCellInFocus().getCoordinate().get());
+        previousBackgrounds.put(coordinate.toString(), background);
+        if(color != null) {
+
+            Objects.requireNonNull(cellsTextFieldMap.get(coordinate.toString())).setBackground(background);
+        }
     }
 
     public void changeCellTextColor(Color color) {
