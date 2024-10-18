@@ -313,7 +313,7 @@ public class AppController {
     }
 
     // Get boundaries from a specific sheet if exists
-    public void getBoundariesDto(String text) {
+    public void getBoundariesDto(String text, Callback callback) {
 
         String finalUrl = HttpUrl
                 .parse(GET_BOUNDARIES_URL)
@@ -323,29 +323,11 @@ public class AppController {
                 .build()
                 .toString();
 
-        HttpClientUtil.runAsync(finalUrl, new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(() -> showAlertPopup(new Exception(),"get Boundaries Dto"));
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                String jsonResponse = response.body().string();
-                if(response.code() != 200){
-                    Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"get Boundaries Dto"));
-                }
-                else{
-                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
-                    BoundariesDto boundariesDto = gson.fromJson(jsonResponse, BoundariesDto.class);
-                    Platform.runLater(() -> commandsComponentController.wrapRunLateForFilterController(boundariesDto));
-                }
-            }
-        });
+        HttpClientUtil.runAsync(finalUrl, callback);
     }
 
     // Get the unique values in a specific range that selected
-    public void getColumnUniqueValuesInRange(int column, int startRow, int endRow) {
+    public void getColumnUniqueValuesInRange(int column, int startRow, int endRow, Callback callback) {
         String finalUrl = HttpUrl
                 .parse(UNIQUE_COL_VALUES_URL)
                 .newBuilder()
@@ -357,27 +339,7 @@ public class AppController {
                 .build()
                 .toString();
 
-        HttpClientUtil.runAsync(finalUrl,new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(() -> showAlertPopup(new Exception(),"get column unique values"));
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
-                String jsonResponse = response.body().string();
-                if(response.code() != 200){
-                    Platform.runLater(()->showAlertPopup(new Exception(jsonResponse),"get column unique values"));
-                }
-                else{
-                    List<String> values = gson.fromJson(jsonResponse, new TypeToken<List<String>>(){}.getType());
-
-                    Platform.runLater(() -> commandsComponentController.wrapRunLaterForUniqueValues(values));
-                }
-            }
-        });
-
+        HttpClientUtil.runAsync(finalUrl, callback);
     }
 
     // Get filtered sheet
@@ -402,8 +364,9 @@ public class AppController {
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                assert response.body() != null;
                 String jsonResponse = response.body().string();
-                if(response.code() != 200){
+                if(response.code() != 200) {
                     Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"get Filtered Sheet"));
                 }
                 else{
@@ -422,7 +385,7 @@ public class AppController {
 
     // TODO: Check if works
     // Get only the columns that have numerical values
-    public void getNumericColumnsInBoundaries(String boundaries) {
+    public void getNumericColumnsInBoundaries(String boundaries, Callback callback) {
         String finalUrl = HttpUrl
                 .parse(GET_NUMERIC_COLUMNS_IN_RANGE_URL)
                 .newBuilder()
@@ -432,25 +395,7 @@ public class AppController {
                 .build()
                 .toString();
 
-        HttpClientUtil.runAsync(finalUrl, new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(() -> showAlertPopup(new Exception(),"get Filtered Sheet"));
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                String jsonResponse = response.body().string();
-
-                if(response.code() != 200){
-                    Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"get Numeric columns"));
-                }
-                else{
-                    SortDto sortDto = GSON_INSTANCE.fromJson(jsonResponse, SortDto.class);
-                    Platform.runLater(()-> getNumericColumnsInBoundariesRunLater(sortDto));
-                }
-            }
-        });
+        HttpClientUtil.runAsync(finalUrl, callback);
 
     }
 
@@ -477,12 +422,13 @@ public class AppController {
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                assert response.body() != null;
                 String jsonResponse = response.body().string();
 
-                if(response.code() != 201){
+                if (response.code() != 200) {
                     Platform.runLater(() -> showAlertPopup(new Exception(jsonResponse),"get Filtered Sheet"));
                 }
-                else{
+                else {
                     Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
                     SortDesignDto responseDto = gson.fromJson(jsonResponse, SortDesignDto.class);
                     Platform.runLater(() -> getSortedSheetRunLater(responseDto));
@@ -714,10 +660,6 @@ public class AppController {
         resetSheetToVersionDesign(numberOfVersion);
     }
 
-    public void getNumericColumnsInBoundariesRunLater(SortDto sortDto) {
-        commandsComponentController.wrapSortGetNumericColumnsInBoundariesRunLater(sortDto);
-    }
-
     public void updateCellRunLater(SheetDto sheetDto){
         currentSheet = sheetDto;
         mostUpdatedVersionNumber = currentSheet.getVersion();
@@ -824,7 +766,7 @@ public class AppController {
 
     // Other functions
 
-    public void showAlertPopup(Throwable exception,String error) {
+    public void showAlertPopup(Throwable exception, String error) {
         // Create a new alert dialog for the error
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error");

@@ -23,6 +23,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import okhttp3.Callback;
 
 import java.io.IOException;
 import java.net.URL;
@@ -302,31 +303,20 @@ public class CommandsController {
 
     // Functions (X Controller -> Commands Controller -> Main Controller)
 
-    public void getColumnUniqueValuesInRange(int column, int startRow, int endRow) {
-        mainController.getColumnUniqueValuesInRange(column, startRow, endRow);
+    public void getColumnUniqueValuesInRange(int column, int startRow, int endRow, Callback callback) {
+        mainController.getColumnUniqueValuesInRange(column, startRow, endRow, callback);
     }
 
-    public void getBoundriesDto(String text) {
-        mainController.getBoundariesDto(text);
+    public void getBoundariesDto(String text, Callback callback) {
+        mainController.getBoundariesDto(text, callback);
     }
 
-    public void getNumericColumnsInBoundaries(String text) {
-        mainController.getNumericColumnsInBoundaries(text);
+    public void showAlertPopup(Throwable exception, String error) {
+        mainController.showAlertPopup(exception, error);
     }
 
-
-    // Functions (Main Controller -> Commands Controller -> X Controller)
-
-    public void wrapRunLateForFilterController(BoundariesDto boundariesDto) {
-        filterConroller.textRangeActionRunLater(boundariesDto);
-    }
-
-    public void wrapRunLaterForUniqueValues(List<String> values) {
-        filterConroller.columActionRunLater(values);
-    }
-
-    public void wrapSortGetNumericColumnsInBoundariesRunLater(SortDto sortDto) {
-        sortController.buttonGetColumnsActionRunLater(sortDto);
+    public void getNumericColumnsInBoundaries(String text, Callback callback) {
+        mainController.getNumericColumnsInBoundaries(text, callback);
     }
 
 
