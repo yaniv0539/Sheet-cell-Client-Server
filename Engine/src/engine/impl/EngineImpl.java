@@ -274,7 +274,7 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public List<List<CellDto>> sortCellsInRange(String sheetName, Boundaries boundaries, List<String> columns, int version) {
+    public List<List<CoordinateDto>> sortCellsInRange(String sheetName, Boundaries boundaries, List<String> columns, int version) {
 
         VersionManager versionManager = this.versionManagers.get(sheetName);
 
@@ -291,11 +291,11 @@ public class EngineImpl implements Engine, Serializable {
         List<Integer> columnsByInt = columnsToIntList(columns);
         dataToSort.sort(createComparator(columnsByInt, startCol));
 
-        List<List<CellDto>> dataToSortDto = new ArrayList<>();
+        List<List<CoordinateDto>> dataToSortDto = new ArrayList<>();
 
         dataToSort.forEach(list -> {
-            List<CellDto> tempList = new ArrayList<>();
-            list.forEach(cellGetters -> tempList.add(new CellDto(cellGetters)));
+            List<CoordinateDto> tempList = new ArrayList<>();
+            list.forEach(cellGetters -> tempList.add(new CoordinateDto(cellGetters.getCoordinate())));
             dataToSortDto.add(tempList);
         });
 
@@ -368,11 +368,15 @@ public class EngineImpl implements Engine, Serializable {
     @Override
     public void addRange(String sheetName, String name, String boundariesString) {
         VersionManager versionManager = this.versionManagers.get(sheetName);
-
         versionManager.makeNewVersion();
-
         try {
-            versionManager.getLastVersion().addRange(name, BoundariesFactory.toBoundaries(boundariesString));
+            Boundaries boundaries = BoundariesFactory.toBoundaries(boundariesString);
+            boolean sheetChanged = versionManager.getLastVersion().addRange(name, boundaries);
+            if(!sheetChanged)
+            {
+                versionManager.deleteLastVersion();
+                versionManager.getLastVersion().addRange(name, boundaries);
+            }
         } catch (Exception e) {
             versionManager.deleteLastVersion();
             throw new RuntimeException(e);

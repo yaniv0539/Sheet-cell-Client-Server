@@ -61,7 +61,7 @@ public class SortServlet extends HttpServlet {
             List<String> sortByColumns = sortDto.getSortByColumns();
             int version = Integer.parseInt(sheetVersion);
 
-            List<List<CellDto>> lists = engine.sortCellsInRange(sheetName, boundaries, sortByColumns, version);
+//            List<List<CellDto>> lists = engine.sortCellsInRange(sheetName, boundaries, sortByColumns, version);
             SheetDto sortSheet = engine.sort(sheetName, boundaries, sortByColumns, version);
 
             // TODO: For Itay: Remove the slashes and look at the red line. Should I return List<List<CoordinateDto>> or List<List<CellDto>> ?

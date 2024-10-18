@@ -28,7 +28,7 @@ public interface Engine {
 
                 // Sort
                 SheetDto sort(String sheetName, Boundaries boundaries, List<String> column, int version);
-                List<List<CellDto>> sortCellsInRange(String sheetName, Boundaries boundaries, List<String> column, int version);
+                List<List<CoordinateDto>> sortCellsInRange(String sheetName, Boundaries boundaries, List<String> column, int version);
 
         // Cells:
 
