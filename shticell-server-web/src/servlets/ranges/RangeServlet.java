@@ -1,7 +1,7 @@
 package servlets.ranges;
 
 import com.google.gson.Gson;
-import constants.Constants;
+import utils.Constants;
 import dto.RangeDto;
 import dto.SheetDto;
 import engine.api.Engine;
@@ -16,32 +16,6 @@ import java.io.IOException;
 
 @WebServlet(name = "RangeServlet", urlPatterns = "/sheet/ranges")
 public class RangeServlet extends HttpServlet {
-
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        try {
-            Engine engine = ServletUtils.getEngine(getServletContext());
-            Gson gson = ServletUtils.getGson(getServletContext());
-
-            String rangeName = request.getParameter("rangeName");
-
-            if (rangeName == null) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new ServletException("Range name is required");
-            }
-
-            RangeDto range = engine.getRangeDTO(rangeName);
-
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
-            response.getWriter().print(gson.toJson(range));
-
-            response.setStatus(HttpServletResponse.SC_OK);
-        } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().print(e.getMessage());
-        }
-    }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

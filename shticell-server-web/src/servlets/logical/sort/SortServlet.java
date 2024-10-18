@@ -1,4 +1,4 @@
-package servlets.logical.filter;
+package servlets.logical.sort;
 
 import com.google.gson.Gson;
 import utils.Constants;
@@ -17,13 +17,11 @@ import utils.ServletUtils;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
-@WebServlet(name = "FilterServlet", urlPatterns = "/sheet/filter")
+@WebServlet(name = "SortServlet", urlPatterns = "/sheet/sort")
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 1024 * 1024 * 5, maxRequestSize = 1024 * 1024 * 5 * 5)
-public class FilterServlet extends HttpServlet {
+public class SortServlet extends HttpServlet {
 
-    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             Engine engine = ServletUtils.getEngine(getServletContext());
@@ -50,9 +48,9 @@ public class FilterServlet extends HttpServlet {
                 jsonBody.append(line);
             }
 
-            FilterDto filterDto = gson.fromJson(jsonBody.toString(), FilterDto.class);
+            SortDto sortDto = gson.fromJson(jsonBody.toString(), SortDto.class);
 
-            BoundariesDto boundariesDto = filterDto.getBoundariesDto();
+            BoundariesDto boundariesDto = sortDto.getBoundariesDto();
             CoordinateDto fromDto = boundariesDto.getFrom();
             CoordinateDto toDto = boundariesDto.getTo();
 
@@ -60,18 +58,18 @@ public class FilterServlet extends HttpServlet {
             CoordinateImpl to = CoordinateImpl.create(toDto.getRow(), toDto.getColumn());
 
             Boundaries boundaries = BoundariesFactory.createBoundaries(from, to);
-            String filterByColumn = filterDto.getFilterByColumn();
-            List<String> byValues = filterDto.getByValues();
+            List<String> sortByColumns = sortDto.getSortByColumns();
             int version = Integer.parseInt(sheetVersion);
 
-            Map<CoordinateDto, CoordinateDto> coordinateCoordinateMap = engine.filteredMap(sheetName, boundaries, filterByColumn, byValues, version);
-            SheetDto filterSheet = engine.filter(sheetName, boundaries, filterByColumn, byValues, version);
+            List<List<CellDto>> lists = engine.sortCellsInRange(sheetName, boundaries, sortByColumns, version);
+            SheetDto sortSheet = engine.sort(sheetName, boundaries, sortByColumns, version);
 
-            FilterDesignDto filterDesignDto = new FilterDesignDto(filterSheet, coordinateCoordinateMap, boundariesDto);
+            // TODO: For Itay: Remove the slashes and look at the red line. Should I return List<List<CoordinateDto>> or List<List<CellDto>> ?
+//            SortDesignDto sortDesignDto = new SortDesignDto(sortSheet, boundariesDto, lists);
 
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
-            response.getWriter().print(gson.toJson(filterDesignDto));
+//            response.getWriter().print(gson.toJson(sortDesignDto));
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (Exception e) {
             response.setContentType("text/plain");

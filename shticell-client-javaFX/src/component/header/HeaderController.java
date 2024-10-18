@@ -49,9 +49,32 @@ public class HeaderController {
         @FXML
         private TextField textFieldVersionSelector;
 
+        private AppController mainController;
+
         private SimpleStringProperty selectedFileProperty;
 
-        private AppController mainController;
+
+        // Initializers
+
+        public void init() {
+                SimpleBooleanProperty showHeadersProperty = this.mainController.showHeadersProperty();
+
+                buttonUpdateCell.disableProperty().bind(showHeadersProperty.not());
+                splitMenuButtonSelectVersion.setDisable(true);
+                textFieldOrignalValue.disableProperty().bind(showHeadersProperty.not());
+                textFieldCellId.disableProperty().bind(showHeadersProperty.not());
+                textFieldLastUpdateInVersion.disableProperty().bind(showHeadersProperty.not());
+                textFieldCellId.textProperty().bind(this.mainController.getCellInFocus().getCoordinate());
+                textFieldOrignalValue.textProperty().bindBidirectional(this.mainController.getCellInFocus().getOriginalValue());
+                textFieldLastUpdateInVersion.textProperty().bind(this.mainController.getCellInFocus().getLastUpdateVersion());
+        }
+
+        public void setMainController(AppController mainController) {
+                this.mainController = mainController;
+        }
+
+
+        // Getters
 
         public Button getButtonUpdateCell() {
                 return buttonUpdateCell;
@@ -105,10 +128,6 @@ public class HeaderController {
                 return mainController;
         }
 
-        public void setMainController(AppController mainController) {
-                this.mainController = mainController;
-        }
-
         public String getSelectedFileProperty() {
                 return selectedFileProperty.get();
         }
@@ -117,12 +136,7 @@ public class HeaderController {
                 return selectedFileProperty;
         }
 
-        //TEST
-        public void bindCellIdTextField(StringProperty strProp) {
-                textFieldCellId.textProperty().bind(strProp);
-        }
 
-//        test nor real implementation
         @FXML
         void buttonUpdateCellAction(ActionEvent event) {
                 mainController.updateCell();
@@ -144,8 +158,6 @@ public class HeaderController {
                 here i need to pass the content of the file into the server.
                 then the server open the file..
                 */
-
-
         }
 
         @FXML //no need
@@ -163,18 +175,6 @@ public class HeaderController {
 
         }
 
-        public void init() {
-                SimpleBooleanProperty showHeadersProperty = this.mainController.showHeadersProperty();
-
-                buttonUpdateCell.disableProperty().bind(showHeadersProperty.not());
-                splitMenuButtonSelectVersion.setDisable(true);
-                textFieldOrignalValue.disableProperty().bind(showHeadersProperty.not());
-                textFieldCellId.disableProperty().bind(showHeadersProperty.not());
-                textFieldLastUpdateInVersion.disableProperty().bind(showHeadersProperty.not());
-                textFieldCellId.textProperty().bind(this.mainController.getCellInFocus().getCoordinate());
-                textFieldOrignalValue.textProperty().bindBidirectional(this.mainController.getCellInFocus().getOriginalValue());
-                textFieldLastUpdateInVersion.textProperty().bind(this.mainController.getCellInFocus().getLastUpdateVersion());
-        }
 
         public void addMenuOptionToVersionSelection(String numberOfVersion) {
 
