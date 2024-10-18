@@ -227,7 +227,7 @@ public class AppController {
         });
     }
 
-    // Post range in a specific sheet
+    //Post range in a specific sheet
     public void addRange(String name, String boundaries) {
 
         RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));

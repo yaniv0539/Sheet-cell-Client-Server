@@ -16,6 +16,8 @@ import java.util.List;
 
 public class SortController {
 
+    private CommandsController mainController;
+
     @FXML
     private FlowPane flowPaneColumns;
 
@@ -34,13 +36,14 @@ public class SortController {
     @FXML
     private TextField textFieldRange;
 
-    private CommandsController mainController;
-    Tooltip validationTooltip = new Tooltip("Input must be a range in this format:\n" +
-            "<top left cell coordinate>..<bottom right cell coordinate>");
     SimpleBooleanProperty anyChecked = new SimpleBooleanProperty(false);
     SimpleBooleanProperty validRange = new SimpleBooleanProperty(false);
+
     private List<String> columToSort = new ArrayList<>();
     private BoundariesDto boundariesDto;
+
+    Tooltip validationTooltip = new Tooltip("Input must be a range in this format:\n" +
+            "<top left cell coordinate>..<bottom right cell coordinate>");
 
     public void init() {
         buttonSort.disableProperty().bind(anyChecked.not());
@@ -52,16 +55,31 @@ public class SortController {
 
     }
 
+    public void setMainController(CommandsController mainController){
+        this.mainController = mainController;
+    }
+
     @FXML
     void buttonSortAction(ActionEvent event) {
         mainController.sortRange(new SortDto(boundariesDto, columToSort));
     }
+
     @FXML
     void buttonGetColumnsAction(ActionEvent event) {
         mainController.getNumericColumnsInBoundaries(textFieldRange.getText());
     }
 
-    public void buttonGetColumnsActionRunLater(SortDto sortDto){
+    @FXML
+    void textFieldRangeAction(ActionEvent event) {
+
+    }
+
+    @FXML
+    void textFieldRangeKeyTyped(KeyEvent event) {
+
+    }
+
+    public void buttonGetColumnsActionRunLater(SortDto sortDto) {
         //to add check box to the hbox.
         flowPaneColumns.getChildren().clear();
         anyChecked.setValue(false);
@@ -85,15 +103,10 @@ public class SortController {
 //            }
 //        }
 
-        if(flowPaneColumns.getChildren().isEmpty()){
+        if (flowPaneColumns.getChildren().isEmpty()) {
             Label label = new Label("No numeric columns in range !");
             flowPaneColumns.getChildren().add(label);
         }
-    }
-
-    @FXML
-    void textFieldRangeAction(ActionEvent event) {
-
     }
 
     private void handleCheckBoxSelect(String column,boolean newValue) {
@@ -108,15 +121,5 @@ public class SortController {
         // Update the button's disable property
         anyChecked.set(!columToSort.isEmpty());
     }
-
-    @FXML
-    void textFieldRangeKeyTyped(KeyEvent event) {
-
-    }
-
-    public void setMainController(CommandsController mainController){
-        this.mainController = mainController;
-    }
-
 
 }

@@ -23,7 +23,6 @@ import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import sheet.range.boundaries.api.Boundaries;
 
 import java.io.IOException;
 import java.net.URL;
@@ -61,19 +60,86 @@ public class CommandsController {
     @FXML
     private Spinner<Integer> spinnerWidth;
 
-    private IntegerProperty heightProperty;
-
-    private IntegerProperty widthProperty;
-
     private Stage filterStage;
     private Stage sortStage;
 
-    private boolean startFilter = true;
-    private boolean startSort = true;
-    private BooleanProperty isSortPopupClosed = new SimpleBooleanProperty(false);
-    private BooleanProperty isFilterPopupClosed = new SimpleBooleanProperty(false);
     private FilterController filterConroller;
     private SortController sortController;
+
+    private IntegerProperty heightProperty;
+    private IntegerProperty widthProperty;
+    private BooleanProperty isSortPopupClosed = new SimpleBooleanProperty(false);
+    private BooleanProperty isFilterPopupClosed = new SimpleBooleanProperty(false);
+
+    private boolean startFilter = true;
+    private boolean startSort = true;
+
+
+    // Constructor
+
+    public CommandsController() {
+        heightProperty = new SimpleIntegerProperty();
+        widthProperty = new SimpleIntegerProperty();
+    }
+
+
+    // Initializers
+
+    @FXML
+    private void initialize() {
+
+    }
+
+    public void init() {
+        BooleanProperty showCommandsProperty = this.mainController.showCommandsProperty();
+        buttonResetToDefault.disableProperty().bind(showCommandsProperty.not());
+        buttonSort.setDisable(true);
+        buttonFilter.setDisable(true);
+        spinnerWidth.disableProperty().bind(showCommandsProperty.not());
+        spinnerHeight.disableProperty().bind(showCommandsProperty.not());
+        comboBoxAlignment.disableProperty().bind(showCommandsProperty.not());
+        colorPickerBackgroundColor.disableProperty().bind(showCommandsProperty.not());
+        colorPickerTextColor.disableProperty().bind(showCommandsProperty.not());
+
+        // Set the alignment options in the combo box and initiate it to Left as default.
+        ObservableList<Pos> columnAlignmentOptions = FXCollections.observableArrayList(Pos.CENTER_LEFT, Pos.CENTER, Pos.CENTER_RIGHT);
+        comboBoxAlignment.setItems(columnAlignmentOptions);
+        comboBoxAlignment.getSelectionModel().selectFirst();
+
+        // column width picker
+        SpinnerValueFactory<Integer> widthValueFactory =
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 1000, 0, 1);
+
+        spinnerWidth.setValueFactory(widthValueFactory);
+        spinnerWidth
+                .valueProperty()
+                .addListener((observable, oldValue, newValue) -> mainController.changeSheetColumnWidth(newValue));
+
+
+        // row height picker
+        SpinnerValueFactory<Integer> heightValueFactory =
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 1000, 0, 1);
+        spinnerHeight.setValueFactory(heightValueFactory);
+
+        spinnerHeight
+                .valueProperty()
+                .addListener((observable, oldValue, newValue) -> mainController.changeSheetRowHeight(newValue));
+
+        colorPickerBackgroundColor
+                .valueProperty()
+                .addListener((observable, oldValue, newValue) -> mainController.changeSheetCellBackgroundColor(newValue));
+
+        colorPickerTextColor
+                .valueProperty()
+                .addListener((observableValue, oldValue, newValue) -> mainController.changeSheetTextColor(newValue));
+    }
+
+    public void setMainController(AppController mainController) {
+        this.mainController = mainController;
+    }
+
+
+    // Getters
 
     public AppController getMainController() {
         return mainController;
@@ -127,19 +193,6 @@ public class CommandsController {
         return buttonSort;
     }
 
-    public CommandsController() {
-        heightProperty = new SimpleIntegerProperty();
-        widthProperty = new SimpleIntegerProperty();
-    }
-
-    @FXML
-    private void initialize() {
-
-    }
-
-    public void setMainController(AppController mainController) {
-        this.mainController = mainController;
-    }
 
     @FXML
     void alignmentAction(ActionEvent event) {
@@ -174,13 +227,9 @@ public class CommandsController {
             resetButtonFilter();
         }
     }
-    public void resetButtonFilter(){
-        buttonFilter.setText("Filter");
-        startFilter = true;
-    }
 
     @FXML
-    void sortAction(ActionEvent event) throws IOException{
+    void sortAction(ActionEvent event) throws IOException {
         if (startSort) {
             activateSortPopup(SORT_POPUP_FXML_INCLUDE_RESOURCE, "Sort");
             startSort = false;
@@ -189,6 +238,133 @@ public class CommandsController {
             buttonFilter.setDisable(false);
             resetButtonSort();
         }
+    }
+
+    @FXML
+    void resetToDefaultAction(ActionEvent event) {
+        mainController.resetCellsToDefault();
+    }
+
+    @FXML
+    void textColorAction(ActionEvent event) {
+
+    }
+
+
+    // On change functions
+
+    public void changeColumnWidth(int prefWidth) {
+        spinnerWidth.getValueFactory().setValue(prefWidth);
+    }
+
+    public void changeRowHeight(int prefHeight) {
+        spinnerHeight.getValueFactory().setValue(prefHeight);
+    }
+
+    public void changeColumnAlignment(Pos alignment) {
+        comboBoxAlignment.getSelectionModel().select(alignment);
+    }
+
+    public void changeCellBackgroundColor(Color color) {
+        colorPickerBackgroundColor.setValue(color);
+    }
+
+    public void changeCellTextColor(Color color) {
+        colorPickerTextColor.setValue(color);
+    }
+
+
+    // Filter functions
+
+    public void filterRange(FilterDto data) {
+        this.mainController.getFilteredSheet(data);
+    }
+
+    public void filterCommandsControllerRunLater() {
+        buttonSort.setDisable(true);
+        buttonFilter.setText("Reset Filter");
+        filterStage.close();
+    }
+
+
+    // Sort Functions
+
+    public void sortRange(SortDto sortDto) {
+        this.mainController.getSortedSheet(sortDto);
+    }
+
+    public void sortCommandsControllerRunLater() {
+        buttonFilter.setDisable(true);
+        buttonSort.setText("Reset Sort");
+        sortStage.close();
+    }
+
+
+    // Functions (X Controller -> Commands Controller -> Main Controller)
+
+    public void getColumnUniqueValuesInRange(int column, int startRow, int endRow) {
+        mainController.getColumnUniqueValuesInRange(column, startRow, endRow);
+    }
+
+    public void getBoundriesDto(String text) {
+        mainController.getBoundariesDto(text);
+    }
+
+    public void getNumericColumnsInBoundaries(String text) {
+        mainController.getNumericColumnsInBoundaries(text);
+    }
+
+
+    // Functions (Main Controller -> Commands Controller -> X Controller)
+
+    public void wrapRunLateForFilterController(BoundariesDto boundariesDto) {
+        filterConroller.textRangeActionRunLater(boundariesDto);
+    }
+
+    public void wrapRunLaterForUniqueValues(List<String> values) {
+        filterConroller.columActionRunLater(values);
+    }
+
+    public void wrapSortGetNumericColumnsInBoundariesRunLater(SortDto sortDto) {
+        sortController.buttonGetColumnsActionRunLater(sortDto);
+    }
+
+
+    // Reset functions
+
+    public void resetButtonSort() {
+        buttonSort.setText("Sort");
+        startSort = true;
+    }
+
+    public void resetButtonFilter(){
+        buttonFilter.setText("Filter");
+        startFilter = true;
+    }
+
+
+    // Pop ups
+
+    private void activateFilterPopup(String resource, String title) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader();
+        URL url = getClass().getResource(resource);
+        fxmlLoader.setLocation(url);
+        Parent popupRoot = fxmlLoader.load(url.openStream());
+
+        FilterController filterController = fxmlLoader.getController();
+        this.filterConroller = filterController;
+        filterController.setMainController(this);
+        filterController.init();
+
+        this.filterStage = new Stage();
+        filterStage.initModality(Modality.APPLICATION_MODAL);
+        filterStage.setTitle(title);
+        filterStage.setOnCloseRequest((WindowEvent event) -> startFilter = true);
+
+        Scene popupScene = new Scene(popupRoot, 770, 220);
+        filterStage.setResizable(true);
+        filterStage.setScene(popupScene);
+        filterStage.show();
     }
 
     private void activateSortPopup(String resource, String title) throws IOException {
@@ -217,158 +393,13 @@ public class CommandsController {
 
     }
 
-    public void resetButtonSort() {
-        buttonSort.setText("Sort");
-        startSort = true;
-    }
 
-    @FXML
-    void resetToDefaultAction(ActionEvent event) {
-        mainController.resetCellsToDefault();
-    }
-
-    @FXML
-    void textColorAction(ActionEvent event) {
-
-    }
-
-    public void init() {
-        BooleanProperty showCommandsProperty = this.mainController.showCommandsProperty();
-        buttonResetToDefault.disableProperty().bind(showCommandsProperty.not());
-        buttonSort.setDisable(true);
-        buttonFilter.setDisable(true);
-        spinnerWidth.disableProperty().bind(showCommandsProperty.not());
-        spinnerHeight.disableProperty().bind(showCommandsProperty.not());
-        comboBoxAlignment.disableProperty().bind(showCommandsProperty.not());
-        colorPickerBackgroundColor.disableProperty().bind(showCommandsProperty.not());
-        colorPickerTextColor.disableProperty().bind(showCommandsProperty.not());
-
-        // Set the alignment options in the combo box and initiate it to Left as default.
-        ObservableList<Pos> columnAlignmentOptions = FXCollections.observableArrayList(Pos.CENTER_LEFT, Pos.CENTER, Pos.CENTER_RIGHT);
-        comboBoxAlignment.setItems(columnAlignmentOptions);
-        comboBoxAlignment.getSelectionModel().selectFirst();
-
-        // column width picker
-        SpinnerValueFactory<Integer> widthValueFactory =
-                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 1000, 0, 1);
-
-        spinnerWidth.setValueFactory(widthValueFactory);
-        spinnerWidth
-                .valueProperty()
-                .addListener((observable, oldValue, newValue) -> mainController.changeSheetColumnWidth(newValue));
-
-
-        // row height picker
-        SpinnerValueFactory<Integer> heightValueFactory =
-                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 1000, 0, 1);
-        spinnerHeight.setValueFactory(heightValueFactory);
-
-        spinnerHeight
-                .valueProperty()
-                .addListener((observable, oldValue, newValue) -> mainController.changeSheetRowHeight(newValue));
-
-        colorPickerBackgroundColor
-                .valueProperty()
-                .addListener((observable, oldValue, newValue) -> mainController.changeSheetCellBackgroundColor(newValue));
-
-        colorPickerTextColor
-                .valueProperty()
-                .addListener((observableValue, oldValue, newValue) -> mainController.changeSheetTextColor(newValue));
-    }
-
-    public void changeColumnWidth(int prefWidth) {
-        spinnerWidth.getValueFactory().setValue(prefWidth);
-    }
-
-    public void changeRowHeight(int prefHeight) {
-        spinnerHeight.getValueFactory().setValue(prefHeight);
-    }
-
-    public void changeColumnAlignment(Pos alignment) {
-        comboBoxAlignment.getSelectionModel().select(alignment);
-    }
-
-    public void changeCellBackgroundColor(Color color) {
-        colorPickerBackgroundColor.setValue(color);
-    }
-
-    public void changeCellTextColor(Color color) {
-        colorPickerTextColor.setValue(color);
-    }
-
-    private void activateFilterPopup(String resource, String title) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader();
-        URL url = getClass().getResource(resource);
-        fxmlLoader.setLocation(url);
-        Parent popupRoot = fxmlLoader.load(url.openStream());
-
-        FilterController filterController = fxmlLoader.getController();
-        this.filterConroller = filterController;
-        filterController.setMainController(this);
-        filterController.init();
-
-        this.filterStage = new Stage();
-        filterStage.initModality(Modality.APPLICATION_MODAL);
-        filterStage.setTitle(title);
-        filterStage.setOnCloseRequest((WindowEvent event) -> startFilter = true);
-
-        Scene popupScene = new Scene(popupRoot, 770, 220);
-        filterStage.setResizable(true);
-        filterStage.setScene(popupScene);
-        filterStage.show();
-    }
-
-    public void filterRange(FilterDto data) {
-        this.mainController.getFilteredSheet(data);
-    }
-
-    public void filterCommandsControllerRunLater(){
-        buttonSort.setDisable(true);
-        buttonFilter.setText("Reset Filter");
-        filterStage.close();
-    }
-
-    public void sortRange(SortDto sortDto) {
-        this.mainController.getSortedSheet(sortDto);
-
-    }
-
-    public void sortCommandsControllerRunLater(){
-        buttonFilter.setDisable(true);
-        buttonSort.setText("Reset Sort");
-        sortStage.close();
-    }
-
-
-    public boolean isBoundariesValidForCurrentSheet(Boundaries boundaries) {
-        return this.mainController.isBoundariesValidForCurrentSheet(boundaries);
-    }
-
-    public boolean isNumericColumn(int column, int startRow, int endRow) {
-        return mainController.isNumericColumn(column,startRow,endRow);
-    }
-
-    public void getColumnUniqueValuesInRange(int column, int startRow, int endRow) {
-        mainController.getColumnUniqueValuesInRange(column, startRow, endRow);
-    }
-
-    public void getBoundriesDto(String text) {
-        mainController.getBoundariesDto(text);
-    }
-
-    public void wrapRunLateForFilterController(BoundariesDto boundariesDto) {
-        filterConroller.textRangeActionRunLater(boundariesDto);
-    }
-
-    public void wrapRunLaterForUniqueValues(List<String> values) {
-        filterConroller.columActionRunLater(values);
-    }
-
-    public void getNumericColumnsInBoundaries(String text) {
-        mainController.getNumericColumnsInBoundaries(text);
-    }
-
-    public void wrapSortGetNumericColumnsInBoundariesRunLater(SortDto sortDto) {
-        sortController.buttonGetColumnsActionRunLater(sortDto);
-    }
+    // TODO: functions that will be deleted eventually.
+//    public boolean isBoundariesValidForCurrentSheet(Boundaries boundaries) {
+//        return this.mainController.isBoundariesValidForCurrentSheet(boundaries);
+//    }
+//
+//    public boolean isNumericColumn(int column, int startRow, int endRow) {
+//        return mainController.isNumericColumn(column,startRow,endRow);
+//    }
 }

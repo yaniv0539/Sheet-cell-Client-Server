@@ -27,6 +27,4 @@ public class AddRangeController {
     void submitAction(ActionEvent event) {
         this.mainController.addRange(textFieldRangeName.getText(), textFieldRangeBoundaries.getText());
     }
-
-
 }
