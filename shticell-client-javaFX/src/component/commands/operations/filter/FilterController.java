@@ -1,8 +1,14 @@
 package component.commands.operations.filter;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import component.commands.CommandsController;
 import dto.BoundariesDto;
+import dto.CellDto;
 import dto.FilterDto;
+import dto.deserializer.CellDtoDeserializer;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
@@ -10,7 +16,12 @@ import javafx.fxml.FXML;
 
 import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
+import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,9 +71,31 @@ public class FilterController {
             anyValueChecked.set(false);
             flowPaneValues.getChildren().clear();
 
-            mainController.getColumnUniqueValuesInRange(filteringByColumn.toUpperCase().toCharArray()[0] - 'A'
-                    ,boundariesToFilter.getFrom().getRow()
-                    ,boundariesToFilter.getTo().getRow());
+            mainController.getColumnUniqueValuesInRange(
+                    filteringByColumn.toUpperCase().toCharArray()[0] - 'A',
+                    boundariesToFilter.getFrom().getRow(),
+                    boundariesToFilter.getTo().getRow(),
+                    new Callback() {
+                        @Override
+                        public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                            Platform.runLater(() -> mainController.showAlertPopup(new Exception(),"get column unique values"));
+                        }
+
+                        @Override
+                        public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                            Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
+                            assert response.body() != null;
+                            String jsonResponse = response.body().string();
+                            if(response.code() != 200) {
+                                Platform.runLater(() -> mainController.showAlertPopup(new Exception(jsonResponse),"get column unique values"));
+                            }
+                            else {
+                                List<String> values = gson.fromJson(jsonResponse, new TypeToken<List<String>>(){}.getType());
+
+                                Platform.runLater(() -> columActionRunLater(values));
+                            }
+                        }
+                    });
         }
     }
 
@@ -70,20 +103,6 @@ public class FilterController {
     void filterAction(ActionEvent event) {
         FilterDto data = new FilterDto(boundariesToFilter, filteringByColumn, uniqueValuesToFilter);
         this.mainController.filterRange(data);
-    }
-
-    public void textRangeActionRunLater(BoundariesDto boundaries) {
-
-        this.boundariesToFilter = boundaries;
-        List<String> ranges = new ArrayList<>();
-
-        for (int i = boundariesToFilter.getFrom().getColumn(); i <= boundariesToFilter.getTo().getColumn(); i++) {
-            char character = (char) ('A' + i); // Compute the character
-            String str = String.valueOf(character);
-            ranges.add(str);
-        }
-        comboBoxColumn1.getItems().addAll(ranges);
-        validRange.set(true);
     }
 
     public void columActionRunLater(List<String> uniqueValues) {
@@ -111,7 +130,40 @@ public class FilterController {
 
     private void textRangeAction() {
         comboBoxColumn1.getItems().clear();
-        mainController.getBoundriesDto(textFieldRange.getText());
+
+        mainController.getBoundariesDto(textFieldRange.getText(), new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> mainController.showAlertPopup(new Exception(),"get Boundaries Dto"));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                assert response.body() != null;
+                String jsonResponse = response.body().string();
+                if(response.code() != 200){
+                    Platform.runLater(() -> mainController.showAlertPopup(new Exception(jsonResponse),"get Boundaries Dto"));
+                }
+                else{
+                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
+                    BoundariesDto boundariesDto = gson.fromJson(jsonResponse, BoundariesDto.class);
+                    Platform.runLater(() -> textRangeActionRunLater(boundariesDto));
+                }
+            }
+        });
+    }
+
+    private void textRangeActionRunLater(BoundariesDto boundaries) {
+        this.boundariesToFilter = boundaries;
+        List<String> ranges = new ArrayList<>();
+
+        for (int i = boundariesToFilter.getFrom().getColumn(); i <= boundariesToFilter.getTo().getColumn(); i++) {
+            char character = (char) ('A' + i); // Compute the character
+            String str = String.valueOf(character);
+            ranges.add(str);
+        }
+        comboBoxColumn1.getItems().addAll(ranges);
+        validRange.set(true);
     }
 
     // TODO: functions that will be deleted eventually.

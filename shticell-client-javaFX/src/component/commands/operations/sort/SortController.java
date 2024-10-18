@@ -2,17 +2,23 @@ package component.commands.operations.sort;
 import component.commands.CommandsController;
 import dto.BoundariesDto;
 import dto.SortDto;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.FlowPane;
-import sheet.range.boundaries.api.Boundaries;
-import sheet.range.boundaries.impl.BoundariesFactory;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
+import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static utils.Constants.GSON_INSTANCE;
 
 public class SortController {
 
@@ -47,7 +53,9 @@ public class SortController {
 
     public void init() {
         buttonSort.disableProperty().bind(anyChecked.not());
-        buttonGetColumns.disableProperty().bind(validRange.not());
+//        buttonGetColumns.disableProperty().bind(validRange.not());
+        textFieldRange.setOnAction((ActionEvent event) -> textRangeAction());
+
         // Initially hide the Tooltip
         validationTooltip.setAutoHide(false);
         Tooltip.install(textFieldRange, validationTooltip);
@@ -66,7 +74,7 @@ public class SortController {
 
     @FXML
     void buttonGetColumnsAction(ActionEvent event) {
-        mainController.getNumericColumnsInBoundaries(textFieldRange.getText());
+        textRangeAction();
     }
 
     @FXML
@@ -92,21 +100,33 @@ public class SortController {
             flowPaneColumns.getChildren().add(checkBox);
         });
 
-        //todo: logic for serverlet.
-//        for (int i = boundariesDto.getFrom().getColumn(); i <= boundariesDto.getTo().getColumn(); i++) {
-//            if(mainController.isNumericColumn(i ,boundariesDto.getFrom().getRow(),boundariesDto.getTo().getRow())){
-//                char character = (char) ('A' + i); // Compute the character
-//                String column = String.valueOf(character);
-//                CheckBox checkBox = new CheckBox(column);
-//                checkBox.selectedProperty().addListener((observable,oldValue,newValue) -> this.handleCheckBoxSelect(column,newValue));
-//                flowPaneColumns.getChildren().add(checkBox);
-//            }
-//        }
-
         if (flowPaneColumns.getChildren().isEmpty()) {
             Label label = new Label("No numeric columns in range !");
             flowPaneColumns.getChildren().add(label);
         }
+    }
+
+    private void textRangeAction() {
+        mainController.getNumericColumnsInBoundaries(textFieldRange.getText(), new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> mainController.showAlertPopup(new Exception(),"get Filtered Sheet"));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                assert response.body() != null;
+                String jsonResponse = response.body().string();
+
+                if(response.code() != 200){
+                    Platform.runLater(() -> mainController.showAlertPopup(new Exception(jsonResponse),"get Numeric columns"));
+                }
+                else{
+                    SortDto sortDto = GSON_INSTANCE.fromJson(jsonResponse, SortDto.class);
+                    Platform.runLater(()-> buttonGetColumnsActionRunLater(sortDto));
+                }
+            }
+        });
     }
 
     private void handleCheckBoxSelect(String column,boolean newValue) {

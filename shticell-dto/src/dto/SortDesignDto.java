@@ -10,7 +10,8 @@ public class SortDesignDto {
     public SortDesignDto() {
     }
 
-    public SortDesignDto(SheetDto sheetDto,BoundariesDto boundariesDto, List<List<CoordinateDto>> coordinateDtos) {
+    public SortDesignDto(SheetDto sheetDto, BoundariesDto boundariesDto, List<List<CoordinateDto>> coordinateDtos) {
+        this.sheetDto = sheetDto;
         this.boundariesDto = boundariesDto;
         this.coordinateDtos = coordinateDtos;
     }

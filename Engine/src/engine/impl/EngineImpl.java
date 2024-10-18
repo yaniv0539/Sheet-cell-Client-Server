@@ -8,6 +8,7 @@ import engine.version.manager.impl.VersionManagerImpl;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
+import javafx.scene.control.CheckBox;
 import sheet.api.Sheet;
 
 import java.io.*;
@@ -300,6 +301,30 @@ public class EngineImpl implements Engine, Serializable {
         });
 
         return dataToSortDto;
+    }
+
+    @Override
+    public List<String> getNumericColumnsInRange(String sheetName, Boundaries boundaries, int version) {
+
+        VersionManager versionManager = this.versionManagers.get(sheetName);
+
+        if (versionManager == null) {
+            throw new IllegalArgumentException("Sheet " + sheetName + " does not exist");
+        }
+
+        Sheet lastVersion = versionManager.getLastVersion();
+
+        List<String> numericColumns = new ArrayList<>();
+
+        for (int i = boundaries.getFrom().getCol(); i <= boundaries.getTo().getCol(); i++) {
+            if (lastVersion.isColumnNumericInRange(i, boundaries.getFrom().getRow(), boundaries.getTo().getRow())) {
+                char character = (char) ('A' + i);
+                String column = String.valueOf(character);
+                numericColumns.add(column);
+            }
+        }
+
+        return numericColumns;
     }
 
     @Override

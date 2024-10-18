@@ -61,15 +61,14 @@ public class SortServlet extends HttpServlet {
             List<String> sortByColumns = sortDto.getSortByColumns();
             int version = Integer.parseInt(sheetVersion);
 
-//            List<List<CellDto>> lists = engine.sortCellsInRange(sheetName, boundaries, sortByColumns, version);
+            List<List<CoordinateDto>> lists = engine.sortCellsInRange(sheetName, boundaries, sortByColumns, version);
             SheetDto sortSheet = engine.sort(sheetName, boundaries, sortByColumns, version);
 
-            // TODO: For Itay: Remove the slashes and look at the red line. Should I return List<List<CoordinateDto>> or List<List<CellDto>> ?
-//            SortDesignDto sortDesignDto = new SortDesignDto(sortSheet, boundariesDto, lists);
+            SortDesignDto sortDesignDto = new SortDesignDto(sortSheet, boundariesDto, lists);
 
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
-//            response.getWriter().print(gson.toJson(sortDesignDto));
+            response.getWriter().print(gson.toJson(sortDesignDto));
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (Exception e) {
             response.setContentType("text/plain");
