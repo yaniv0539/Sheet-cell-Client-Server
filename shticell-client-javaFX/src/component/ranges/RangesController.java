@@ -1,6 +1,7 @@
 package component.ranges;
 
 import component.app.AppController;
+import component.ranges.operations.add.AddRangeController;
 import dto.RangeDto;
 import dto.SheetDto;
 import javafx.beans.property.BooleanProperty;
@@ -19,7 +20,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import component.ranges.operations.add.AddRangeController;
 import sheet.range.api.RangeGetters;
 
 import java.io.IOException;
