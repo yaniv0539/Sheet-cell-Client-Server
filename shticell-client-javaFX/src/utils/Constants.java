@@ -28,7 +28,7 @@ public class Constants {
     public final static String FILTER_SHEET_URL = SHEET_URL + "/filter";
     public final static String UNIQUE_COL_VALUES_URL = FILTER_SHEET_URL + "/uniqueColumnValues";
     public final static String SORT_SHEET_URL = SHEET_URL + "/sort";
-    public final static String GET_NUMERIC_COLUMNS_IN_RANGE_URL = SHEET_URL + "/numericColumns";
+    public final static String GET_NUMERIC_COLUMNS_IN_RANGE_URL = SORT_SHEET_URL + "/numericColumns";
 
 
 
