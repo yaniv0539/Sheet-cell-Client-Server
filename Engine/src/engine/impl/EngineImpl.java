@@ -3,12 +3,12 @@ package engine.impl;
 import dto.*;
 import engine.api.Engine;
 import engine.jaxb.parser.STLSheetToSheet;
-import engine.version.manager.api.VersionManager;
-import engine.version.manager.impl.VersionManagerImpl;
+import engine.users.UserManager;
+import engine.versions.api.VersionManager;
+import engine.versions.impl.VersionManagerImpl;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
-import javafx.scene.control.CheckBox;
 import sheet.api.Sheet;
 
 import java.io.*;
@@ -36,9 +36,11 @@ public class EngineImpl implements Engine, Serializable {
     private final static int MAX_COLUMNS = 20;
 
     private final Map<String, VersionManager> versionManagers;
+    private final UserManager userManager;
 
     private EngineImpl() {
         this.versionManagers = new HashMap<>();
+        this.userManager = new UserManager();
     }
 
     public static EngineImpl create() {

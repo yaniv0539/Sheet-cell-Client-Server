@@ -7,12 +7,12 @@ import dto.deserializer.CellDtoDeserializer;
 import dto.serializer.CellDtoSerializer;
 
 public class Constants {
-    // GSON instance
-    public final static Gson GSON_INSTANCE = new GsonBuilder()
-            .setPrettyPrinting()
-            .registerTypeAdapter(CellDto.class,new CellDtoSerializer())
-            .registerTypeAdapter(CellDto.class,new CellDtoDeserializer())
-            .create();
+
+    // fxml locations
+    public final static String MAIN_PAGE_FXML_RESOURCE_LOCATION = "/component/main/main.fxml";
+    public final static String LOGIN_PAGE_FXML_RESOURCE_LOCATION = "/component/main/center/login/login.fxml";
+    public final static String DASHBOARD_PAGE_FXML_RESOURCE_LOCATION = "component/main/center/dashboard/dashboard.fxml";
+    public final static String APP_PAGE_FXML_RESOURCE_LOCATION = "/component/main/center/app/app.fxml";
 
     // Server resources locations
     public final static String BASE_DOMAIN = "localhost";
@@ -30,7 +30,14 @@ public class Constants {
     public final static String SORT_SHEET_URL = SHEET_URL + "/sort";
     public final static String GET_NUMERIC_COLUMNS_IN_RANGE_URL = SORT_SHEET_URL + "/numericColumns";
 
+    public final static String LOGIN_PAGE = FULL_SERVER_PATH + "/loginShortResponse";
 
+    // GSON instance
+    public final static Gson GSON_INSTANCE = new GsonBuilder()
+            .setPrettyPrinting()
+            .registerTypeAdapter(CellDto.class,new CellDtoSerializer())
+            .registerTypeAdapter(CellDto.class,new CellDtoDeserializer())
+            .create();
 
 //    public final static String USERS_LIST = FULL_SERVER_PATH + "/userslist";
 //    public final static String LOGOUT = FULL_SERVER_PATH + "/chat/logout";
