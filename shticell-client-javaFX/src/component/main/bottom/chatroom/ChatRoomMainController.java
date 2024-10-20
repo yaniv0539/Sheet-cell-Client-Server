@@ -1,11 +1,10 @@
 package component.main.bottom.chatroom;
 
-import chat.client.component.api.ChatCommands;
-import chat.client.component.api.HttpStatusUpdate;
-import chat.client.component.chatarea.ChatAreaController;
-import chat.client.component.commands.CommandsController;
-import chat.client.component.main.ChatAppMainController;
-import chat.client.component.users.UsersListController;
+import component.main.MainController;
+import component.main.bottom.api.ChatCommands;
+import component.main.bottom.chatarea.ChatAreaController;
+import component.main.bottom.commands.CommandsController;
+import component.main.bottom.users.UsersListController;
 import javafx.fxml.FXML;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
@@ -13,7 +12,7 @@ import javafx.scene.layout.VBox;
 import java.io.Closeable;
 import java.io.IOException;
 
-public class ChatRoomMainController implements Closeable, HttpStatusUpdate, ChatCommands {
+public class ChatRoomMainController implements Closeable, ChatCommands {
 
     @FXML private VBox usersListComponent;
     @FXML private UsersListController usersListComponentController;
@@ -22,21 +21,14 @@ public class ChatRoomMainController implements Closeable, HttpStatusUpdate, Chat
     @FXML private GridPane chatAreaComponent;
     @FXML private ChatAreaController chatAreaComponentController;
 
-    private ChatAppMainController chatAppMainController;
+    private MainController mainController;
 
     @FXML
     public void initialize() {
-        usersListComponentController.setHttpStatusUpdate(this);
         actionCommandsComponentController.setChatCommands(this);
-        chatAreaComponentController.setHttpStatusUpdate(this);
 
         chatAreaComponentController.autoUpdatesProperty().bind(actionCommandsComponentController.autoUpdatesProperty());
         usersListComponentController.autoUpdatesProperty().bind(actionCommandsComponentController.autoUpdatesProperty());
-    }
-
-    @Override
-    public void updateHttpLine(String line) {
-        chatAppMainController.updateHttpLine(line);
     }
 
     @Override
@@ -57,12 +49,12 @@ public class ChatRoomMainController implements Closeable, HttpStatusUpdate, Chat
         } catch (Exception ignored) {}
     }
 
-    public void setChatAppMainController(ChatAppMainController chatAppMainController) {
-        this.chatAppMainController = chatAppMainController;
+    public void setMainController(MainController mainController) {
+        this.mainController= mainController;
     }
 
     @Override
     public void logout() {
-        chatAppMainController.switchToLogin();
+        mainController.switchToLogin();
     }
 }

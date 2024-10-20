@@ -1,8 +1,6 @@
 package component.main.bottom.commands;
 
-import chat.client.component.api.ChatCommands;
-import chat.client.util.Constants;
-import chat.client.util.http.HttpClientUtil;
+import component.main.bottom.api.ChatCommands;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -14,6 +12,8 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
+import utils.Constants;
+import utils.http.HttpClientUtil;
 
 import java.io.IOException;
 
@@ -38,11 +38,10 @@ public class CommandsController {
 
     @FXML
     void logoutClicked(ActionEvent event) {
-        chatCommands.updateHttpLine(Constants.LOGOUT);
         HttpClientUtil.runAsync(Constants.LOGOUT, new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                chatCommands.updateHttpLine("Logout request ended with failure...:(");
+
             }
 
             @Override
@@ -53,7 +52,6 @@ public class CommandsController {
                 }
             }
         });
-
     }
 
     @FXML
