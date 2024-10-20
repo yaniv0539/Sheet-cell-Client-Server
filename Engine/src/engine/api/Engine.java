@@ -48,4 +48,13 @@ public interface Engine {
 
                 // Get Functions
                 BoundariesDto getBoundaries(String sheetName, String boundaries);
+
+        // Permissions:
+
+                // Get Functions
+                PermissionsDto getPermissions();
+                boolean isUserHasPermission(String userName, String sheetName, String permission);
+
+                // Post Functions
+
 }

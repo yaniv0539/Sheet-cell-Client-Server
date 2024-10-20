@@ -1,31 +1,51 @@
 package main;
 
-import component.app.AppController;
+import component.main.center.app.AppController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.net.URL;
+
+import static utils.Constants.MAIN_PAGE_FXML_RESOURCE_LOCATION;
 
 public class javaFXSheetCellApplication extends Application {
 
-    private static final String APP_FXML_INCLUDE_RESOURCE = "../component/app/app.fxml";
+    private AppController appController;
 
     @Override
-    public void start(Stage stage) throws Exception {
+    public void start(Stage primaryStage) {
 
-        FXMLLoader fxmlLoader = new FXMLLoader();
-        URL url = getClass().getResource(APP_FXML_INCLUDE_RESOURCE);
-        fxmlLoader.setLocation(url);
-        Parent root = fxmlLoader.load(url.openStream());
+        primaryStage.setMinHeight(600);
+        primaryStage.setMinWidth(600);
+        primaryStage.setTitle("Chat App Client");
 
-        Scene scene = new Scene(root, 500, 500);
+        URL loginPage = getClass().getResource(MAIN_PAGE_FXML_RESOURCE_LOCATION);
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader();
+            fxmlLoader.setLocation(loginPage);
+            Parent root = fxmlLoader.load();
+            appController = fxmlLoader.getController();
 
-        stage.setTitle("Shticell");
-        stage.setScene(scene);
-        ((AppController) fxmlLoader.getController()).setPrimaryStage(stage);
-        stage.show();
+            Scene scene = new Scene(root, 700, 600);
+            primaryStage.setScene(scene);
+            primaryStage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+//    @Override
+//    public void stop() throws Exception {
+//        HttpClientUtil.shutdown();
+//        appController.close();
+//    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 }

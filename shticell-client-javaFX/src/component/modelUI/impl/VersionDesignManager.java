@@ -1,6 +1,6 @@
 package component.modelUI.impl;
 
-import component.app.AppController;
+import component.main.center.app.AppController;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 
