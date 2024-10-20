@@ -12,8 +12,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-
-<ScrollPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="402.0" prefWidth="602.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1">
+<ScrollPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="402.0" prefWidth="602.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="component.main.center.dashboard.DashBoardController">
    <content>
       <GridPane prefHeight="398.0" prefWidth="600.0">
         <columnConstraints>
@@ -27,7 +26,7 @@
          <children>
             <AnchorPane prefHeight="200.0" prefWidth="200.0">
                <children>
-                  <Button id="load-button" layoutX="14.0" layoutY="9.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="113.0" text="load sheet" />
+                  <Button id="load-button" fx:id="loadSheetButton" layoutX="14.0" layoutY="9.0" mnemonicParsing="false" onAction="#loadSheetAction" prefHeight="26.0" prefWidth="113.0" text="load sheet" />
                </children>
             </AnchorPane>
             <ScrollPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
@@ -36,7 +35,7 @@
                     <items>
                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="220.0" prefWidth="454.0">
                            <children>
-                              <TableView layoutX="-1.0" layoutY="-2.0" prefHeight="182.0" prefWidth="448.0">
+                              <TableView fx:id="sheetTableView" layoutX="-1.0" layoutY="-2.0" onSort="#sheetTableViewOnSort" prefHeight="182.0" prefWidth="448.0">
                                 <columns>
                                   <TableColumn id="sheet-name-column" prefWidth="104.80001223087311" styleClass="table-colum" text="sheet name" />
                                   <TableColumn id="upload-by-column" prefWidth="152.80007934570312" styleClass="table-colum" text="upload by" />
@@ -48,7 +47,7 @@
                         </AnchorPane>
                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="72.0" prefWidth="454.0">
                            <children>
-                              <TableView layoutX="1.0" layoutY="1.0" prefHeight="147.0" prefWidth="445.0">
+                              <TableView fx:id="requestTableView" layoutX="1.0" layoutY="1.0" onSort="#requestTableViewOnSort" prefHeight="147.0" prefWidth="445.0">
                                 <columns>
                                   <TableColumn id="user-name-column" prefWidth="120.00002408027649" styleClass="table-colum" text="user name" />
                                   <TableColumn id="request- for-sheet-column" prefWidth="124.0" styleClass="table-colum" text="request for" />
@@ -71,10 +70,10 @@
                <content>
                   <AnchorPane prefHeight="350.0" prefWidth="136.0">
                      <children>
-                        <Button id="view-button" layoutX="10.0" layoutY="14.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="114.0" styleClass="commend-button" text="View" />
-                        <Button id="Request-permission" layoutX="11.0" layoutY="149.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="114.0" styleClass="commend-button" text="Request permission" />
-                        <Button id="aprove-button" layoutX="11.0" layoutY="228.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="114.0" styleClass="commend-button" text="Aprove" />
-                        <Button id="deny-button" layoutX="12.0" layoutY="276.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="114.0" styleClass="commend-button" text="Deny" />
+                        <Button id="view-button" fx:id="viewSheetButton" layoutX="10.0" layoutY="14.0" mnemonicParsing="false" onAction="#viewSheetAction" prefHeight="26.0" prefWidth="114.0" styleClass="commend-button" text="View" />
+                        <Button id="Request-permission" fx:id="requestPermissionButton" layoutX="11.0" layoutY="149.0" mnemonicParsing="false" onAction="#requestPermissionAction" prefHeight="24.0" prefWidth="114.0" styleClass="commend-button" text="Request permission" />
+                        <Button id="aprove-button" fx:id="confirmButton" layoutX="11.0" layoutY="228.0" mnemonicParsing="false" onAction="#confirmAction" prefHeight="26.0" prefWidth="114.0" styleClass="commend-button" text="confirm" />
+                        <Button id="deny-button" fx:id="denyButton" layoutX="12.0" layoutY="276.0" mnemonicParsing="false" onAction="#denyAction" prefHeight="26.0" prefWidth="114.0" styleClass="commend-button" text="Deny" />
                         <CheckBox layoutX="15.0" layoutY="76.0" mnemonicParsing="false" prefHeight="18.0" prefWidth="105.0" text="Reader" />
                         <CheckBox layoutX="15.0" layoutY="109.0" mnemonicParsing="false" prefHeight="18.0" prefWidth="105.0" text="Writer" />
                         <Label id="prmission-Lable" layoutX="15.0" layoutY="52.0" prefHeight="18.0" prefWidth="108.0" styleClass="lable" text="choose permission:" />

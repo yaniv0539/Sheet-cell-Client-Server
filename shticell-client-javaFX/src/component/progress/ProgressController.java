@@ -1,6 +1,6 @@
 package component.progress;
 
-import component.app.AppController;
+import component.main.center.app.AppController;
 import javafx.concurrent.Task;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;

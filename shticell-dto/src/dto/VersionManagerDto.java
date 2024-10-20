@@ -1,6 +1,6 @@
 package dto;
 
-import engine.version.manager.api.VersionManagerGetters;
+import engine.versions.api.VersionManagerGetters;
 
 import java.util.ArrayList;
 import java.util.List;
