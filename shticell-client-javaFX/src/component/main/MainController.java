@@ -2,7 +2,6 @@ package component.main;
 
 import component.main.center.app.AppController;
 import component.main.center.dashboard.DashBoardController;
-import component.main.center.dashboard.DashboardController;
 import component.main.center.login.LoginController;
 import component.main.top.TopController;
 import dto.FilterDto;
@@ -10,9 +9,13 @@ import dto.SortDto;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.control.Alert;
 import javafx.scene.control.SplitPane;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.StageStyle;
 import okhttp3.*;
 import utils.Constants;
 import utils.http.HttpClientUtil;
@@ -119,17 +122,17 @@ public class MainController {
 
     public void switchToLogin() {
         setMainPanelTo(loginComponent);
-//        loginComponentController.setActive();
+        loginComponentController.setActive();
     }
 
     public void switchToDashboard() {
         setMainPanelTo(dashboardComponent);
-//        dashboardComponentController.setActive();
+        dashboardComponentController.setActive();
     }
 
     public void switchToApp() {
         setMainPanelTo(appComponent);
-//        appComponentController.setActive();
+        appComponentController.setActive();
     }
 
 
@@ -312,5 +315,44 @@ public class MainController {
 
         HttpClientUtil.runAsyncDelete(finalUrl, body, callback);
     }
+
+
+
+
+
+
+
+
+    //error function
+    public void showAlertPopup(Throwable exception, String error) {
+        // Create a new alert dialog for the error
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setHeaderText("An Error Occurred While " + error);
+        TextArea textArea = new TextArea();
+        if (exception != null) {
+            textArea.setText(exception.getMessage());
+        } else {
+            textArea.setText("An unknown error occurred.");
+        }
+        textArea.setWrapText(true);
+        textArea.setEditable(false);
+
+        // Allow TextArea to expand dynamically with the window
+        VBox content = new VBox(textArea);
+        content.setPrefSize(300, 200);  // Adjust the size of the popup window
+
+        // Add the TextArea to the Alert dialog
+        alert.getDialogPane().setContent(content);
+
+        // Make the dialog non-resizable if needed
+        alert.initStyle(StageStyle.DECORATED);
+
+        alert.showAndWait();  // Display the popup
+    }
+
+
+
+
 
 }
