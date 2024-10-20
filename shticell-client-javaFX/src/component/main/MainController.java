@@ -1,6 +1,7 @@
 package component.main;
 
 import component.main.center.app.AppController;
+import component.main.center.dashboard.DashBoardController;
 import component.main.center.dashboard.DashboardController;
 import component.main.center.login.LoginController;
 import component.main.top.TopController;
@@ -31,7 +32,7 @@ public class MainController {
     private LoginController loginComponentController;
 
     private GridPane dashboardComponent;
-    private DashboardController dashboardComponentController;
+    private DashBoardController dashboardComponentController;
 
     private GridPane appComponent;
     private AppController appComponentController;
@@ -118,17 +119,17 @@ public class MainController {
 
     public void switchToLogin() {
         setMainPanelTo(loginComponent);
-        loginComponentController.setActive();
+//        loginComponentController.setActive();
     }
 
     public void switchToDashboard() {
         setMainPanelTo(dashboardComponent);
-        dashboardComponentController.setActive();
+//        dashboardComponentController.setActive();
     }
 
     public void switchToApp() {
         setMainPanelTo(appComponent);
-        appComponentController.setActive();
+//        appComponentController.setActive();
     }
 
 

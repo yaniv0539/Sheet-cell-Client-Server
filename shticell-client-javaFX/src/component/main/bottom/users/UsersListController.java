@@ -1,6 +1,5 @@
 package component.main.bottom.users;
 
-import chat.client.component.api.HttpStatusUpdate;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -17,7 +16,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static chat.client.util.Constants.REFRESH_RATE;
+import static utils.Constants.REFRESH_RATE;
 
 public class UsersListController implements Closeable {
 
@@ -25,7 +24,6 @@ public class UsersListController implements Closeable {
     private TimerTask listRefresher;
     private final BooleanProperty autoUpdate;
     private final IntegerProperty totalUsers;
-    private HttpStatusUpdate httpStatusUpdate;
 
     @FXML private ListView<String> usersListView;
     @FXML private Label chatUsersLabel;
@@ -40,10 +38,6 @@ public class UsersListController implements Closeable {
         chatUsersLabel.textProperty().bind(Bindings.concat("Chat Users: (", totalUsers.asString(), ")"));
     }
 
-    public void setHttpStatusUpdate(HttpStatusUpdate httpStatusUpdate) {
-        this.httpStatusUpdate = httpStatusUpdate;
-
-    }
     public BooleanProperty autoUpdatesProperty() {
         return autoUpdate;
     }
@@ -60,7 +54,6 @@ public class UsersListController implements Closeable {
     public void startListRefresher() {
         listRefresher = new UserListRefresher(
                 autoUpdate,
-                httpStatusUpdate::updateHttpLine,
                 this::updateUsersList);
         timer = new Timer();
         timer.schedule(listRefresher, REFRESH_RATE, REFRESH_RATE);

@@ -16,6 +16,8 @@ import javafx.scene.control.cell.PropertyValueFactory;
 
 public class DashBoardController {
 
+    MainController mainController;
+
     BooleanProperty activeConfirmButton = new SimpleBooleanProperty(false);
     BooleanProperty activeDenyButton = new SimpleBooleanProperty(false);
     BooleanProperty activeLoadSheetButton = new SimpleBooleanProperty(false);
@@ -105,4 +107,7 @@ public class DashBoardController {
 
     }
 
+    public void setMainController(MainController mainController) {
+        this.mainController = mainController;
+    }
 }
