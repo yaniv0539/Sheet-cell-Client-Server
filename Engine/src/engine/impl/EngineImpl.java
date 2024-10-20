@@ -3,6 +3,7 @@ package engine.impl;
 import dto.*;
 import engine.api.Engine;
 import engine.jaxb.parser.STLSheetToSheet;
+import engine.permissions.PermissionManager;
 import engine.users.UserManager;
 import engine.versions.api.VersionManager;
 import engine.versions.impl.VersionManagerImpl;
@@ -36,11 +37,11 @@ public class EngineImpl implements Engine, Serializable {
     private final static int MAX_COLUMNS = 20;
 
     private final Map<String, VersionManager> versionManagers;
-    private final UserManager userManager;
+    private final Map<String, PermissionManager> permissionManagers;
 
     private EngineImpl() {
         this.versionManagers = new HashMap<>();
-        this.userManager = new UserManager();
+        this.permissionManagers = new HashMap<>();
     }
 
     public static EngineImpl create() {
@@ -463,6 +464,17 @@ public class EngineImpl implements Engine, Serializable {
 
         return new BoundariesDto(boundaries1);
     }
+
+    @Override
+    public PermissionDto getPermissions() {
+        return new PermissionDto(this.permissionManagers);
+    }
+
+    @Override
+    public boolean isUserHasPermission(String userName, String sheetName, String permission) {
+        return false;
+    }
+
 
     //sort function helper
     private Comparator<List<CellGetters>> createComparator(List<Integer> sortByColumns, int startCol) {

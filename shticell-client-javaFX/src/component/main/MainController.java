@@ -116,20 +116,20 @@ public class MainController {
         AnchorPane.setRightAnchor(pane, 1.0);
     }
 
-//    public void switchToLogin() {
-//        setMainPanelTo(loginComponent);
-//        loginComponentController.setActive();
-//    }
-//
-//    public void switchToDashboard() {
-//        setMainPanelTo(dashboardComponent);
-//        dashboardComponentController.setActive();
-//    }
-//
-//    public void switchToApp() {
-//        setMainPanelTo(appComponent);
-//        appComponentController.setActive();
-//    }
+    public void switchToLogin() {
+        setMainPanelTo(loginComponent);
+        loginComponentController.setActive();
+    }
+
+    public void switchToDashboard() {
+        setMainPanelTo(dashboardComponent);
+        dashboardComponentController.setActive();
+    }
+
+    public void switchToApp() {
+        setMainPanelTo(appComponent);
+        appComponentController.setActive();
+    }
 
 
     // Http requests to shticell servlet
@@ -139,7 +139,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(SHEET_URL)
                 .newBuilder()
-                .addQueryParameter("sheetName",name)
+                .addQueryParameter("sheetName", name)
                 .addQueryParameter("sheetVersion",version)
                 .build()
                 .toString();

@@ -235,10 +235,10 @@ public class HeaderController {
                                     assert response.body() != null;
                                     String jsonResponse = response.body().string();
 
-                                        if(response.code() != 200){
+                                        if (response.code() != 200) {
                                                 mainController.showAlertPopup(new Exception(GSON_INSTANCE.fromJson(jsonResponse,String.class)), "show version: " + numberOfVersion);
                                         }
-                                        else{
+                                        else {
                                                 Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
                                                 SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
 

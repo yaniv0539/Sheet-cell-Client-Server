@@ -72,6 +72,8 @@ public class LoginController {
                 } else {
                     Platform.runLater(() -> {
                         mainController.switchToDashboard();
+                        // TODO: Implement this.
+//                        mainController.showChatInBottomPanel();
                     });
                 }
             }
