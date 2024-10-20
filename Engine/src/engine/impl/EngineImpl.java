@@ -4,7 +4,6 @@ import dto.*;
 import engine.api.Engine;
 import engine.jaxb.parser.STLSheetToSheet;
 import engine.permissions.PermissionManager;
-import engine.users.UserManager;
 import engine.versions.api.VersionManager;
 import engine.versions.impl.VersionManagerImpl;
 import jakarta.xml.bind.JAXBContext;
@@ -466,8 +465,8 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public PermissionDto getPermissions() {
-        return new PermissionDto(this.permissionManagers);
+    public PermissionsDto getPermissions() {
+        return new PermissionsDto(this.permissionManagers);
     }
 
     @Override
