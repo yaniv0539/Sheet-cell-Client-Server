@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+
+
+<ScrollPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="402.0" prefWidth="602.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1">
+   <content>
+      <GridPane prefHeight="398.0" prefWidth="600.0">
+        <columnConstraints>
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="496.79998779296875" minWidth="10.0" prefWidth="460.6" />
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="295.20001220703125" minWidth="10.0" prefWidth="139.0" />
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints maxHeight="192.9999755859375" minHeight="10.0" prefHeight="43.79999694824219" vgrow="SOMETIMES" />
+          <RowConstraints maxHeight="381.80000534057615" minHeight="10.0" prefHeight="354.2000030517578" vgrow="SOMETIMES" />
+        </rowConstraints>
+         <children>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0">
+               <children>
+                  <Button id="load-button" layoutX="14.0" layoutY="9.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="113.0" text="load sheet" />
+               </children>
+            </AnchorPane>
+            <ScrollPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
+               <content>
+                  <SplitPane dividerPositions="0.5192743764172336" orientation="VERTICAL" prefHeight="354.0" prefWidth="455.0">
+                    <items>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="220.0" prefWidth="454.0">
+                           <children>
+                              <TableView layoutX="-1.0" layoutY="-2.0" prefHeight="182.0" prefWidth="448.0">
+                                <columns>
+                                  <TableColumn id="sheet-name-column" prefWidth="104.80001223087311" styleClass="table-colum" text="sheet name" />
+                                  <TableColumn id="upload-by-column" prefWidth="152.80007934570312" styleClass="table-colum" text="upload by" />
+                                    <TableColumn id="layout-column" prefWidth="59.99993896484375" styleClass="table-colum" text="layout" />
+                                    <TableColumn id="permission-column" prefWidth="130.4000244140625" styleClass="table-colum" text="permisson" />
+                                </columns>
+                              </TableView>
+                           </children>
+                        </AnchorPane>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="72.0" prefWidth="454.0">
+                           <children>
+                              <TableView layoutX="1.0" layoutY="1.0" prefHeight="147.0" prefWidth="445.0">
+                                <columns>
+                                  <TableColumn id="user-name-column" prefWidth="120.00002408027649" styleClass="table-colum" text="user name" />
+                                  <TableColumn id="request- for-sheet-column" prefWidth="124.0" styleClass="table-colum" text="request for" />
+                                    <TableColumn id="request-type-column" prefWidth="111.20004272460938" styleClass="table-colum" text="request type" />
+                                    <TableColumn id="status" prefWidth="90.4000244140625" styleClass="table-colum" text="status" />
+                                </columns>
+                              </TableView>
+                           </children>
+                        </AnchorPane>
+                    </items>
+                  </SplitPane>
+               </content>
+            </ScrollPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+               <children>
+                  <Label id="commend-Label" layoutX="5.0" layoutY="2.0" prefHeight="42.0" prefWidth="131.0" styleClass="lable" text="Commends:" />
+               </children>
+            </AnchorPane>
+            <ScrollPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+               <content>
+                  <AnchorPane prefHeight="350.0" prefWidth="136.0">
+                     <children>
+                        <Button id="view-button" layoutX="10.0" layoutY="14.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="114.0" styleClass="commend-button" text="View" />
+                        <Button id="Request-permission" layoutX="11.0" layoutY="149.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="114.0" styleClass="commend-button" text="Request permission" />
+                        <Button id="aprove-button" layoutX="11.0" layoutY="228.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="114.0" styleClass="commend-button" text="Aprove" />
+                        <Button id="deny-button" layoutX="12.0" layoutY="276.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="114.0" styleClass="commend-button" text="Deny" />
+                        <CheckBox layoutX="15.0" layoutY="76.0" mnemonicParsing="false" prefHeight="18.0" prefWidth="105.0" text="Reader" />
+                        <CheckBox layoutX="15.0" layoutY="109.0" mnemonicParsing="false" prefHeight="18.0" prefWidth="105.0" text="Writer" />
+                        <Label id="prmission-Lable" layoutX="15.0" layoutY="52.0" prefHeight="18.0" prefWidth="108.0" styleClass="lable" text="choose permission:" />
+                     </children>
+                  </AnchorPane>
+               </content>
+            </ScrollPane>
+         </children>
+      </GridPane>
+   </content>
+</ScrollPane>
