@@ -74,8 +74,8 @@
                         <Button id="Request-permission" fx:id="requestPermissionButton" layoutX="11.0" layoutY="149.0" mnemonicParsing="false" onAction="#requestPermissionAction" prefHeight="24.0" prefWidth="114.0" styleClass="commend-button" text="Request permission" />
                         <Button id="aprove-button" fx:id="confirmButton" layoutX="11.0" layoutY="228.0" mnemonicParsing="false" onAction="#confirmAction" prefHeight="26.0" prefWidth="114.0" styleClass="commend-button" text="confirm" />
                         <Button id="deny-button" fx:id="denyButton" layoutX="12.0" layoutY="276.0" mnemonicParsing="false" onAction="#denyAction" prefHeight="26.0" prefWidth="114.0" styleClass="commend-button" text="Deny" />
-                        <CheckBox layoutX="15.0" layoutY="76.0" mnemonicParsing="false" prefHeight="18.0" prefWidth="105.0" text="Reader" />
-                        <CheckBox layoutX="15.0" layoutY="109.0" mnemonicParsing="false" prefHeight="18.0" prefWidth="105.0" text="Writer" />
+                        <CheckBox fx:id="redearCheckBox" layoutX="15.0" layoutY="76.0" mnemonicParsing="false" onAction="#readerAction" prefHeight="18.0" prefWidth="105.0" text="Reader" />
+                        <CheckBox fx:id="writerCheckBox" layoutX="15.0" layoutY="109.0" mnemonicParsing="false" onAction="#writerAction" prefHeight="18.0" prefWidth="105.0" text="Writer" />
                         <Label id="prmission-Lable" layoutX="15.0" layoutY="52.0" prefHeight="18.0" prefWidth="108.0" styleClass="lable" text="choose permission:" />
                      </children>
                   </AnchorPane>
