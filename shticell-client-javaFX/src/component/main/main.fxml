@@ -8,20 +8,20 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<SplitPane fx:id="splitPaneApp" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="component.main.MainController">
+<SplitPane fx:id="splitPaneApp" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" orientation="VERTICAL" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="component.main.MainController">
   <items>
       <ScrollPane fitToHeight="true" fitToWidth="true">
          <content>
-            <GridPane vgap="5.0">
+            <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" vgap="5.0">
                <columnConstraints>
                   <ColumnConstraints hgrow="SOMETIMES" />
                </columnConstraints>
                <rowConstraints>
                   <RowConstraints maxHeight="168.0" minHeight="10.0" prefHeight="59.0" vgrow="NEVER" />
-                  <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="219.0" vgrow="SOMETIMES" />
+                  <RowConstraints vgrow="ALWAYS" />
                </rowConstraints>
                <children>
-                  <AnchorPane fx:id="mainPanel" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1" />
+                  <AnchorPane fx:id="mainPanel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" GridPane.rowIndex="1" />
                   <fx:include fx:id="topComponent" source="top/top.fxml" />
                </children>
                <padding>

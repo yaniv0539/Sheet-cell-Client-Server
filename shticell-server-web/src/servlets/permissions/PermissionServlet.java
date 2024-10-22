@@ -5,6 +5,8 @@ import dto.SheetDto;
 import dto.enums.PermissionType;
 import engine.api.Engine;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -12,6 +14,8 @@ import utils.ServletUtils;
 
 import java.io.IOException;
 
+@WebServlet(name = "PermissionServlet", urlPatterns = "/permission/request")
+@MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 1024 * 1024 * 5, maxRequestSize = 1024 * 1024 * 5 * 5)
 public class PermissionServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -19,7 +23,7 @@ public class PermissionServlet extends HttpServlet {
             Engine engine = ServletUtils.getEngine(getServletContext());
             Gson gson = ServletUtils.getGson(getServletContext());
 
-            String userName = ServletUtils.getSheetName(request);
+            String userName = ServletUtils.getUserName(request);
             String sheetName = ServletUtils.getSheetName(request);
             PermissionType permissionType = ServletUtils.getPermissionType(request);
 
