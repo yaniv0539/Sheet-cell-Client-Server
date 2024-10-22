@@ -25,12 +25,11 @@ public class UserServlet extends HttpServlet {
 
             String userName = ServletUtils.getUserName(request);
 
-            // TODO: Call the right method from the engine.
+            engine.addUser(userName);
 
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
 
-//            response.getWriter().print(gson.toJson(sheetDTO));
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (Exception e) {
             response.setContentType("text/plain");

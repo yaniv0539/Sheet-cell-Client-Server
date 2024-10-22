@@ -5,6 +5,7 @@ import engine.api.Engine;
 import engine.jaxb.parser.STLSheetToSheet;
 import engine.permissions.impl.PermissionManagerImpl;
 import engine.permissions.api.PermissionManager;
+import engine.users.UserManager;
 import engine.versions.api.VersionManager;
 import engine.versions.impl.VersionManagerImpl;
 import jakarta.xml.bind.JAXBContext;
@@ -38,10 +39,12 @@ public class EngineImpl implements Engine, Serializable {
 
     private final Map<String, VersionManager> versionManagers;
     private final Map<String, PermissionManager> permissionManagers;
+    private final UserManager userManager;
 
     private EngineImpl() {
         this.versionManagers = new HashMap<>();
         this.permissionManagers = new HashMap<>();
+        this.userManager = new UserManager();
     }
 
     public static EngineImpl create() {
@@ -466,15 +469,22 @@ public class EngineImpl implements Engine, Serializable {
         return new BoundariesDto(boundaries1);
     }
 
-//    @Override
-//    public PermissionsDto getPermissions() {
-//        return new PermissionsDto(this.permissionManagers);
-//    }
-
     @Override
     public boolean isUserHasPermission(String userName, String sheetName, String permission) {
         return false;
     }
+
+    @Override
+    public synchronized void addUser(String userName) {
+        this.userManager.addUser(userName);
+    }
+
+
+//    @Override
+//    public PermissionsDto getPermissions() {
+//        return new PermissionsDto(this.permissionManagers);
+
+//    }
 
 
     //sort function helper

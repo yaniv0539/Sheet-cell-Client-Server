@@ -18,6 +18,10 @@ public class UserManager {
     }
 
     public synchronized void addUser(String username) {
+        if (isUserExists(username)) {
+            throw new IllegalArgumentException("Username " + username + " is already in use");
+        }
+
         usersSet.add(username);
     }
 

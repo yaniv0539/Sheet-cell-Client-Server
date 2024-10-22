@@ -57,4 +57,10 @@ public interface Engine {
 
                 // Post Functions
 
+        // Users:
+
+                void addUser(String userName);
+
+
+
 }
