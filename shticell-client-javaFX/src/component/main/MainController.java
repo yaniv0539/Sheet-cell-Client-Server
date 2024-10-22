@@ -280,7 +280,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(Constants.LOGIN_PAGE)
                 .newBuilder()
-                .addQueryParameter("username", userName)
+                .addQueryParameter("userName", userName)
                 .build()
                 .toString();
 
