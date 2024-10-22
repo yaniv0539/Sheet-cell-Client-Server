@@ -19,6 +19,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import okhttp3.*;
 import utils.Constants;
@@ -34,6 +35,8 @@ public class MainController {
 
     @FXML private GridPane topComponent;
     @FXML private TopController topComponentController;
+
+    private Stage primaryStage;
 
     private GridPane loginComponent;
     private LoginController loginComponentController;
@@ -121,6 +124,16 @@ public class MainController {
 
     public String getUserName() {
         return userName;
+    }
+
+    public Stage getPrimaryStage() {
+        return primaryStage;
+    }
+
+    // Setters
+
+    public void setPrimaryStage(Stage primaryStage) {
+        this.primaryStage = primaryStage;
     }
 
 
@@ -342,16 +355,32 @@ public class MainController {
         HttpClientUtil.runAsyncPost(finalUrl, body, callback);
     }
 
-    // Post new permission for specific sheet
-    public void postPermission(String sheetName, PermissionType requestedPermission, Callback callback) {
+    // Post new permission request for specific sheet
+    public void postRequestPermission(String sheetName, PermissionType requestedPermission, Callback callback) {
         RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
 
         String finalUrl = HttpUrl
-                .parse(PERMISSIONS_URL)
+                .parse(REQUEST_PERMISSION_URL)
                 .newBuilder()
                 .addQueryParameter("userName", userName)
                 .addQueryParameter("sheetName", sheetName)
                 .addQueryParameter("permissionType", requestedPermission.toString())
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsyncPost(finalUrl, body, callback);
+    }
+
+    // Post new permission response for specific sheet
+    public void postResponsePermission(String sheetName, String userNameToConfirm, Callback callback) {
+        RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
+
+        String finalUrl = HttpUrl
+                .parse(RESPONSE_PERMISSION_URL)
+                .newBuilder()
+                .addQueryParameter("userName", userName)
+                .addQueryParameter("sheetName", sheetName)
+                .addQueryParameter("userNameToConfirm", userNameToConfirm)
                 .build()
                 .toString();
 
@@ -408,4 +437,7 @@ public class MainController {
     public void uploadSheetToWorkspace(SheetDto sheetDto) {
 
     }
+
+
+
 }

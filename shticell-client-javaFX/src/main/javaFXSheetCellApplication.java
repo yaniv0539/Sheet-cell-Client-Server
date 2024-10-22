@@ -30,6 +30,7 @@ public class javaFXSheetCellApplication extends Application {
             fxmlLoader.setLocation(loginPage);
             Parent root = fxmlLoader.load();
             mainController = fxmlLoader.getController();
+            mainController.setPrimaryStage(primaryStage);
 
             Scene scene = new Scene(root, 700, 600);
             primaryStage.setScene(scene);

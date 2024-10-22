@@ -31,9 +31,12 @@ public class Constants {
     public final static String RANGE_URL = SHEET_URL + "/ranges";
     public final static String FILTER_SHEET_URL = SHEET_URL + "/filter";
     public final static String SORT_SHEET_URL = SHEET_URL + "/sort";
-    public final static String GET_BOUNDARIES_URL = RANGE_URL + "/boundaries";
+    public final static String REQUEST_PERMISSION_URL = FULL_SERVER_PATH + "/request";
+    public final static String RESPONSE_PERMISSION_URL = FULL_SERVER_PATH + "/response";
+
 
     // Third Layer
+    public final static String GET_BOUNDARIES_URL = RANGE_URL + "/boundaries";
     public final static String UNIQUE_COL_VALUES_URL = FILTER_SHEET_URL + "/uniqueColumnValues";
     public final static String GET_NUMERIC_COLUMNS_IN_RANGE_URL = SORT_SHEET_URL + "/numericColumns";
 

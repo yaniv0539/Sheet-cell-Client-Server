@@ -133,10 +133,6 @@ public class AppController {
         return cellInFocus;
     }
 
-    public Stage getPrimaryStage() {
-        return primaryStage;
-    }
-
     public EffectiveValuesPoolPropertyReadOnly getEffectiveValuesPool() {
         return effectiveValuesPool;
     }
@@ -149,10 +145,6 @@ public class AppController {
 
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
-    }
-
-    public void setPrimaryStage(Stage primaryStage) {
-        this.primaryStage = primaryStage;
     }
 
     private void setSheet(SheetDto sheetDto) {

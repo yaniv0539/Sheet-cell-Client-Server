@@ -14,7 +14,6 @@ import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -31,10 +30,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.function.Function;
 
 import static dto.enums.Status.*;
-import static utils.Constants.GSON_INSTANCE;
 
 public class DashBoardController {
 
@@ -77,7 +74,6 @@ public class DashBoardController {
     private TableView<SheetTableLine> sheetTableView;
 
 
-
     @FXML
     void initialize() {
 
@@ -86,7 +82,6 @@ public class DashBoardController {
         initRequestTableView();
         initListeners();
     }
-
 
 
     @FXML
@@ -172,7 +167,7 @@ public class DashBoardController {
         String sheetName = sheetTableLine.getSheetName();
 
         //to complete function in main
-        mainController.postPermission(sheetName, RequestedPermission, new Callback() {
+        mainController.postRequestPermission(sheetName, RequestedPermission, new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 Platform.runLater(()-> System.out.println("(()->mainController.showPopupAlert())"));
@@ -303,7 +298,7 @@ public class DashBoardController {
         }
         final String userNameToConfirmFinal = userNameToConfirm;
 
-        mainController.postPermissionForUserUpdate(mainController.getUserName(), sheetName, userNameToConfirm, new Callback(){
+        mainController.postResponsePermission(sheetName, userNameToConfirm, new Callback(){
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 Platform.runLater(()-> mainController.showAlertPopup(new Exception(e.getMessage()),"unexpected error" ));
@@ -311,6 +306,7 @@ public class DashBoardController {
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                assert response.body() != null;
                 String jsonResponse = response.body().string();
 
                 if(response.code() != 200){
@@ -324,9 +320,6 @@ public class DashBoardController {
                 }
             }
         });
-
-
-
     }
 
     private void updateUserStatus(int index, Status ownerAnswer) {
