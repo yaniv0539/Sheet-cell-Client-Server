@@ -1,4 +1,4 @@
-package engine.permissions;
+package engine.permissions.impl;
 
 import engine.permissions.api.PermissionManager;
 

@@ -133,7 +133,6 @@ public class DashBoardController {
 
     @FXML
     void loadSheetAction(ActionEvent event) {
-        //
         String path = chooseFileFromFileChooser();
         mainController.postXMLFile(path, new Callback() {
             @Override
@@ -143,11 +142,11 @@ public class DashBoardController {
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                assert response.body() != null;
                 String jsonResponse = response.body().string(); // Raw response
-                if(response.code() != 201){
+                if(response.code() != 200) {
                     Platform.runLater(()-> mainController.showAlertPopup(new Exception(jsonResponse),"loading sheet failed"));
-                }
-                else{
+                } else {
                     Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
                     SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
 

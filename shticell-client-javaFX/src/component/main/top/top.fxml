@@ -9,7 +9,7 @@
 
 <GridPane fx:id="gridPaneTopApp" prefHeight="278.0" prefWidth="596.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="component.main.top.TopController">
    <columnConstraints>
-      <ColumnConstraints hgrow="NEVER" minWidth="-Infinity" prefWidth="161.0" />
+      <ColumnConstraints hgrow="SOMETIMES" minWidth="-Infinity" prefWidth="161.0" />
       <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="437.0" />
    </columnConstraints>
    <rowConstraints>
