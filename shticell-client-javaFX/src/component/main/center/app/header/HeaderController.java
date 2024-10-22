@@ -26,6 +26,9 @@ import static utils.Constants.GSON_INSTANCE;
 public class HeaderController {
 
         @FXML
+        private TextField textFieldUpdatedBy;
+
+        @FXML
         private Button buttonUpdateCell;
 
         @FXML
@@ -76,6 +79,7 @@ public class HeaderController {
                 textFieldOrignalValue.disableProperty().bind(showHeadersProperty.not());
                 textFieldCellId.disableProperty().bind(showHeadersProperty.not());
                 textFieldLastUpdateInVersion.disableProperty().bind(showHeadersProperty.not());
+                textFieldUpdatedBy.disableProperty().bind(showHeadersProperty.not());
                 textFieldCellId.textProperty().bind(this.mainController.getCellInFocus().getCoordinate());
                 textFieldOrignalValue.textProperty().bindBidirectional(this.mainController.getCellInFocus().getOriginalValue());
                 textFieldLastUpdateInVersion.textProperty().bind(this.mainController.getCellInFocus().getLastUpdateVersion());

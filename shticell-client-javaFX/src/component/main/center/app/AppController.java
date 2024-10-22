@@ -8,14 +8,12 @@ import component.main.center.app.sheet.SheetController;
 import dto.*;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
@@ -37,6 +35,7 @@ import java.util.stream.Collectors;
 
 public class AppController {
 
+    @FXML private Button buttonBackToDashboard;
     @FXML private BorderPane appBorderPane;
     @FXML private ScrollPane headerComponent;
     @FXML private HeaderController headerComponentController;
@@ -176,6 +175,10 @@ public class AppController {
         sheetToVersionDesignManager.get(currentSheet.getName()).saveVersionDesign(gridPane);
     }
 
+    @FXML
+    public void buttonBackToDashboardAction(ActionEvent actionEvent) {
+        mainController.switchToDashboard();
+    }
 
     // Http requests to shticell servlet
 
@@ -577,6 +580,7 @@ public class AppController {
     public void paintRangeOnSheet(RangeDto range, Color color) {
         this.sheetComponentController.paintRangeOnSheet(range, color);
     }
+
 
 
     // TODO: functions that will be deleted eventually.
