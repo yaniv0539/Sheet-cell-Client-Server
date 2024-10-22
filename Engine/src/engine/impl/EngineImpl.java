@@ -3,7 +3,7 @@ package engine.impl;
 import dto.*;
 import engine.api.Engine;
 import engine.jaxb.parser.STLSheetToSheet;
-import engine.permissions.PermissionManagerImpl;
+import engine.permissions.impl.PermissionManagerImpl;
 import engine.permissions.api.PermissionManager;
 import engine.versions.api.VersionManager;
 import engine.versions.impl.VersionManagerImpl;

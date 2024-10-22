@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
 <BorderPane fx:id="appBorderPane" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="component.main.center.app.AppController">
@@ -24,4 +26,11 @@
    <top>
       <fx:include fx:id="headerComponent" source="header/header.fxml" />
    </top>
+   <bottom>
+      <HBox prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+         <children>
+            <Button fx:id="buttonBackToDashboard" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#buttonBackToDashboardAction" style="-fx-border-width: 5;" text="Go Back To Dashboard" textFill="RED" HBox.hgrow="ALWAYS" />
+         </children>
+      </HBox>
+   </bottom>
 </BorderPane>

@@ -8,6 +8,8 @@ import dto.FilterDto;
 import dto.SheetDto;
 import dto.SortDto;
 import dto.enums.PermissionType;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -56,7 +58,7 @@ public class MainController {
     @FXML
     private SplitPane splitPaneApp;
 
-    private String userName;
+    private StringProperty userNameProperty;
 
     // Constructor
 
@@ -71,6 +73,9 @@ public class MainController {
     public void initialize() {
         if (topComponentController != null) {
             topComponentController.setMainController(this);
+            this.userNameProperty = new SimpleStringProperty("Guest");
+
+            topComponentController.init();
 
             // prepare components
             loadLoginPage();
@@ -123,7 +128,11 @@ public class MainController {
     // Getters
 
     public String getUserName() {
-        return userName;
+        return userNameProperty.get();
+    }
+
+    public StringProperty userNameProperty() {
+        return userNameProperty;
     }
 
     public Stage getPrimaryStage() {
@@ -131,6 +140,10 @@ public class MainController {
     }
 
     // Setters
+
+    public void setUserName(String userName) {
+        this.userNameProperty.set(userName);
+    }
 
     public void setPrimaryStage(Stage primaryStage) {
         this.primaryStage = primaryStage;
@@ -171,7 +184,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(SHEET_URL)
                 .newBuilder()
-                .addQueryParameter("userName", userName)
+                .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
                 .addQueryParameter("sheetVersion",sheetVersion)
                 .build()
@@ -185,7 +198,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(SHEET_URL)
                 .newBuilder()
-                .addQueryParameter("userName", userName)
+                .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
                 .build()
                 .toString();
@@ -199,7 +212,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(GET_BOUNDARIES_URL)
                 .newBuilder()
-                .addQueryParameter("userName", userName)
+                .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
                 .addQueryParameter("boundaries", boundaries)
                 .build()
@@ -213,7 +226,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(UNIQUE_COL_VALUES_URL)
                 .newBuilder()
-                .addQueryParameter("userName", userName)
+                .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
                 .addQueryParameter("sheetVersion", sheetVersion)
                 .addQueryParameter("column", column)
@@ -234,7 +247,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(FILTER_SHEET_URL)
                 .newBuilder()
-                .addQueryParameter("userName", userName)
+                .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName",sheetName)
                 .addQueryParameter("sheetVersion", sheetVersion)
                 .build()
@@ -248,7 +261,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(GET_NUMERIC_COLUMNS_IN_RANGE_URL)
                 .newBuilder()
-                .addQueryParameter("userName", userName)
+                .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
                 .addQueryParameter("sheetVersion", sheetVersion)
                 .addQueryParameter("boundaries", boundaries)
@@ -266,7 +279,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(SORT_SHEET_URL)
                 .newBuilder()
-                .addQueryParameter("userName", userName)
+                .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
                 .addQueryParameter("sheetVersion", sheetVersion)
                 .build()
@@ -297,7 +310,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(SHEET_URL)
                 .newBuilder()
-                .addQueryParameter("userName", userName)
+                .addQueryParameter("userName", userNameProperty.get())
                 .build()
                 .toString();
 
@@ -312,7 +325,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(CELL_URL)
                 .newBuilder()
-                .addQueryParameter("userName", userName)
+                .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
                 .addQueryParameter("target", coordinate)
                 .build()
@@ -329,7 +342,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(RANGE_URL)
                 .newBuilder()
-                .addQueryParameter("userName", userName)
+                .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
                 .addQueryParameter("sheetVersion",String.valueOf(sheetVersion))
                 .addQueryParameter("rangeName", rangeName)
@@ -362,7 +375,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(REQUEST_PERMISSION_URL)
                 .newBuilder()
-                .addQueryParameter("userName", userName)
+                .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
                 .addQueryParameter("permissionType", requestedPermission.toString())
                 .build()
@@ -378,7 +391,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(RESPONSE_PERMISSION_URL)
                 .newBuilder()
-                .addQueryParameter("userName", userName)
+                .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
                 .addQueryParameter("userNameToConfirm", userNameToConfirm)
                 .build()
@@ -394,7 +407,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(RANGE_URL)
                 .newBuilder()
-                .addQueryParameter("userName", userName)
+                .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
                 //to check if it is really the most update sheet: itay.
                 .addQueryParameter("sheetVersion", sheetVersion)
@@ -437,7 +450,5 @@ public class MainController {
     public void uploadSheetToWorkspace(SheetDto sheetDto) {
 
     }
-
-
 
 }

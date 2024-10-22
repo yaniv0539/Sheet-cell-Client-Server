@@ -1,6 +1,7 @@
 package component.main.top;
 
 import component.main.MainController;
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
@@ -22,6 +23,10 @@ public class TopController {
 
     }
 
+    public void init() {
+        textFieldHelloGuest.textProperty().bind(Bindings.concat("Hello ", mainController.userNameProperty()));
+    }
+
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
     }
@@ -29,4 +34,6 @@ public class TopController {
     public void setTextFieldHelloGuest(String text) {
         textFieldHelloGuest.setText(text);
     }
+
+
 }
