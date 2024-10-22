@@ -9,10 +9,12 @@ import dto.CellDto;
 import dto.SheetDto;
 import dto.deserializer.CellDtoDeserializer;
 import dto.enums.PermissionType;
+import dto.enums.Status;
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -21,14 +23,18 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.FileChooser;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.function.Function;
 
-import static dto.enums.Status.PENDING;
+import static dto.enums.Status.*;
+import static utils.Constants.GSON_INSTANCE;
 
 public class DashBoardController {
 
@@ -87,11 +93,9 @@ public class DashBoardController {
     void viewSheetAction(ActionEvent event) {
         SheetTableLine selectedLine = sheetTableView.getSelectionModel().getSelectedItem();
         String sheetName = null;
-        PermissionType userPermission = null;
 
         if (selectedLine != null) {
             sheetName = selectedLine.getSheetName();
-            userPermission = PermissionType.valueOf(selectedLine.getPermission().toUpperCase());
         }
 
         mainController.getSheet(sheetName, new Callback() {
@@ -105,7 +109,7 @@ public class DashBoardController {
                 assert response.body() != null;
                 String jsonResponse = response.body().string();
 
-                if (response.code() != 200) {
+                if(response.code() != 200) {
                     Platform.runLater(()-> mainController.showAlertPopup(new Exception(jsonResponse),"loading sheet failed" ));
                 }
                 else {
@@ -123,18 +127,42 @@ public class DashBoardController {
 
     @FXML
     void confirmAction(ActionEvent event) {
-
+        confirmDenyOnAction(CONFIRMED);
 
     }
 
     @FXML
     void denyAction(ActionEvent event) {
-
+        confirmDenyOnAction(DENIED);
     }
 
     @FXML
     void loadSheetAction(ActionEvent event) {
+        //
+        String path = chooseFileFromFileChooser();
+        mainController.postXMLFile(path, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> mainController.showAlertPopup(new Exception(),"Loading file"));
+            }
 
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                String jsonResponse = response.body().string(); // Raw response
+                if(response.code() != 201){
+                    Platform.runLater(()-> mainController.showAlertPopup(new Exception(jsonResponse),"loading sheet failed"));
+                }
+                else{
+                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
+                    SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
+
+                    Platform.runLater(()->{
+                        mainController.uploadSheetToWorkspace(sheetDto); //prepare the scene
+                        mainController.switchToApp();
+                    });
+                }
+            }
+        });
     }
 
     @FXML
@@ -158,7 +186,11 @@ public class DashBoardController {
                 if(response.code() != 201) {
                     Platform.runLater(()-> System.out.println("(()->mainController.showPopupAlert(jsonString))"));
                 }
-                //nothing to do if all good.
+                else {
+                    //add line to request
+                    Platform.runLater(()-> requestTableLines.add(
+                            new RequestTableLine(mainController.getUserName(), sheetName,RequestedPermission,PENDING)));
+                }
             }
         });
     }
@@ -248,12 +280,57 @@ public class DashBoardController {
             toUnselect.setSelected(false);
         }
     }
+    private String chooseFileFromFileChooser(){
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select xml file");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("XML files", "*.xml"));
+        File selectedFile = fileChooser.showOpenDialog(mainController.getPrimaryStage());
+        if (selectedFile == null) {
+            return null;
+        }
+        return selectedFile.getAbsolutePath();
+    }
 
-    private void ConfirmDenyOnAction() {
+    private void confirmDenyOnAction(Status ownerAnswer) {
+        RequestTableLine selectedLine = requestTableView.getSelectionModel().getSelectedItem();
+        int index = requestTableView.getItems().indexOf(selectedLine);
+        String sheetName = null;
+        String userNameToConfirm = null;
+
+        if (selectedLine != null) {
+            sheetName = selectedLine.getSheetName();
+            userNameToConfirm = selectedLine.getUserName();
+        }
+        final String userNameToConfirmFinal = userNameToConfirm;
+
+        mainController.postPermissionForUserUpdate(mainController.getUserName(), sheetName, userNameToConfirm, new Callback(){
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(()-> mainController.showAlertPopup(new Exception(e.getMessage()),"unexpected error" ));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                String jsonResponse = response.body().string();
+
+                if(response.code() != 200){
+                    Platform.runLater(()-> mainController.showAlertPopup(new Exception(jsonResponse),"update permission for user"));
+                }
+                else{
+
+                    Platform.runLater(()->{
+                        updateUserStatus(index,ownerAnswer);//change in table view requests
+                    });
+                }
+            }
+        });
 
 
 
+    }
 
+    private void updateUserStatus(int index, Status ownerAnswer) {
+        requestTableLines.get(index).setRequestStatus(ownerAnswer);
     }
 
 }

@@ -31,4 +31,8 @@ public class RequestTableLine {
     public Status getRequestStatus() {
         return requestStatus;
     }
+
+    public void setRequestStatus(Status ownerAnswer) {
+        this.requestStatus = ownerAnswer;
+    }
 }
