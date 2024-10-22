@@ -27,28 +27,13 @@ public class SortServlet extends HttpServlet {
             Engine engine = ServletUtils.getEngine(getServletContext());
             Gson gson = ServletUtils.getGson(getServletContext());
 
-            String sheetName = request.getParameter(Constants.SHEET_NAME_PARAMETER);
+            String userName = ServletUtils.getUserName(request);
+            String sheetName = ServletUtils.getSheetName(request);
+            int sheetVersion = ServletUtils.getSheetVersion(request);
 
-            if (sheetName == null) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new RuntimeException("Sheet name is required");
-            }
+            String jsonBody = ServletUtils.getJsonBody(request);
 
-            String sheetVersion = request.getParameter(Constants.SHEET_VERSION_PARAMETER);
-
-            if (sheetVersion == null) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new RuntimeException("Sheet version is required");
-            }
-
-            StringBuilder jsonBody = new StringBuilder();
-            String line;
-
-            while ((line = request.getReader().readLine()) != null) {
-                jsonBody.append(line);
-            }
-
-            SortDto sortDto = gson.fromJson(jsonBody.toString(), SortDto.class);
+            SortDto sortDto = gson.fromJson(jsonBody, SortDto.class);
 
             BoundariesDto boundariesDto = sortDto.getBoundariesDto();
             CoordinateDto fromDto = boundariesDto.getFrom();
@@ -59,10 +44,9 @@ public class SortServlet extends HttpServlet {
 
             Boundaries boundaries = BoundariesFactory.createBoundaries(from, to);
             List<String> sortByColumns = sortDto.getSortByColumns();
-            int version = Integer.parseInt(sheetVersion);
 
-            List<List<CoordinateDto>> lists = engine.sortCellsInRange(sheetName, boundaries, sortByColumns, version);
-            SheetDto sortSheet = engine.sort(sheetName, boundaries, sortByColumns, version);
+            List<List<CoordinateDto>> lists = engine.sortCellsInRange(userName, sheetName, boundaries, sortByColumns, sheetVersion);
+            SheetDto sortSheet = engine.sort(userName, sheetName, boundaries, sortByColumns, sheetVersion);
 
             SortDesignDto sortDesignDto = new SortDesignDto(sortSheet, boundariesDto, lists);
 

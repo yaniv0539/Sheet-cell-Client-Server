@@ -29,28 +29,13 @@ public class FilterServlet extends HttpServlet {
             Engine engine = ServletUtils.getEngine(getServletContext());
             Gson gson = ServletUtils.getGson(getServletContext());
 
-            String sheetName = request.getParameter(Constants.SHEET_NAME_PARAMETER);
+            String userName = ServletUtils.getUserName(request);
+            String sheetName = ServletUtils.getSheetName(request);
+            int sheetVersion = ServletUtils.getSheetVersion(request);
 
-            if (sheetName == null) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new RuntimeException("Sheet name is required");
-            }
+            String jsonBody = ServletUtils.getJsonBody(request);
 
-            String sheetVersion = request.getParameter(Constants.SHEET_VERSION_PARAMETER);
-
-            if (sheetVersion == null) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new RuntimeException("Sheet version is required");
-            }
-
-            StringBuilder jsonBody = new StringBuilder();
-            String line;
-
-            while ((line = request.getReader().readLine()) != null) {
-                jsonBody.append(line);
-            }
-
-            FilterDto filterDto = gson.fromJson(jsonBody.toString(), FilterDto.class);
+            FilterDto filterDto = gson.fromJson(jsonBody, FilterDto.class);
 
             BoundariesDto boundariesDto = filterDto.getBoundariesDto();
             CoordinateDto fromDto = boundariesDto.getFrom();
@@ -62,10 +47,9 @@ public class FilterServlet extends HttpServlet {
             Boundaries boundaries = BoundariesFactory.createBoundaries(from, to);
             String filterByColumn = filterDto.getFilterByColumn();
             List<String> byValues = filterDto.getByValues();
-            int version = Integer.parseInt(sheetVersion);
 
-            Map<CoordinateDto, CoordinateDto> coordinateCoordinateMap = engine.filteredMap(sheetName, boundaries, filterByColumn, byValues, version);
-            SheetDto filterSheet = engine.filter(sheetName, boundaries, filterByColumn, byValues, version);
+            Map<CoordinateDto, CoordinateDto> coordinateCoordinateMap = engine.filteredMap(userName, sheetName, boundaries, filterByColumn, byValues, sheetVersion);
+            SheetDto filterSheet = engine.filter(userName, sheetName, boundaries, filterByColumn, byValues, sheetVersion);
 
             FilterDesignDto filterDesignDto = new FilterDesignDto(filterSheet, coordinateCoordinateMap, boundariesDto);
 

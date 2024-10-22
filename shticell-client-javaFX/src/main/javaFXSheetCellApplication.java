@@ -1,5 +1,6 @@
 package main;
 
+import component.main.MainController;
 import component.main.center.app.AppController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -14,7 +15,7 @@ import static utils.Constants.MAIN_PAGE_FXML_RESOURCE_LOCATION;
 
 public class javaFXSheetCellApplication extends Application {
 
-    private AppController appController;
+    private MainController mainController;
 
     @Override
     public void start(Stage primaryStage) {
@@ -28,7 +29,7 @@ public class javaFXSheetCellApplication extends Application {
             FXMLLoader fxmlLoader = new FXMLLoader();
             fxmlLoader.setLocation(loginPage);
             Parent root = fxmlLoader.load();
-            appController = fxmlLoader.getController();
+            mainController = fxmlLoader.getController();
 
             Scene scene = new Scene(root, 700, 600);
             primaryStage.setScene(scene);

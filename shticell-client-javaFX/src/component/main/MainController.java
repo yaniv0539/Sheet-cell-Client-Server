@@ -5,14 +5,18 @@ import component.main.center.dashboard.DashBoardController;
 import component.main.center.login.LoginController;
 import component.main.top.TopController;
 import dto.FilterDto;
+import dto.SheetDto;
 import dto.SortDto;
+import dto.enums.PermissionType;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.StageStyle;
@@ -34,10 +38,10 @@ public class MainController {
     private GridPane loginComponent;
     private LoginController loginComponentController;
 
-    private GridPane dashboardComponent;
+    private ScrollPane dashboardComponent;
     private DashBoardController dashboardComponentController;
 
-    private GridPane appComponent;
+    private BorderPane appComponent;
     private AppController appComponentController;
 
     @FXML
@@ -49,6 +53,7 @@ public class MainController {
     @FXML
     private SplitPane splitPaneApp;
 
+    private String userName;
 
     // Constructor
 
@@ -111,6 +116,16 @@ public class MainController {
         }
     }
 
+
+    // Getters
+
+    public String getUserName() {
+        return userName;
+    }
+
+
+    // Screen switchers
+
     private void setMainPanelTo(Parent pane) {
         mainPanel.getChildren().clear();
         mainPanel.getChildren().add(pane);
@@ -122,29 +137,43 @@ public class MainController {
 
     public void switchToLogin() {
         setMainPanelTo(loginComponent);
-        loginComponentController.setActive();
+//        loginComponentController.setActive();
     }
 
     public void switchToDashboard() {
         setMainPanelTo(dashboardComponent);
-        dashboardComponentController.setActive();
+//        dashboardComponentController.setActive();
     }
 
     public void switchToApp() {
         setMainPanelTo(appComponent);
-        appComponentController.setActive();
+//        appComponentController.setActive();
     }
 
 
     // Http requests to shticell servlet
 
     // Get sheet by version
-    public void getSheet(String name, String version, Callback callback) {
+    public void getSheet(String sheetName, String sheetVersion, Callback callback) {
         String finalUrl = HttpUrl
                 .parse(SHEET_URL)
                 .newBuilder()
-                .addQueryParameter("sheetName", name)
-                .addQueryParameter("sheetVersion",version)
+                .addQueryParameter("userName", userName)
+                .addQueryParameter("sheetName", sheetName)
+                .addQueryParameter("sheetVersion",sheetVersion)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsync(finalUrl, callback);
+    }
+
+    // Get sheet by last version
+    public void getSheet(String sheetName, Callback callback) {
+        String finalUrl = HttpUrl
+                .parse(SHEET_URL)
+                .newBuilder()
+                .addQueryParameter("userName", userName)
+                .addQueryParameter("sheetName", sheetName)
                 .build()
                 .toString();
 
@@ -157,6 +186,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(GET_BOUNDARIES_URL)
                 .newBuilder()
+                .addQueryParameter("userName", userName)
                 .addQueryParameter("sheetName", sheetName)
                 .addQueryParameter("boundaries", boundaries)
                 .build()
@@ -170,6 +200,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(UNIQUE_COL_VALUES_URL)
                 .newBuilder()
+                .addQueryParameter("userName", userName)
                 .addQueryParameter("sheetName", sheetName)
                 .addQueryParameter("sheetVersion", sheetVersion)
                 .addQueryParameter("column", column)
@@ -190,6 +221,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(FILTER_SHEET_URL)
                 .newBuilder()
+                .addQueryParameter("userName", userName)
                 .addQueryParameter("sheetName",sheetName)
                 .addQueryParameter("sheetVersion", sheetVersion)
                 .build()
@@ -203,6 +235,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(GET_NUMERIC_COLUMNS_IN_RANGE_URL)
                 .newBuilder()
+                .addQueryParameter("userName", userName)
                 .addQueryParameter("sheetName", sheetName)
                 .addQueryParameter("sheetVersion", sheetVersion)
                 .addQueryParameter("boundaries", boundaries)
@@ -220,6 +253,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(SORT_SHEET_URL)
                 .newBuilder()
+                .addQueryParameter("userName", userName)
                 .addQueryParameter("sheetName", sheetName)
                 .addQueryParameter("sheetVersion", sheetVersion)
                 .build()
@@ -247,7 +281,14 @@ public class MainController {
                 .addFormDataPart("sheet",f.getName(),RequestBody.create(f, MediaType.parse("text/plain")))
                 .build();
 
-        HttpClientUtil.runAsyncPost(SHEET_URL, body, callback);
+        String finalUrl = HttpUrl
+                .parse(SHEET_URL)
+                .newBuilder()
+                .addQueryParameter("userName", userName)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsyncPost(finalUrl, body, callback);
     }
 
     // Post new cell to specific sheet
@@ -258,6 +299,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(CELL_URL)
                 .newBuilder()
+                .addQueryParameter("userName", userName)
                 .addQueryParameter("sheetName", sheetName)
                 .addQueryParameter("target", coordinate)
                 .build()
@@ -274,6 +316,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(RANGE_URL)
                 .newBuilder()
+                .addQueryParameter("userName", userName)
                 .addQueryParameter("sheetName", sheetName)
                 .addQueryParameter("sheetVersion",String.valueOf(sheetVersion))
                 .addQueryParameter("rangeName", rangeName)
@@ -299,6 +342,22 @@ public class MainController {
         HttpClientUtil.runAsyncPost(finalUrl, body, callback);
     }
 
+    // Post new permission for specific sheet
+    public void postPermission(String sheetName, PermissionType requestedPermission, Callback callback) {
+        RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
+
+        String finalUrl = HttpUrl
+                .parse(PERMISSIONS_URL)
+                .newBuilder()
+                .addQueryParameter("userName", userName)
+                .addQueryParameter("sheetName", sheetName)
+                .addQueryParameter("permissionType", requestedPermission.toString())
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsyncPost(finalUrl, body, callback);
+    }
+
     // Delete range in a specific sheet
     public void deleteRange(String sheetName, String sheetVersion, String rangeName, Callback callback) {
 
@@ -306,6 +365,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(RANGE_URL)
                 .newBuilder()
+                .addQueryParameter("userName", userName)
                 .addQueryParameter("sheetName", sheetName)
                 //to check if it is really the most update sheet: itay.
                 .addQueryParameter("sheetVersion", sheetVersion)
@@ -315,12 +375,6 @@ public class MainController {
 
         HttpClientUtil.runAsyncDelete(finalUrl, body, callback);
     }
-
-
-
-
-
-
 
 
     //error function
@@ -351,8 +405,7 @@ public class MainController {
         alert.showAndWait();  // Display the popup
     }
 
+    public void uploadSheetToWorkspace(SheetDto sheetDto) {
 
-
-
-
+    }
 }

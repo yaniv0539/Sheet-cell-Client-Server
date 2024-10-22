@@ -174,6 +174,7 @@ public class RangesController {
 
                 @Override
                 public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                    assert response.body() != null;
                     String jsonResponse = response.body().string();
 
                     if (response.code() != 201) {
