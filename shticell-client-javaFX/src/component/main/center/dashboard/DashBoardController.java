@@ -266,7 +266,7 @@ public class DashBoardController {
         writerCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> checkBoxPermissionListener(PermissionType.WRITER,redearCheckBox,newValue));
     }
 
-    //set main controller
+    //set main controller.
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
     }
