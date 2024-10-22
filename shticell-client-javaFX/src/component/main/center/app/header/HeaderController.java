@@ -174,31 +174,31 @@ public class HeaderController {
 
         @FXML
         public void buttonUploadXmlFileAction(ActionEvent event) {
-                FileChooser fileChooser = new FileChooser();
-                fileChooser.setTitle("Select xml file");
-                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("XML files", "*.xml"));
-                File selectedFile = fileChooser.showOpenDialog(mainController.getPrimaryStage());
-                if (selectedFile == null) {
-                        return;
-                }
-                selectedFileProperty = new SimpleStringProperty(selectedFile.getAbsolutePath());
-                textFieldFileName.textProperty().bind(selectedFileProperty);
-                mainController.uploadXml(selectedFileProperty.get(), new Callback() {
-                        @Override
-                        public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                                System.err.println("Failed to upload file: " + e.getMessage());
-                                Platform.runLater(() -> mainController.showAlertPopup(new Exception(),"Loading file"));
-                        }
-
-                        @Override
-                        public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                                assert response.body() != null;
-                                String jsonResponse = response.body().string(); // Raw response
-                                System.out.println(jsonResponse);
-                                SheetDto sheetDto = GSON_INSTANCE.fromJson(jsonResponse, SheetDto.class);
-                                Platform.runLater(() -> mainController.onFinishLoadingFile(sheetDto));
-                        }
-                });
+//                FileChooser fileChooser = new FileChooser();
+//                fileChooser.setTitle("Select xml file");
+//                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("XML files", "*.xml"));
+//                File selectedFile = fileChooser.showOpenDialog(mainController.getPrimaryStage());
+//                if (selectedFile == null) {
+//                        return;
+//                }
+//                selectedFileProperty = new SimpleStringProperty(selectedFile.getAbsolutePath());
+//                textFieldFileName.textProperty().bind(selectedFileProperty);
+//                mainController.uploadXml(selectedFileProperty.get(), new Callback() {
+//                        @Override
+//                        public void onFailure(@NotNull Call call, @NotNull IOException e) {
+//                                System.err.println("Failed to upload file: " + e.getMessage());
+//                                Platform.runLater(() -> mainController.showAlertPopup(new Exception(),"Loading file"));
+//                        }
+//
+//                        @Override
+//                        public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+//                                assert response.body() != null;
+//                                String jsonResponse = response.body().string(); // Raw response
+//                                System.out.println(jsonResponse);
+//                                SheetDto sheetDto = GSON_INSTANCE.fromJson(jsonResponse, SheetDto.class);
+//                                Platform.runLater(() -> mainController.onFinishLoadingFile(sheetDto));
+//                        }
+//                });
         }
 
         @FXML //no need
