@@ -23,10 +23,12 @@ public class CellServlet extends HttpServlet {
             Engine engine = ServletUtils.getEngine(getServletContext());
             Gson gson = ServletUtils.getGson(getServletContext());
 
-            String sheetName = request.getParameter(Constants.SHEET_NAME_PARAMETER);
-            SheetDto sheetDTO = engine.getSheetDTO(sheetName);
+            String userName = ServletUtils.getUserName(request);
+            String sheetName = ServletUtils.getSheetName(request);
 
-            if (sheetName == null || sheetDTO == null) {
+            SheetDto sheetDTO = engine.getSheetDTO(userName, sheetName);
+
+            if (sheetDTO == null) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 throw new ServletException("Invalid sheet name");
             }
@@ -56,21 +58,15 @@ public class CellServlet extends HttpServlet {
             Engine engine = ServletUtils.getEngine(getServletContext());
             Gson gson = ServletUtils.getGson(getServletContext());
 
-            String sheetName = request.getParameter(Constants.SHEET_NAME_PARAMETER);
+            String userName = ServletUtils.getSheetName(request);
+            String sheetName = ServletUtils.getSheetName(request);
+            String cellName = ServletUtils.getCellName(request);
 
-            String cellName = request.getParameter(Constants.CELL_NAME_PARAMETER);
+            String jsonBody = ServletUtils.getJsonBody(request);
 
-            StringBuilder body = new StringBuilder();
-            String line;
+            engine.updateCell(userName, sheetName, cellName, jsonBody);
+            SheetDto sheetDTO = engine.getSheetDTO(userName, sheetName);
 
-            try (BufferedReader reader = request.getReader()) {
-                while ((line = reader.readLine()) != null) {
-                    body.append(line);
-                }
-            }
-
-            engine.updateCell(sheetName, cellName, body.toString());
-            SheetDto sheetDTO = engine.getSheetDTO(sheetName);
             response.getWriter().print(gson.toJson(sheetDTO));
             response.setStatus(HttpServletResponse.SC_CREATED);
         } catch (Exception e) {

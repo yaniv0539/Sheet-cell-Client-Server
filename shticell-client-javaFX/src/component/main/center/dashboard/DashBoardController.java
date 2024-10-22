@@ -1,8 +1,13 @@
 package component.main.center.dashboard;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import component.main.MainController;
 import component.main.center.dashboard.model.RequestTableLine;
 import component.main.center.dashboard.model.SheetTableLine;
+import dto.CellDto;
+import dto.SheetDto;
+import dto.deserializer.CellDtoDeserializer;
 import dto.enums.PermissionType;
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
@@ -28,7 +33,6 @@ import static dto.enums.Status.PENDING;
 public class DashBoardController {
 
     MainController mainController;
-    String userName;
     PermissionType RequestedPermission;
 
     BooleanBinding disableConfirmDenyButton;
@@ -89,9 +93,8 @@ public class DashBoardController {
             sheetName = selectedLine.getSheetName();
             userPermission = PermissionType.valueOf(selectedLine.getPermission().toUpperCase());
         }
-        final String sheetNameFinal = sheetName;
 
-        mainController.postSelectedSheetFromDashboard(userName,sheetName,userPermission,new Callback(){
+        mainController.getSheet(sheetName, new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 Platform.runLater(()-> mainController.showAlertPopup(new Exception(e.getMessage()),"unexpected error" ));
@@ -99,14 +102,18 @@ public class DashBoardController {
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                String JsonResponse = response.body().string();
+                assert response.body() != null;
+                String jsonResponse = response.body().string();
 
-                if(response.code() != 200){
-                    Platform.runLater(()-> mainController.showAlertPopup(new Exception(JsonResponse),"loading sheet failed" ));
+                if (response.code() != 200) {
+                    Platform.runLater(()-> mainController.showAlertPopup(new Exception(jsonResponse),"loading sheet failed" ));
                 }
-                else{
+                else {
+                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
+                    SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
+
                     Platform.runLater(()->{
-                        mainController.uploadSheetToWorkArea(sheetNameFinal); //prepare the scene
+                        mainController.uploadSheetToWorkspace(sheetDto); //prepare the scene
                         mainController.switchToApp();
                     });
                 }
@@ -137,7 +144,7 @@ public class DashBoardController {
         String sheetName = sheetTableLine.getSheetName();
 
         //to complete function in main
-        MainController.postRequest(sheetName,userName, RequestedPermission,new Callback(){
+        mainController.postPermission(sheetName, RequestedPermission, new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 Platform.runLater(()-> System.out.println("(()->mainController.showPopupAlert())"));
@@ -145,7 +152,9 @@ public class DashBoardController {
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                assert response.body() != null;
                 String jsonString = response.body().string();
+
                 if(response.code() != 201) {
                     Platform.runLater(()-> System.out.println("(()->mainController.showPopupAlert(jsonString))"));
                 }
@@ -185,8 +194,8 @@ public class DashBoardController {
                 .or(redearCheckBox.selectedProperty().not().and(writerCheckBox.selectedProperty().not()));
 
         disableConfirmDenyButton = requestTableView.getSelectionModel().selectedItemProperty().isNull()
-                .or(requestTableView.getSelectionModel().selectedItemProperty().isNotNull()
-                        .and(new SimpleBooleanProperty(requestTableView.getSelectionModel().getSelectedItem().getRequestStatus() != PENDING)))
+                .or(requestTableView.getSelectionModel().selectedItemProperty().isNotNull())
+//                        .and(new SimpleBooleanProperty(requestTableView.getSelectionModel().getSelectedItem().getRequestStatus() != PENDING)))
                 .or(sheetTableView.focusedProperty());
 
 

@@ -29,28 +29,12 @@ public class NumericColumnsServlet  extends HttpServlet {
             Engine engine = ServletUtils.getEngine(getServletContext());
             Gson gson = ServletUtils.getGson(getServletContext());
 
-            String sheetName = request.getParameter(Constants.SHEET_NAME_PARAMETER);
+            String userName = ServletUtils.getUserName(request);
+            String sheetName = ServletUtils.getSheetName(request);
+            int sheetVersion = ServletUtils.getSheetVersion(request);
+            String boundaries = ServletUtils.getBoundaries(request);
 
-            if (sheetName == null) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new RuntimeException("Sheet name is required");
-            }
-
-            String sheetVersion = request.getParameter(Constants.SHEET_VERSION_PARAMETER);
-
-            if (sheetVersion == null) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new RuntimeException("Range name is required");
-            }
-
-            String boundaries = request.getParameter(Constants.RANGE_BOUNDARIES_PARAMETER);
-
-            if (boundaries == null) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new RuntimeException("Boundaries name is required");
-            }
-
-            BoundariesDto boundariesDto = engine.getBoundaries(sheetName, boundaries);
+            BoundariesDto boundariesDto = engine.getBoundaries(userName, sheetName, boundaries);
             CoordinateDto fromDto = boundariesDto.getFrom();
             CoordinateDto toDto = boundariesDto.getTo();
 
@@ -59,9 +43,7 @@ public class NumericColumnsServlet  extends HttpServlet {
 
             Boundaries boundaries1 = BoundariesFactory.createBoundaries(from, to);
 
-            int version = Integer.parseInt(sheetVersion);
-
-            List<String> numericColumnsInRange = engine.getNumericColumnsInRange(sheetName, boundaries1, version);
+            List<String> numericColumnsInRange = engine.getNumericColumnsInRange(userName, sheetName, boundaries1, sheetVersion);
 
             SortDto sortDto = new SortDto(boundariesDto, numericColumnsInRange);
 

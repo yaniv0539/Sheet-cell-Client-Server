@@ -1,10 +1,10 @@
-package servlets.ranges;
+package servlets.permissions;
 
 import com.google.gson.Gson;
 import dto.SheetDto;
+import dto.enums.PermissionType;
 import engine.api.Engine;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -12,9 +12,7 @@ import utils.ServletUtils;
 
 import java.io.IOException;
 
-@WebServlet(name = "RangeServlet", urlPatterns = "/sheet/ranges")
-public class RangeServlet extends HttpServlet {
-
+public class PermissionServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
@@ -23,10 +21,9 @@ public class RangeServlet extends HttpServlet {
 
             String userName = ServletUtils.getSheetName(request);
             String sheetName = ServletUtils.getSheetName(request);
-            String rangeName = ServletUtils.getRangeName(request);
-            String rangeValue = ServletUtils.getBoundaries(request);
+            PermissionType permissionType = ServletUtils.getPermissionType(request);
 
-            engine.addRange(userName, sheetName, rangeName, rangeValue);
+            // TODO: Call the right method from the engine.
 
             SheetDto sheetDTO = engine.getSheetDTO(userName, sheetName);
 
@@ -35,25 +32,6 @@ public class RangeServlet extends HttpServlet {
 
             response.getWriter().print(gson.toJson(sheetDTO));
             response.setStatus(HttpServletResponse.SC_CREATED);
-        } catch (Exception e) {
-            response.setContentType("text/plain");
-            response.getWriter().println(e.getMessage());
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @Override
-    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        try {
-            Engine engine = ServletUtils.getEngine(getServletContext());
-
-            String userName = ServletUtils.getUserName(request);
-            String sheetName = ServletUtils.getSheetName(request);
-            String rangeName = ServletUtils.getRangeName(request);
-
-            engine.deleteRange(userName, sheetName, rangeName);
-
-            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
         } catch (Exception e) {
             response.setContentType("text/plain");
             response.getWriter().println(e.getMessage());

@@ -26,21 +26,16 @@ public class SheetServlet extends HttpServlet {
             Engine engine = ServletUtils.getEngine(getServletContext());
             Gson gson = ServletUtils.getGson(getServletContext());
 
-            String sheetName = request.getParameter(Constants.SHEET_NAME_PARAMETER);
-
-            if (sheetName == null || sheetName.isEmpty()) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new RuntimeException("Sheet name is required");
-            }
-
-            String sheetVersion = request.getParameter(Constants.SHEET_VERSION_PARAMETER);
+            String userName = ServletUtils.getUserName(request);
+            String sheetName = ServletUtils.getSheetName(request);
+            int sheetVersion = ServletUtils.getSheetVersion(request);
 
             SheetDto sheetDTO;
 
-            if (sheetVersion == null || sheetVersion.isEmpty()) {
-                sheetDTO = engine.getSheetDTO(sheetName);
+            if (sheetVersion == 0) {
+                sheetDTO = engine.getSheetDTO(userName, sheetName);
             } else {
-                sheetDTO = engine.getSheetDTO(sheetName, Integer.parseInt(sheetVersion));
+                sheetDTO = engine.getSheetDTO(userName, sheetName, sheetVersion);
             }
 
             response.setContentType("application/json");
@@ -59,6 +54,8 @@ public class SheetServlet extends HttpServlet {
             Engine engine = ServletUtils.getEngine(getServletContext());
             Gson gson = ServletUtils.getGson(getServletContext());
 
+            String userName = ServletUtils.getUserName(request);
+
             Collection<Part> parts = request.getParts();
 
             if (parts.size() != 1) {
@@ -67,11 +64,13 @@ public class SheetServlet extends HttpServlet {
             }
 
             for (Part part : parts) {
-                engine.addNewSheet(part.getInputStream());
+                engine.addNewSheet(userName, part.getInputStream());
             }
 
+            // TODO: Change from beginner
+            SheetDto sheetDTO = engine.getSheetDTO(userName, "beginner");
+
             response.setContentType("text/plain");
-            SheetDto sheetDTO = engine.getSheetDTO("beginner");
             response.getWriter().println(gson.toJson(sheetDTO));
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (Exception e) {

@@ -3,7 +3,8 @@ package engine.impl;
 import dto.*;
 import engine.api.Engine;
 import engine.jaxb.parser.STLSheetToSheet;
-import engine.permissions.PermissionManager;
+import engine.permissions.PermissionManagerImpl;
+import engine.permissions.api.PermissionManager;
 import engine.versions.api.VersionManager;
 import engine.versions.impl.VersionManagerImpl;
 import jakarta.xml.bind.JAXBContext;
@@ -48,35 +49,32 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public SheetDto getSheetDTO(String sheetName) {
-        VersionManager versionManager = this.versionManagers.get(sheetName);
+    public SheetDto getSheetDTO(String userName, String sheetName) {
+        VersionManager versionManager = getVersionManager(sheetName);
+        PermissionManager permissionManager = getPermissionManager(sheetName);
 
-        if (versionManager == null) {
-            throw new RuntimeException("No version manager found for sheet " + sheetName);
-        }
+        canRead(permissionManager, userName, sheetName);
 
         return new SheetDto(versionManager.getLastVersion());
     }
 
     @Override
-    public SheetDto getSheetDTO(String sheetName, int sheetVersion) {
+    public SheetDto getSheetDTO(String userName, String sheetName, int sheetVersion) {
         VersionManager versionManager = this.versionManagers.get(sheetName);
+        PermissionManager permissionManager = getPermissionManager(sheetName);
+        Sheet sheet = versionManager.getVersion(sheetVersion);
 
-        if (versionManager == null) {
-            throw new RuntimeException("No version manager found for sheet " + sheetName);
-        }
+        canRead(permissionManager, userName, sheetName);
 
-        SheetGetters sheetGetters = versionManager.getVersion(sheetVersion);
-
-        if (sheetGetters == null) {
+        if (sheet == null) {
             throw new RuntimeException("Sheet " + sheetName + " not found");
         }
 
-        return new SheetDto(sheetGetters);
+        return new SheetDto(sheet);
     }
 
     @Override
-    public void addNewSheet(InputStream inputStream) {
+    public void addNewSheet(String userName, InputStream inputStream) {
         try {
             STLSheet stlSheet = deserializeFrom(inputStream);
             Sheet sheet = STLSheetToSheet.generate(stlSheet);
@@ -87,8 +85,9 @@ public class EngineImpl implements Engine, Serializable {
             }
 
             VersionManager versionManager = this.versionManagers.computeIfAbsent(sheet.getName(), k -> VersionManagerImpl.create());
-
             versionManager.init(sheet);
+
+            this.permissionManagers.computeIfAbsent(sheet.getName(), k -> PermissionManagerImpl.create(userName));
 
         } catch (JAXBException e) {
             throw new RuntimeException("Failed to read XML file", e);
@@ -96,13 +95,12 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public void updateCell(String sheetName, String cellName, String cellValue) {
+    public void updateCell(String userName, String sheetName, String cellName, String cellValue) {
 
-        VersionManager versionManager = versionManagers.get(sheetName);
+        VersionManager versionManager = getVersionManager(sheetName);
+        PermissionManager permissionManager = getPermissionManager(sheetName);
 
-        if (versionManager == null) {
-            throw new RuntimeException("No version manager found for sheet " + sheetName);
-        }
+        canWrite(permissionManager, userName, sheetName);
 
         versionManager.makeNewVersion();
 
@@ -115,13 +113,12 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public SheetDto filter(String sheetName, Boundaries boundaries, String column, List<String> values, int version) {
+    public SheetDto filter(String userName, String sheetName, Boundaries boundaries, String column, List<String> values, int version) {
 
-        VersionManager versionManager = this.versionManagers.get(sheetName);
+        VersionManager versionManager = getVersionManager(sheetName);
+        PermissionManager permissionManager = getPermissionManager(sheetName);
 
-        if (versionManager == null) {
-            throw new RuntimeException("No version manager found for sheet " + sheetName);
-        }
+        canRead(permissionManager, userName, sheetName);
 
         Coordinate to = boundaries.getTo();
         Coordinate from = boundaries.getFrom();
@@ -155,7 +152,7 @@ public class EngineImpl implements Engine, Serializable {
         }
 
 
-        //todo:itay filter version for exrecise demends.
+        // Itay's filter version for exercise demands.
         sheetToFilter
                 .getActiveCells()
                 .keySet()
@@ -175,7 +172,7 @@ public class EngineImpl implements Engine, Serializable {
                     }
                 });
 
-        //todo: this is yaniv version works like Gsheet.
+        // Yaniv's version works like Gsheet.
 //        this.sheet
 //                .getActiveCells()
 //                .keySet()
@@ -216,9 +213,12 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public SheetDto sort(String sheetName, Boundaries boundaries, List<String> columns, int version) {
+    public SheetDto sort(String userName, String sheetName, Boundaries boundaries, List<String> columns, int version) {
 
-        VersionManager versionManager = this.versionManagers.get(sheetName);
+        VersionManager versionManager = getVersionManager(sheetName);
+        PermissionManager permissionManager = getPermissionManager(sheetName);
+
+        canRead(permissionManager, userName, sheetName);
 
         Coordinate from = boundaries.getFrom();
         Coordinate to = boundaries.getTo();
@@ -277,9 +277,12 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public List<List<CoordinateDto>> sortCellsInRange(String sheetName, Boundaries boundaries, List<String> columns, int version) {
+    public List<List<CoordinateDto>> sortCellsInRange(String userName, String sheetName, Boundaries boundaries, List<String> columns, int version) {
 
-        VersionManager versionManager = this.versionManagers.get(sheetName);
+        VersionManager versionManager = getVersionManager(sheetName);
+        PermissionManager permissionManager = getPermissionManager(sheetName);
+
+        canRead(permissionManager, userName, sheetName);
 
         Coordinate from = boundaries.getFrom();
         Coordinate to = boundaries.getTo();
@@ -306,13 +309,12 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public List<String> getNumericColumnsInRange(String sheetName, Boundaries boundaries, int version) {
+    public List<String> getNumericColumnsInRange(String userName, String sheetName, Boundaries boundaries, int version) {
 
-        VersionManager versionManager = this.versionManagers.get(sheetName);
+        VersionManager versionManager = getVersionManager(sheetName);
+        PermissionManager permissionManager = getPermissionManager(sheetName);
 
-        if (versionManager == null) {
-            throw new IllegalArgumentException("Sheet " + sheetName + " does not exist");
-        }
+        canRead(permissionManager, userName, sheetName);
 
         Sheet lastVersion = versionManager.getLastVersion();
 
@@ -330,13 +332,12 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public Map<CoordinateDto, CoordinateDto> filteredMap(String sheetName, Boundaries boundariesToFilter, String filteringByColumn, List<String> filteringByValues, int version) {
+    public Map<CoordinateDto, CoordinateDto> filteredMap(String userName, String sheetName, Boundaries boundariesToFilter, String filteringByColumn, List<String> filteringByValues, int version) {
 
-        VersionManager versionManager = this.versionManagers.get(sheetName);
+        VersionManager versionManager = getVersionManager(sheetName);
+        PermissionManager permissionManager = getPermissionManager(sheetName);
 
-        if (versionManager == null) {
-            throw new IllegalArgumentException("Sheet " + sheetName + " does not have a version manager");
-        }
+        canRead(permissionManager, userName, sheetName);
 
         Sheet sheet = versionManager.getVersion(version);
 
@@ -376,12 +377,11 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public List<String> getColumnUniqueValuesInRange(String sheetName, int column, int startRow, int endRow, int version) {
-        VersionManager versionManager = this.versionManagers.get(sheetName);
+    public List<String> getColumnUniqueValuesInRange(String userName, String sheetName, int column, int startRow, int endRow, int version) {
+        VersionManager versionManager = getVersionManager(sheetName);
+        PermissionManager permissionManager = getPermissionManager(sheetName);
 
-        if (versionManager == null) {
-            throw new IllegalArgumentException("Sheet " + sheetName + " does not have a version manager");
-        }
+        canRead(permissionManager, userName, sheetName);
 
         Sheet sheet = versionManager.getVersion(version);
 
@@ -393,13 +393,18 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public void addRange(String sheetName, String name, String boundariesString) {
-        VersionManager versionManager = this.versionManagers.get(sheetName);
+    public void addRange(String userName, String sheetName, String name, String boundariesString) {
+        VersionManager versionManager = getVersionManager(sheetName);
+        PermissionManager permissionManager = getPermissionManager(sheetName);
+
+        canWrite(permissionManager, userName, sheetName);
+
         versionManager.makeNewVersion();
+
         try {
             Boundaries boundaries = BoundariesFactory.toBoundaries(boundariesString);
             boolean sheetChanged = versionManager.getLastVersion().addRange(name, boundaries);
-            if(!sheetChanged)
+            if (!sheetChanged)
             {
                 versionManager.deleteLastVersion();
                 versionManager.getLastVersion().addRange(name, boundaries);
@@ -411,13 +416,12 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public void deleteRange(String sheetName, String rangeName) {
+    public void deleteRange(String userName, String sheetName, String rangeName) {
 
-        VersionManager versionManager = this.versionManagers.get(sheetName);
+        VersionManager versionManager = getVersionManager(sheetName);
+        PermissionManager permissionManager = getPermissionManager(sheetName);
 
-        if (versionManager == null) {
-            throw new RuntimeException("No version found for sheet " + sheetName);
-        }
+        canWrite(permissionManager, userName, sheetName);
 
         Sheet lastVersion = versionManager.getLastVersion();
         RangeGetters range = lastVersion.getRange(rangeName);
@@ -431,7 +435,7 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public BoundariesDto getBoundaries(String sheetName, String boundaries) {
+    public BoundariesDto getBoundaries(String userName, String sheetName, String boundaries) {
 
         if (!BoundariesFactory.isValidBoundariesFormat(boundaries)) {
             throw new RuntimeException("Invalid boundaries");
@@ -439,11 +443,10 @@ public class EngineImpl implements Engine, Serializable {
 
         Boundaries boundaries1 = BoundariesFactory.toBoundaries(boundaries);
 
-        VersionManager versionManager = this.versionManagers.get(sheetName);
+        VersionManager versionManager = getVersionManager(sheetName);
+        PermissionManager permissionManager = getPermissionManager(sheetName);
 
-        if (versionManager == null) {
-            throw new RuntimeException("No version found for sheet " + sheetName);
-        }
+        canRead(permissionManager, userName, sheetName);
 
         Sheet lastVersion = versionManager.getLastVersion();
 
@@ -456,18 +459,17 @@ public class EngineImpl implements Engine, Serializable {
         if(!lastVersion.isCoordinateInBoundaries(boundaries1.getFrom())) {
             throw new RuntimeException("coordinate " + boundaries1.getFrom() + "out of boundaries");
         }
-        if(!CoordinateFactory.isGreaterThen(boundaries1.getTo(),boundaries1.getFrom()))
-        {
+        if(!CoordinateFactory.isGreaterThen(boundaries1.getTo(),boundaries1.getFrom())) {
             throw new RuntimeException("coordinate " + boundaries1.getFrom() + " > " + boundaries1.getTo());
         }
 
         return new BoundariesDto(boundaries1);
     }
 
-    @Override
-    public PermissionsDto getPermissions() {
-        return new PermissionsDto(this.permissionManagers);
-    }
+//    @Override
+//    public PermissionsDto getPermissions() {
+//        return new PermissionsDto(this.permissionManagers);
+//    }
 
     @Override
     public boolean isUserHasPermission(String userName, String sheetName, String permission) {
@@ -544,6 +546,38 @@ public class EngineImpl implements Engine, Serializable {
         } catch (Exception e) {
             // deal with the runtime error that was discovered as part of invocation
             throw new RuntimeException(e);
+        }
+    }
+
+    private VersionManager getVersionManager(String sheetName) {
+        VersionManager versionManager = this.versionManagers.get(sheetName);
+
+        if (versionManager == null) {
+            throw new RuntimeException("No version manager found for sheet " + sheetName);
+        }
+
+        return versionManager;
+    }
+
+    private PermissionManager getPermissionManager(String sheetName) {
+        PermissionManager permissionManager = this.permissionManagers.get(sheetName);
+
+        if (permissionManager == null) {
+            throw new RuntimeException("No permission manager found for sheet " + sheetName);
+        }
+
+        return permissionManager;
+    }
+
+    private void canRead(PermissionManager permissionManager, String userName, String sheetName) {
+        if (!permissionManager.canRead(userName)) {
+            throw new RuntimeException("Permission manager is not allowed to read sheet " + sheetName);
+        }
+    }
+
+    private void canWrite(PermissionManager permissionManager, String userName, String sheetName) {
+        if (!permissionManager.canWrite(userName)) {
+            throw new RuntimeException("Permission manager is not allowed to write sheet " + sheetName);
         }
     }
 }

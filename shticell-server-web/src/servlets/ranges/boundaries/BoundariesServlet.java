@@ -24,21 +24,11 @@ public class BoundariesServlet extends HttpServlet {
             Engine engine = ServletUtils.getEngine(getServletContext());
             Gson gson = ServletUtils.getGson(getServletContext());
 
-            String sheetName = request.getParameter(Constants.SHEET_NAME_PARAMETER);
+            String userName = ServletUtils.getUserName(request);
+            String sheetName = ServletUtils.getSheetName(request);
+            String boundaries = ServletUtils.getBoundaries(request);
 
-            if (sheetName == null) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new RuntimeException("Sheet name is required");
-            }
-
-            String boundaries = request.getParameter(Constants.RANGE_BOUNDARIES_PARAMETER);
-
-            if (boundaries == null) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new RuntimeException("Boundaries is required");
-            }
-
-            BoundariesDto boundariesDto = engine.getBoundaries(sheetName, boundaries);
+            BoundariesDto boundariesDto = engine.getBoundaries(userName, sheetName, boundaries);
 
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");

@@ -24,47 +24,14 @@ public class UniqueColumnsServlet extends HttpServlet {
             Engine engine = ServletUtils.getEngine(getServletContext());
             Gson gson = ServletUtils.getGson(getServletContext());
 
-            String sheetName = request.getParameter(Constants.SHEET_NAME_PARAMETER);
+            String userName = ServletUtils.getUserName(request);
+            String sheetName = ServletUtils.getSheetName(request);
+            int sheetVersion = ServletUtils.getSheetVersion(request);
+            int column = ServletUtils.getColumn(request);
+            int startRow = ServletUtils.getStartRow(request);
+            int endRow = ServletUtils.getEndRow(request);
 
-            if (sheetName == null) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new RuntimeException("Sheet name is required");
-            }
-
-            String sheetVersion = request.getParameter(Constants.SHEET_VERSION_PARAMETER);
-
-            if (sheetVersion == null) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new RuntimeException("Range name is required");
-            }
-
-            String column = request.getParameter(Constants.SHEET_COLUMN_PARAMETER);
-
-            if (column == null) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new RuntimeException("Column name is required");
-            }
-
-            String startRow = request.getParameter(Constants.SHEET_START_ROW_PARAMETER);
-
-            if (startRow == null) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new RuntimeException("Start row is required");
-            }
-
-            String endRow = request.getParameter(Constants.SHEET_END_ROW_PARAMETER);
-
-            if (endRow == null) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new RuntimeException("End row is required");
-            }
-
-            List<String> columnUniqueValuesInRange = engine.getColumnUniqueValuesInRange(
-                    sheetName,
-                    Integer.parseInt(column),
-                    Integer.parseInt(startRow),
-                    Integer.parseInt(endRow),
-                    Integer.parseInt(sheetVersion));
+            List<String> columnUniqueValuesInRange = engine.getColumnUniqueValuesInRange(userName, sheetName, sheetVersion, column, startRow, endRow);
 
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
