@@ -7,6 +7,7 @@ import sheet.range.boundaries.api.Boundaries;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface Engine {
 
@@ -31,36 +32,34 @@ public interface Engine {
                 List<List<CoordinateDto>> sortCellsInRange(String userName, String sheetName, Boundaries boundaries, List<String> column, int version);
                 List<String> getNumericColumnsInRange(String userName, String sheetName, Boundaries boundaries, int version);
 
-        // Cells:
-
-                // Post Functions
-                void updateCell(String userName, String sheetName, String cellName, String cellValue);
-
-        // Ranges:
-
-                // Post Functions
-                void addRange(String userName, String sheetName, String rangeName, String boundariesString);
-
-                // Delete Functions
-                void deleteRange(String userName, String sheetName, String name);
-
-        // Boundaries:
-
-                // Get Functions
-                BoundariesDto getBoundaries(String userName, String sheetName, String boundaries);
-
         // Permissions:
 
                 // Get Functions
-//                PermissionsDto getPermissions();
+                PermissionsDto getSheetPermissions(String sheetName);
                 boolean isUserHasPermission(String userName, String sheetName, String permission);
 
-                // Post Functions
+// Cells:
 
-        // Users:
+        // Post Functions
+        void updateCell(String userName, String sheetName, String cellName, String cellValue);
 
-                void addUser(String userName);
+// Ranges:
 
+        // Post Functions
+        void addRange(String userName, String sheetName, String rangeName, String boundariesString);
 
+        // Delete Functions
+        void deleteRange(String userName, String sheetName, String name);
 
+// Boundaries:
+
+        // Get Functions
+        BoundariesDto getBoundaries(String userName, String sheetName, String boundaries);
+
+        // Post Functions
+
+// Users:
+
+        Set<String> getUsers();
+        void addUser(String userName);
 }

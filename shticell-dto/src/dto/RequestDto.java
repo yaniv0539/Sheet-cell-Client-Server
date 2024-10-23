@@ -2,24 +2,19 @@ package dto;
 
 import dto.enums.PermissionType;
 import dto.enums.Status;
+import engine.permissions.request.Request;
 
 public class RequestDto {
-    private PermissionType requestType;
-    private Status status;
-    private String userName;
+    public String requesterName;
+    public PermissionType permissionType;
+    public Status status;
 
+    public RequestDto() {}
 
-    public RequestDto(PermissionType requestType, Status status, String userName) {
-        this.requestType = requestType;
-        this.status = status;
-        this.userName = userName;
+    public RequestDto(Request request) {
+        this.requesterName = request.getRequesterName();
+        this.permissionType = request.getPermissionType();
+        this.status = request.getStatus();
     }
 
-    public PermissionType getRequestType() {
-        return requestType;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
 }
