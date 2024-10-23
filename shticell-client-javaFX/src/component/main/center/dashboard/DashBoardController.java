@@ -30,12 +30,17 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static dto.enums.Status.*;
 
 public class DashBoardController {
 
     MainController mainController;
+    ScheduledExecutorService executorService;
+    private boolean isThreadActive;
     PermissionType RequestedPermission;
 
     BooleanBinding disableConfirmDenyButton;
@@ -74,15 +79,15 @@ public class DashBoardController {
     private TableView<SheetTableLine> sheetTableView;
 
 
+
     @FXML
     void initialize() {
-
+        initPullThread();
         initBindButtonDisableProperty();
         initSheetTableView();
         initRequestTableView();
         initListeners();
     }
-
 
     @FXML
     void viewSheetAction(ActionEvent event) {
@@ -134,6 +139,7 @@ public class DashBoardController {
     @FXML
     void loadSheetAction(ActionEvent event) {
         String path = chooseFileFromFileChooser();
+
         mainController.postXMLFile(path, new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
@@ -260,9 +266,63 @@ public class DashBoardController {
         writerCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> checkBoxPermissionListener(PermissionType.WRITER,redearCheckBox,newValue));
     }
 
+    private void initPullThread() {
+        this.executorService = Executors.newSingleThreadScheduledExecutor();
+    }
+
     //set main controller.
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
+    }
+
+    public void setActive() {
+
+        if (isThreadActive) {
+            return; // Prevent starting multiple threads
+        }
+
+        isThreadActive = true;
+
+        executorService.scheduleAtFixedRate(() -> mainController.dashboardPull(new Callback(){
+                @Override
+                public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                    Platform.runLater(()-> mainController.showAlertPopup(new Exception(),"pull thread fail.."));
+                }
+
+                @Override
+                public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                    String jsonString = response.body().string();
+                    if(response.code() != 200) {
+                        Platform.runLater(()-> mainController.showAlertPopup(new Exception(jsonString),"pull thread fail.."));
+                    }
+                    else{
+                        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                        DashBoardDto dashBoardDto = gson.fromJson(jsonString,DashBoardDto.Class);
+                        Platform.runLater(()-> updateDashboard(dashBoardDto));
+                    }
+                }
+            }), 0, 1, TimeUnit.SECONDS); // Sends requests every second
+    }
+
+
+    // Method to stop the periodic HTTP requests
+    public void setInActive() {
+        if (!isThreadActive) {
+            return;
+        }
+
+        isThreadActive = false;
+        executorService.shutdownNow(); // Stop the background thread
+
+        try {
+            // Await termination of all tasks
+            executorService.awaitTermination(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // Reinitialize the executor service to start again if needed
+        executorService = Executors.newSingleThreadScheduledExecutor();
     }
 
 
@@ -323,6 +383,10 @@ public class DashBoardController {
 
     private void updateUserStatus(int index, Status ownerAnswer) {
         requestTableLines.get(index).setRequestStatus(ownerAnswer);
+    }
+
+    private void updateDashboard(DashBoardDto dashBoardDto) {
+        //to implemment.
     }
 
 }
