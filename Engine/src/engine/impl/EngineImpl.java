@@ -470,21 +470,25 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
+    public PermissionsDto getSheetPermissions(String sheetName) {
+        PermissionManager permissionManager = getPermissionManager(sheetName);
+        return new PermissionsDto(permissionManager);
+    }
+
+    @Override
     public boolean isUserHasPermission(String userName, String sheetName, String permission) {
         return false;
+    }
+
+    @Override
+    public Set<String> getUsers() {
+        return userManager.getUsers();
     }
 
     @Override
     public synchronized void addUser(String userName) {
         this.userManager.addUser(userName);
     }
-
-
-//    @Override
-//    public PermissionsDto getPermissions() {
-//        return new PermissionsDto(this.permissionManagers);
-
-//    }
 
 
     //sort function helper
