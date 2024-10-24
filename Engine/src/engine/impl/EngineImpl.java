@@ -26,6 +26,7 @@ import sheet.impl.SheetImpl;
 import sheet.layout.api.Layout;
 import sheet.layout.api.LayoutGetters;
 import sheet.layout.impl.LayoutImpl;
+import sheet.layout.size.api.Size;
 import sheet.range.api.RangeGetters;
 import sheet.range.boundaries.api.Boundaries;
 import sheet.range.boundaries.impl.BoundariesFactory;
@@ -81,6 +82,10 @@ public class EngineImpl implements Engine, Serializable {
         try {
             STLSheet stlSheet = deserializeFrom(inputStream);
             Sheet sheet = STLSheetToSheet.generate(stlSheet);
+
+            if (this.versionManagers.containsKey(sheet.getName())) {
+                throw new RuntimeException("Sheet " + sheet.getName() + " already exists");
+            }
 
             if (!isValidLayout(sheet.getLayout())) {
                 throw new IndexOutOfBoundsException("Layout is invalid !" + "\n" +
@@ -594,4 +599,5 @@ public class EngineImpl implements Engine, Serializable {
             throw new RuntimeException("Permission manager is not allowed to write sheet " + sheetName);
         }
     }
+
 }

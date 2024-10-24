@@ -18,30 +18,41 @@ public class CellDtoDeserializer implements JsonDeserializer<CellDto> {
     public CellDto deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         CoordinateDto coordinate = context.deserialize(json.getAsJsonObject().get("coordinate"), CoordinateDto.class);
 
-//         Check if the cell with this coordinate is already deserialized
+        // Check if the cell with this coordinate is already deserialized
         if (referenceCache.containsKey(coordinate)) {
             return referenceCache.get(coordinate);
         }
 
-        CellDto cellDto = new CellDto();
-        cellDto.coordinate = coordinate;
-        cellDto.version = json.getAsJsonObject().get("version").getAsInt();
-        cellDto.originalValue = json.getAsJsonObject().get("originalValue").getAsString();
-        cellDto.effectiveValue = json.getAsJsonObject().get("effectiveValue").getAsString();
-        cellDto.influenceOn = new HashSet<>();
-        cellDto.influenceFrom = new HashSet<>();
+        int version = json.getAsJsonObject().get("version").getAsInt();
+        String originalValue = json.getAsJsonObject().get("originalValue").getAsString();
+        String effectiveValue = json.getAsJsonObject().get("effectiveValue").getAsString();
+        Set<CellDto> influenceOn = new HashSet<>();
+        Set<CellDto> influenceFrom = new HashSet<>();
 
-        //adding to reference;
-        referenceCache.put(coordinate, cellDto);
+        // Temporary cell for reference before deserializing influenceFrom
+        CellDto cellDto = new CellDto(coordinate, version, originalValue, effectiveValue, influenceOn, influenceFrom);
+        referenceCache.put(coordinate, cellDto);  // Add the newly created cell to the cache
 
+        // Deserialize influenceFrom, ensuring we don't create recursive loops
         json.getAsJsonObject().get("influenceFrom").getAsJsonArray()
                 .forEach(jsonElement -> {
-
                     JsonObject asJsonObject = jsonElement.getAsJsonObject();
 
-                    CellDto influencer = deserialize(asJsonObject,typeOfT,context);
-                    cellDto.influenceFrom.add(influencer);
-                    influencer.influenceOn.add(cellDto);
+                    // Before deserializing, check if the referenced cell is already in the cache
+                    CoordinateDto influencerCoordinate = context.deserialize(asJsonObject.get("coordinate"), CoordinateDto.class);
+                    CellDto influencer;
+
+                    if (referenceCache.containsKey(influencerCoordinate)) {
+                        // Use cached version to avoid recursive deserialization
+                        influencer = referenceCache.get(influencerCoordinate);
+                    } else {
+                        // Deserialize and add the influencer to cache
+                        influencer = deserialize(asJsonObject, typeOfT, context);
+                    }
+
+                    // Add the influencer relationship
+                    influenceFrom.add(influencer);
+                    influencer.influenceOn().add(cellDto);
                 });
 
         return cellDto;

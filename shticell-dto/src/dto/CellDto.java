@@ -1,61 +1,60 @@
 package dto;
 
-import expression.impl.DataImpl;
 import sheet.cell.api.CellGetters;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
-public class CellDto {
-    public CoordinateDto coordinate;
-    public int version;
-    public String originalValue;
-    public String effectiveValue;
-    public Set<CellDto> influenceFrom;
-    public Set<CellDto> influenceOn;
-
-
+public record CellDto(
+        CoordinateDto coordinate,
+        int version,
+        String originalValue,
+        String effectiveValue,
+        Set<CellDto> influenceOn,
+        Set<CellDto> influenceFrom
+) {
     public CellDto(CellGetters cell) {
-        this.coordinate = new CoordinateDto(cell.getCoordinate());
-        this.version = cell.getVersion();
-        this.originalValue = cell.getOriginalValue();
-        this.effectiveValue = cell.getEffectiveValue().toString();
-        this.influenceFrom = new HashSet<>();
-        this.influenceOn = new HashSet<>();
+        this(
+                new CoordinateDto(cell.getCoordinate()),
+                cell.getVersion(),
+                cell.getOriginalValue(),
+                cell.getEffectiveValue().toString(),
+                new HashSet<>(),
+                createInfluenceFrom(cell)
+        );
+    }
 
+    private static Set<CellDto> createInfluenceFrom(CellGetters cell) {
+        Set<CellDto> influenceFrom = new HashSet<>();
         cell.getInfluenceFrom().forEach(cell1 -> influenceFrom.add(new CellDto(cell1)));
+        return Collections.unmodifiableSet(influenceFrom);  // Ensure immutability
     }
 
-    public CellDto() {
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CellDto cellDto = (CellDto) o;
+        return Objects.equals(coordinate, cellDto.coordinate);
     }
 
-    public void setInfluenceOn() {
-        for (CellDto cell : influenceFrom) {
-            cell.influenceOn.add(this);
-        }
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(coordinate);
     }
 
-    public String getEffectiveValue() {
-        return effectiveValue;
+    @Override
+    public String toString() {
+        return "CellDto{" +
+                "coordinate=" + coordinate +
+                ", version=" + version +
+                ", originalValue='" + originalValue + '\'' +
+                ", effectiveValue='" + effectiveValue + '\'' +
+                ", influenceOn.size=" + (influenceOn != null ? influenceOn.size() : 0) +  // Avoid deep printing
+                ", influenceFrom.size=" + (influenceFrom != null ? influenceFrom.size() : 0) +  // Avoid deep printing
+                '}';
     }
 
-    public CoordinateDto getCoordinate() {
-        return coordinate;
-    }
-
-    public int getVersion() {
-        return version;
-    }
-
-    public String getOriginalValue() {
-        return originalValue;
-    }
-
-    public Set<CellDto> getInfluenceFrom() {
-        return influenceFrom;
-    }
-
-    public Set<CellDto> getInfluenceOn() {
-        return influenceOn;
-    }
 }
