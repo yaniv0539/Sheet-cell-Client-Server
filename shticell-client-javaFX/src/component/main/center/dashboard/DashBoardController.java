@@ -7,6 +7,7 @@ import component.main.center.dashboard.model.RequestTableLine;
 import component.main.center.dashboard.model.SheetTableLine;
 import dto.CellDto;
 import dto.PermissionDto;
+import dto.PermissionsDto;
 import dto.SheetDto;
 import dto.deserializer.CellDtoDeserializer;
 import dto.enums.PermissionType;
@@ -301,7 +302,7 @@ public class DashBoardController {
         }
 
         isThreadActive = true;
-
+        //wait for yaniv to do pulling Dto.
         executorService.scheduleAtFixedRate(() -> mainController.dashboardPull(new Callback(){
                 @Override
                 public void onFailure(@NotNull Call call, @NotNull IOException e) {
@@ -423,11 +424,22 @@ public class DashBoardController {
                 }
                 else {
                     Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                    SheetPermissionDto sheetPermissionDto = gson.fromJson(jsonString,SheetPermissionDto.class);
+                    PermissionsDto sheetPermissionDto = gson.fromJson(jsonString,PermissionsDto.class);
                     Platform.runLater(()-> addToRequestTableLine(sheetPermissionDto));
                 }
             }
         });
+    }
+
+    //adding the request for specific sheet
+    private void addToRequestTableLine(PermissionsDto sheetPermissionDto) {
+        //user
+        //reader/writer
+        //status
+        requestTableView.getItems().clear();
+        sheetPermissionDto.requests.forEach(requestDto -> {
+            requestTableLines.add(new RequestTableLine(requestDto.requesterName,requestDto.permissionType,requestDto.status));
+        } );
     }
 
 }
