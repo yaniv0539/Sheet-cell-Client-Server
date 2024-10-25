@@ -60,6 +60,7 @@ public class MainController {
 
     private StringProperty userNameProperty;
 
+
     // Constructor
 
     public MainController() {
@@ -139,6 +140,7 @@ public class MainController {
         return primaryStage;
     }
 
+
     // Setters
 
     public void setUserName(String userName) {
@@ -168,11 +170,12 @@ public class MainController {
 
     public void switchToDashboard() {
         setMainPanelTo(dashboardComponent);
-//        dashboardComponentController.setActive();
+        dashboardComponentController.setActive();
     }
 
     public void switchToApp() {
         setMainPanelTo(appComponent);
+        dashboardComponentController.setInActive();
 //        appComponentController.setActive();
     }
 
@@ -288,12 +291,17 @@ public class MainController {
         HttpClientUtil.runAsyncPost(finalUrl, body, callback);
     }
 
-    // Get user details
-    public void getUserDetails(String userName, Callback callback) {
+    // Get all sheets overview
+    public void getSheetsOverview(Callback callback) {
+
+    }
+
+    // Get permissions for specific sheet
+    public void getPermissions(String sheetName, Callback callback) {
         String finalUrl = HttpUrl
-                .parse(Constants.LOGIN_PAGE)
+                .parse(Constants.PERMISSIONS_URL)
                 .newBuilder()
-                .addQueryParameter("userName", userName)
+                .addQueryParameter("sheetName", sheetName)
                 .build()
                 .toString();
 
@@ -361,7 +369,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(Constants.LOGIN_PAGE)
                 .newBuilder()
-                .addQueryParameter("username", userName)
+                .addQueryParameter("userName", userName)
                 .build()
                 .toString();
 
@@ -448,7 +456,7 @@ public class MainController {
     }
 
     public void uploadSheetToWorkspace(SheetDto sheetDto) {
-
+        appComponentController.onFinishLoadingFile(sheetDto);
     }
 
 }

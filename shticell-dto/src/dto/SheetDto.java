@@ -1,66 +1,39 @@
 package dto;
 
-import engine.jaxb.generated.STLLayout;
 import sheet.api.SheetGetters;
-import sheet.cell.api.CellGetters;
-import sheet.coordinate.api.Coordinate;
 
 import java.util.*;
 
-public class SheetDto {
-    public String name;
-    public LayoutDto layout;
-    public int version;
-    public Map<String, CellDto> activeCells;
-    public Set<RangeDto> ranges;
+public record SheetDto(
+        String name,
+        LayoutDto layout,
+        int version,
+        Map<String, CellDto> activeCells,
+        Set<RangeDto> ranges
+) {
 
     public SheetDto(SheetGetters sheet) {
-        this.name = sheet.getName();
-        this.version = sheet.getVersion();
-        this.layout = new LayoutDto(sheet.getLayout());
-        this.activeCells = new HashMap<>();
-        this.ranges = new HashSet<>();
+        this(
+                sheet.getName(),
+                new LayoutDto(sheet.getLayout()),
+                sheet.getVersion(),
+                createActiveCells(sheet),
+                createRanges(sheet)
+        );
 
+        // TODO: Ask Itay how he thinks we can fix it.
+//        activeCells().values().forEach(CellDto::setInfluenceOn);
+    }
+
+    private static Map<String, CellDto> createActiveCells(SheetGetters sheet) {
+        Map<String, CellDto> activeCells = new HashMap<>();
         sheet.getActiveCells().forEach((coordinate, cell) -> activeCells.put(coordinate.toString(), new CellDto(cell)));
-        activeCells.values().forEach(CellDto::setInfluenceOn);
-        sheet.getRanges().forEach(range-> ranges.add(new RangeDto(range)));
+        return Collections.unmodifiableMap(activeCells);  // Ensure immutability
     }
 
-    public Map<String, CellDto> getActiveCells() {
-        return Collections.unmodifiableMap(activeCells);
+    private static Set<RangeDto> createRanges(SheetGetters sheet) {
+        Set<RangeDto> ranges = new HashSet<>();
+        sheet.getRanges().forEach(range -> ranges.add(new RangeDto(range)));
+        return Collections.unmodifiableSet(ranges);  // Ensure immutability
     }
-
-    public LayoutDto getLayout() {
-        return layout;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public int getVersion() {
-        return version;
-    }
-
-    public Set<RangeDto> getRanges() {
-        return ranges;
-    }
-    //    public static void main(String[] args) {
-//        //test
-//        Engine  e = EngineImpl.create();
-//        String file = "C:/Users/itayr/OneDrive/Desktop/second year/java/shticell_client_server/Engine/src/engine/jaxb/resources/grades.xml";
-//        e.readXMLInitFile(file);
-//        SheetDto dto = new SheetDto(e.getSheetStatus());
-//        System.out.println(dto.name);
-//        System.out.println(dto.layout.rows);
-//        System.out.println(dto.layout.columns);
-//
-//        dto.activeCells.forEach((coordinate, cell) -> {
-//            System.out.println(coordinate +" ="+ cell.effectiveValue);
-//            cell.influenceFrom.forEach(cellDto -> System.out.println(cellDto.coordinate));
-//            cell.influenceOn.forEach(cellDto -> System.out.println(cellDto.coordinate));
-//        });
-//        dto.ranges.forEach(range -> System.out.println(range.name));
-//
-//    }
 }

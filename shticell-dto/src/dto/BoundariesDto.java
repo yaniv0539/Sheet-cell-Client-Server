@@ -2,20 +2,14 @@ package dto;
 
 import sheet.range.boundaries.api.Boundaries;
 
-public class BoundariesDto {
-    public CoordinateDto from;
-    public CoordinateDto to;
-
+public record BoundariesDto(
+        CoordinateDto from,
+        CoordinateDto to
+) {
     public BoundariesDto(Boundaries boundaries) {
-        this.from = new CoordinateDto(boundaries.getFrom());
-        this.to = new CoordinateDto(boundaries.getTo());
-    }
-
-    public CoordinateDto getFrom() {
-        return from;
-    }
-
-    public CoordinateDto getTo() {
-        return to;
+        this(
+                new CoordinateDto(boundaries.getFrom()),
+                new CoordinateDto(boundaries.getTo())
+        );
     }
 }

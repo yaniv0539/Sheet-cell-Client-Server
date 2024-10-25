@@ -1,9 +1,9 @@
 package component.main.center.app.sheet;
 
 import component.main.center.app.AppController;
-import component.modelUI.api.EffectiveValuesPoolPropertyReadOnly;
-import component.modelUI.impl.TextFieldDesign;
-import component.modelUI.impl.VersionDesignManager;
+import component.main.center.app.model.api.EffectiveValuesPoolPropertyReadOnly;
+import component.main.center.app.model.impl.TextFieldDesign;
+import component.main.center.app.model.impl.VersionDesignManager;
 import dto.BoundariesDto;
 import dto.CoordinateDto;
 import dto.LayoutDto;
@@ -56,8 +56,8 @@ public class SheetController {
     }
 
     public ScrollPane getInitializedSheet(LayoutDto layout, EffectiveValuesPoolPropertyReadOnly dataToView) {
-        this.defaultRowHeight = layout.getSize().getHeight();
-        this.defaultColWidth = layout.getSize().getWidth();
+        this.defaultRowHeight = layout.size().height();
+        this.defaultColWidth = layout.size().width();
         setLayoutGridPane(layout);
         //until here set the grid.
         setBindsTo(dataToView);
@@ -71,7 +71,7 @@ public class SheetController {
         gridPane.setGridLinesVisible(true);  // Enable grid lines for visualization
 
         // Add column constraints to match FXML configuration
-        for (int col = 0; col <= layout.getColumns(); col++) {
+        for (int col = 0; col <= layout.columns(); col++) {
 
             ColumnConstraints columnConstraints = new ColumnConstraints();
             if (col == 0) {
@@ -80,15 +80,15 @@ public class SheetController {
                 columnConstraints.setPrefWidth(30);  // First column for row numbers
                 columnConstraints.setHgrow(Priority.NEVER);  // No horizontal grow
             } else {
-                columnConstraints.setMinWidth(layout.getSize().getWidth());
-                columnConstraints.setPrefWidth(layout.getSize().getWidth());  // Other columns
+                columnConstraints.setMinWidth(layout.size().width());
+                columnConstraints.setPrefWidth(layout.size().width());  // Other columns
                 columnConstraints.setHgrow(Priority.NEVER);  // Allow horizontal grow
             }
             gridPane.getColumnConstraints().add(columnConstraints);
         }
 
         // Add row constraints to match FXML configuration
-        for (int row = 0; row <= layout.getRows(); row++) {
+        for (int row = 0; row <= layout.rows(); row++) {
             RowConstraints rowConstraints = new RowConstraints();
             if (row == 0) {
                 rowConstraints.setMinHeight(30);
@@ -96,8 +96,8 @@ public class SheetController {
                 rowConstraints.setPrefHeight(30);
                 rowConstraints.setVgrow(Priority.NEVER);  // No horizontal grow
             } else {
-                rowConstraints.setMinHeight(layout.getSize().getHeight());
-                rowConstraints.setPrefHeight(layout.getSize().getHeight());  // Set preferred height for rows
+                rowConstraints.setMinHeight(layout.size().height());
+                rowConstraints.setPrefHeight(layout.size().height());  // Set preferred height for rows
                 rowConstraints.setVgrow(Priority.NEVER);  // Allow vertical grow
             }
             gridPane.getRowConstraints().add(rowConstraints);
@@ -281,12 +281,12 @@ public class SheetController {
     // Other functions
 
     public void resetRangeOnSheet(RangeDto range) {
-        BoundariesDto boundaries = range.getBoundaries();
-        CoordinateDto to = boundaries.getTo();
-        CoordinateDto from = boundaries.getFrom();
+        BoundariesDto boundaries = range.boundaries();
+        CoordinateDto to = boundaries.to();
+        CoordinateDto from = boundaries.from();
 
-        for (int i = from.getRow(); i <= to.getRow(); i++) {
-            for (int j = from.getColumn(); j <= to.getColumn(); j++) {
+        for (int i = from.row(); i <= to.row(); i++) {
+            for (int j = from.column(); j <= to.column(); j++) {
                 String CoordinateString = CoordinateFactory.createCoordinate(i, j).toString();
                 TextField textField = cellsTextFieldMap.get(CoordinateString);
                 if (textField != null) {
@@ -346,8 +346,8 @@ public class SheetController {
     }
 
     public void setCoordinateDesign(CoordinateDto coordinateToDesign,TextFieldDesign design) {
-        int row = coordinateToDesign.getRow();
-        int col = coordinateToDesign.getColumn();
+        int row = coordinateToDesign.row();
+        int col = coordinateToDesign.column();
 
         gridPane.getChildren().stream()
                 .filter(node -> node instanceof TextField)
@@ -364,8 +364,8 @@ public class SheetController {
     }
 
     public int getIndexDesign(CoordinateDto coordinate) {
-        int row = coordinate.getRow();
-        int col = coordinate.getColumn();
+        int row = coordinate.row();
+        int col = coordinate.column();
 
         for(int i = 1 ; i < gridPane.getChildren().size(); i++) {
             if (gridPane.getChildren().get(i) instanceof TextField tf) {
@@ -380,12 +380,12 @@ public class SheetController {
     }
 
     public void paintRangeOnSheet(RangeDto range, Color color) {
-        BoundariesDto boundaries = range.getBoundaries();
-        CoordinateDto to = boundaries.getTo();
-        CoordinateDto from = boundaries.getFrom();
+        BoundariesDto boundaries = range.boundaries();
+        CoordinateDto to = boundaries.to();
+        CoordinateDto from = boundaries.from();
 
-        for (int i = from.getRow(); i <= to.getRow(); i++) {
-            for (int j = from.getColumn(); j <= to.getColumn(); j++) {
+        for (int i = from.row(); i <= to.row(); i++) {
+            for (int j = from.column(); j <= to.column(); j++) {
                 String coordinateString = CoordinateFactory.createCoordinate(i, j).toString();
                 TextField textField = cellsTextFieldMap.get(coordinateString);
                 if (textField != null) {
