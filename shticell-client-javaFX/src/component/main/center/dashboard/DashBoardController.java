@@ -7,7 +7,6 @@ import component.main.MainController;
 import component.main.center.dashboard.model.RequestTableLine;
 import component.main.center.dashboard.model.SheetTableLine;
 import dto.CellDto;
-import dto.PermissionDto;
 import dto.PermissionsDto;
 import dto.PermissionsDto;
 import dto.SheetDto;
@@ -166,7 +165,7 @@ public class DashBoardController {
 
                     Platform.runLater(()->{
                         mainController.uploadSheetToWorkspace(sheetDto); //prepare the scene
-                        mainController.switchToApp();
+                        //mainController.switchToApp();
                     });
                 }
             }

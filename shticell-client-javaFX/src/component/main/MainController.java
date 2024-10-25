@@ -294,6 +294,7 @@ public class MainController {
     // Get all sheets overview
     public void getSheetsOverview(Callback callback) {
 
+
     }
 
     // Get permissions for specific sheet
