@@ -14,4 +14,9 @@ public record LayoutDto(
                 layout.getColumns()
         );
     }
+
+    @Override
+    public String toString() {
+        return  rows + "x" + columns;
+    }
 }

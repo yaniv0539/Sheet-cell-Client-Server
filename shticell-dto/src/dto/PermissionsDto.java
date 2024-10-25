@@ -2,15 +2,13 @@ package dto;
 
 import engine.permissions.api.PermissionManager;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public record PermissionsDto(
         String owner,
         Set<String> readers,
         Set<String> writers,
-        Set<RequestDto> requests
+        List<RequestDto> requests
 ) {
     public PermissionsDto(PermissionManager permissionManager) {
         this(
@@ -21,9 +19,10 @@ public record PermissionsDto(
         );
     }
 
-    private static Set<RequestDto> createRanges(PermissionManager permissionManager) {
-        Set<RequestDto> requests = new HashSet<>();
+    private static List<RequestDto> createRanges(PermissionManager permissionManager) {
+        List<RequestDto> requests = new ArrayList<>();
         permissionManager.getRequestsHistory().forEach(request -> requests.add(new RequestDto(request)));
-        return Collections.unmodifiableSet(requests);  // Ensure immutability
+
+        return Collections.unmodifiableList(requests);  // Ensure immutability
     }
 }

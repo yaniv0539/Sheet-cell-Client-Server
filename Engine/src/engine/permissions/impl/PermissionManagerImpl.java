@@ -11,13 +11,13 @@ public class PermissionManagerImpl implements PermissionManager {
     private final String owner;
     private final Set<String> readers;
     private final Set<String> writers;
-    private final Set<Request> requestsHistory;
+    private final List<Request> requestsHistory;
 
     public PermissionManagerImpl(String owner) {
         this.owner = owner;
         this.readers = new HashSet<>();
         this.writers = new HashSet<>();
-        this.requestsHistory = new HashSet<>();
+        this.requestsHistory = new ArrayList<>();
     }
 
     public static PermissionManagerImpl create(String owner) {
@@ -40,8 +40,8 @@ public class PermissionManagerImpl implements PermissionManager {
     }
 
     @Override
-    public Set<Request> getRequestsHistory() {
-        return Collections.unmodifiableSet(requestsHistory);
+    public List<Request> getRequestsHistory() {
+        return Collections.unmodifiableList(requestsHistory);
     }
 
     @Override
@@ -64,11 +64,16 @@ public class PermissionManagerImpl implements PermissionManager {
     @Override
     public void addRequest(String requesterName, PermissionType permissionType) {
         Request pendingRequest = new Request(requesterName, permissionType, Status.PENDING);
-        Request comfirmedRequest = new Request(requesterName, permissionType, Status.CONFIRMED);
+//        Request comfirmedRequest = new Request(requesterName, permissionType, Status.CONFIRMED);
+//
+//        if (requestsHistory.contains(comfirmedRequest)) {
+//            throw new RuntimeException("Permission already confirmed.");
+//        } else if (requestsHistory.contains(pendingRequest)) {
+//            throw new RuntimeException("Request already pending.");
+//        }
 
-        if (requestsHistory.contains(comfirmedRequest)) {
-            throw new RuntimeException("Permission already confirmed.");
-        } else if (requestsHistory.contains(pendingRequest)) {
+        //itsay add
+        if(requestsHistory.contains(pendingRequest)) {
             throw new RuntimeException("Request already pending.");
         }
 
@@ -83,9 +88,12 @@ public class PermissionManagerImpl implements PermissionManager {
         if (!requestsHistory.contains(pendingRequest)) {
             throw new RuntimeException("Cannot find pending request for this requester.");
         }
+        //it contains : itay add
+        int index = requestsHistory.indexOf(pendingRequest);
+        requestsHistory.set(index,confirmedRequest); //switch
 
-        requestsHistory.remove(pendingRequest);
-        requestsHistory.add(confirmedRequest);
+//        requestsHistory.remove(pendingRequest);
+//        requestsHistory.add(confirmedRequest);
 
         if (permissionType == PermissionType.WRITER) {
             writers.add(requesterName);
@@ -105,8 +113,13 @@ public class PermissionManagerImpl implements PermissionManager {
             throw new RuntimeException("Cannot find pending request for this requester.");
         }
 
-        requestsHistory.remove(pendingRequest);
-        requestsHistory.add(deniedRequest);
+        //itay out it in comment
+//        requestsHistory.remove(pendingRequest);
+//        requestsHistory.add(deniedRequest);
+
+        //it contain
+        int index = requestsHistory.indexOf(pendingRequest);
+        requestsHistory.set(index,deniedRequest); //switch
     }
 
     @Override

@@ -5,6 +5,7 @@ import component.main.center.dashboard.DashBoardController;
 import component.main.center.login.LoginController;
 import component.main.top.TopController;
 import dto.FilterDto;
+import dto.RequestDto;
 import dto.SheetDto;
 import dto.SortDto;
 import dto.enums.PermissionType;
@@ -401,15 +402,14 @@ public class MainController {
     }
 
     // Post new permission response for specific sheet
-    public void postResponsePermission(String sheetName, String userNameToConfirm, Callback callback) {
-        RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
+    public void postResponsePermission(String sheetName, RequestDto requestDto, Callback callback) {
+        //transfer the request to confirm. : itay
+        RequestBody body = RequestBody.create(GSON_INSTANCE.toJson(requestDto), MediaType.parse("text/plain"));
 
         String finalUrl = HttpUrl
                 .parse(RESPONSE_PERMISSION_URL)
                 .newBuilder()
-                .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
-                .addQueryParameter("userNameToConfirm", userNameToConfirm)
                 .build()
                 .toString();
 

@@ -79,7 +79,7 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public void addNewSheet(String userName, InputStream inputStream) {
+    public String addNewSheet(String userName, InputStream inputStream) {
         try {
             STLSheet stlSheet = deserializeFrom(inputStream);
             Sheet sheet = STLSheetToSheet.generate(stlSheet);
@@ -97,6 +97,8 @@ public class EngineImpl implements Engine, Serializable {
             versionManager.init(sheet);
 
             this.permissionManagers.computeIfAbsent(sheet.getName(), k -> PermissionManagerImpl.create(userName));
+
+            return sheet.getName();
 
         } catch (JAXBException e) {
             throw new RuntimeException("Failed to read XML file", e);

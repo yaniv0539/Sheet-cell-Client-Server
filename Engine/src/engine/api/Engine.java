@@ -19,7 +19,7 @@ public interface Engine {
         SheetDto getSheetDTO(String userName, String sheetName, int sheetVersion);
 
         // Post Functions
-        void addNewSheet(String userName, InputStream inputStream);
+        String addNewSheet(String userName, InputStream inputStream);
 
         // Logical Operations:
 

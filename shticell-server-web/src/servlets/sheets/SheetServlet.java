@@ -54,6 +54,7 @@ public class SheetServlet extends HttpServlet {
             Gson gson = ServletUtils.getGson(getServletContext());
 
             String userName = ServletUtils.getUserName(request);
+            String sheetName = null;
 
             Collection<Part> parts = request.getParts();
 
@@ -62,12 +63,15 @@ public class SheetServlet extends HttpServlet {
                 throw new RuntimeException("Expected exactly one part");
             }
 
-            for (Part part : parts) {
-                engine.addNewSheet(userName, part.getInputStream());
-            }
 
-            // TODO: Change from beginner
-            SheetDto sheetDTO = engine.getSheetDTO(userName, "beginner");
+                for (Part part : parts) {
+
+                    sheetName = engine.addNewSheet(userName, part.getInputStream());
+                }
+
+            // TODO: Change from beginner. done be itay 25/10
+            //sheet name should never be null
+            SheetDto sheetDTO = engine.getSheetDTO(userName, sheetName);
 
             response.setContentType("text/plain");
             response.getWriter().println(gson.toJson(sheetDTO));

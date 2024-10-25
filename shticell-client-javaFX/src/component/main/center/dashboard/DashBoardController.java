@@ -4,13 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import component.main.MainController;
-import component.main.center.dashboard.model.RequestTableLine;
 import component.main.center.dashboard.model.SheetTableLine;
-import dto.CellDto;
-import dto.PermissionsDto;
-import dto.PermissionsDto;
-import dto.SheetDto;
-import dto.SheetOverviewDto;
+import dto.*;
 import dto.deserializer.CellDtoDeserializer;
 import dto.enums.PermissionType;
 import dto.enums.Status;
@@ -35,6 +30,9 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -45,15 +43,19 @@ import static dto.enums.Status.*;
 public class DashBoardController {
 
     // Members
-
     MainController mainController;
-    ScheduledExecutorService executorService;
-    private boolean isThreadActive;
+    ScheduledExecutorService executorServiceForSheetTable;
+    ScheduledExecutorService executorServiceForRequestTable;
+    private boolean isThreadsActive;
     PermissionType RequestedPermission;
+    String focusSheetName = null;
 
-    //index for current focus in tables.
+    //index for current focus in tables.params
     private int focusItemIndexInSheetTable;
-    private int focusItemIndexInRequestTable;
+
+
+    //set's for check if sheet and permission change
+    private Map<String,Integer> sheetNameToIndexInSheetList = new HashMap<>();
 
     BooleanProperty isSelectedNonePendingRequest = new SimpleBooleanProperty(false);
     BooleanProperty disableLoadSheetButton = new SimpleBooleanProperty(false);
@@ -62,7 +64,7 @@ public class DashBoardController {
     BooleanBinding disableViewSheetButton;
 
     ObservableList<SheetTableLine> sheetTableLines = FXCollections.observableArrayList();
-    ObservableList<RequestTableLine> requestTableLines = FXCollections.observableArrayList();
+    ObservableList<RequestDto> requestTableLines = FXCollections.observableArrayList();
 
 
     // FXML Members
@@ -89,7 +91,7 @@ public class DashBoardController {
     private CheckBox writerCheckBox;
 
     @FXML
-    private TableView<RequestTableLine> requestTableView;
+    private TableView<RequestDto> requestTableView;
 
     @FXML
     private TableView<SheetTableLine> sheetTableView;
@@ -165,7 +167,6 @@ public class DashBoardController {
 
                     Platform.runLater(()->{
                         mainController.uploadSheetToWorkspace(sheetDto); //prepare the scene
-                        //mainController.switchToApp();
                     });
                 }
             }
@@ -192,11 +193,6 @@ public class DashBoardController {
 
                 if(response.code() != 201) {
                     Platform.runLater(()-> System.out.println("(()->mainController.showPopupAlert(jsonString))"));
-                }
-                else {
-                    //add line to request
-                    Platform.runLater(()-> requestTableLines.add(
-                            new RequestTableLine(mainController.getUserName(),RequestedPermission,PENDING)));
                 }
             }
         });
@@ -269,9 +265,9 @@ public class DashBoardController {
 
     private void initRequestTableView() {
         // Bind columns to fields in data model.
-        requestTableView.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("userName"));
-        requestTableView.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("sheetName"));
-        requestTableView.getColumns().get(2).setCellValueFactory(new PropertyValueFactory<>("requestStatus"));
+        requestTableView.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("requesterName"));
+        requestTableView.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("permissionType"));
+        requestTableView.getColumns().get(2).setCellValueFactory(new PropertyValueFactory<>("status"));
 
         // Set observable list to table
         requestTableView.setItems(requestTableLines);
@@ -282,31 +278,24 @@ public class DashBoardController {
         writerCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> checkBoxPermissionListener(PermissionType.WRITER, redearCheckBox, newValue));
         sheetTableView.focusedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
-                focusItemIndexInSheetTable = sheetTableView.getSelectionModel().getFocusedIndex();
+               SheetTableLine focusItem = sheetTableView.getSelectionModel().getSelectedItem();
 
-                if (focusItemIndexInSheetTable == -1) {
-                    return;
+                if (focusItemIndexInSheetTable != -1) {
+                   focusSheetName = focusItem.getSheetName();
                 }
-
-                sentHttpRequestForPermission(sheetTableView.getItems().get(focusItemIndexInSheetTable).getSheetName());
             }
-
         });
+
         requestTableView.focusedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
-                focusItemIndexInRequestTable = requestTableView.getSelectionModel().getFocusedIndex();
-
-                if (focusItemIndexInRequestTable == -1) {
-                    return;
-                }
-
-                isSelectedNonePendingRequest.set(requestTableView.getItems().get(focusItemIndexInRequestTable).getRequestStatus() != PENDING);
+                isSelectedNonePendingRequest.set(requestTableView.getSelectionModel().getSelectedItem().status() != PENDING);
             }
         });
     }
 
     private void initPullThread() {
-        this.executorService = Executors.newSingleThreadScheduledExecutor();
+        this.executorServiceForSheetTable = Executors.newSingleThreadScheduledExecutor();
+        this.executorServiceForRequestTable = Executors.newSingleThreadScheduledExecutor();
     }
 
 
@@ -318,13 +307,13 @@ public class DashBoardController {
 
     public void setActive() {
 
-        if (isThreadActive) {
+        if (isThreadsActive) {
             return; // Prevent starting multiple threads
         }
 
-        isThreadActive = true;
+        isThreadsActive = true;
 
-        executorService.scheduleAtFixedRate(() -> mainController.getSheetsOverview(new Callback() {
+        executorServiceForSheetTable.scheduleAtFixedRate(() -> mainController.getSheetsOverview(new Callback() {
                 @Override
                 public void onFailure(@NotNull Call call, @NotNull IOException e) {
                     Platform.runLater(()-> mainController.showAlertPopup(new Exception(),"pull thread fail.."));
@@ -344,25 +333,48 @@ public class DashBoardController {
                     }
                 }
             }), 0, 1, TimeUnit.SECONDS); // Sends requests every second
+        executorServiceForRequestTable.scheduleAtFixedRate(()-> mainController.getPermissions(focusSheetName,new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(()->mainController.showAlertPopup(new Exception(e.getMessage()),"unexpected error at get requests"));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                assert response.body() != null;
+                String jsonString = response.body().string();
+                if (response.code() != 200) {
+                    Platform.runLater(() -> mainController.showAlertPopup(new Exception(jsonString),"unexpected error at get requests"));
+                } else {
+                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+//                    Type setType = new TypeToken<List<RequestDto>>(){}.getType();
+                    PermissionsDto permissionsDto = gson.fromJson(jsonString, PermissionsDto.class);
+                    Platform.runLater(()-> updatePermissionsTable(permissionsDto));
+                }
+            }
+        }), 0,500 , TimeUnit.MILLISECONDS);
     }
 
     public void setInActive() {
-        if (!isThreadActive) {
+        if (!isThreadsActive) {
             return;
         }
 
-        isThreadActive = false;
-        executorService.shutdownNow(); // Stop the background thread
+        isThreadsActive = false;
+        executorServiceForSheetTable.shutdownNow(); // Stop the background thread
+        executorServiceForRequestTable.shutdownNow();
 
         try {
             // Await termination of all tasks
-            executorService.awaitTermination(1, TimeUnit.SECONDS);
+            executorServiceForRequestTable.awaitTermination(1, TimeUnit.SECONDS);
+            executorServiceForSheetTable.awaitTermination(1, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
         // Reinitialize the executor service to start again if needed
-        executorService = Executors.newSingleThreadScheduledExecutor();
+        executorServiceForSheetTable = Executors.newSingleThreadScheduledExecutor();
+        executorServiceForRequestTable = Executors.newSingleThreadScheduledExecutor();
     }
 
 
@@ -387,18 +399,10 @@ public class DashBoardController {
     }
 
     private void confirmDenyOnAction(Status ownerAnswer) {
-        RequestTableLine selectedLine = requestTableView.getSelectionModel().getSelectedItem();
-        int index = requestTableView.getItems().indexOf(selectedLine);
-        String sheetName = null;
-        String userNameToConfirm = null;
 
-        if (selectedLine != null) {
-//            sheetName = selectedLine.getSheetName();
-            userNameToConfirm = selectedLine.getUserName();
-        }
-        final String userNameToConfirmFinal = userNameToConfirm;
+        RequestDto selectedLine = requestTableView.getSelectionModel().getSelectedItem();
 
-        mainController.postResponsePermission(sheetName, userNameToConfirm, new Callback() {
+        mainController.postResponsePermission(focusSheetName, selectedLine, new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 Platform.runLater(()-> mainController.showAlertPopup(new Exception(e.getMessage()),"unexpected error" ));
@@ -411,59 +415,96 @@ public class DashBoardController {
 
                 if (response.code() != 200) {
                     Platform.runLater(()-> mainController.showAlertPopup(new Exception(jsonResponse),"update permission for user"));
-                } else {
-                    Platform.runLater(()->{
-                        updateUserStatus(index,ownerAnswer);//change in table view requests
-                    });
                 }
             }
         });
     }
 
-    private void updateUserStatus(int index, Status ownerAnswer) {
-        requestTableLines.get(index).setRequestStatus(ownerAnswer);
-    }
-
+    //no need this function we have a thread
     private void sentHttpRequestForPermission(String sheetName) {
 
-        mainController.getPermissions(sheetName, new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(()->mainController.showAlertPopup(new Exception(e.getMessage()),"unexpected error at get requests"));
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                assert response.body() != null;
-                String jsonString = response.body().string();
-                if (response.code() != 200) {
-                    Platform.runLater(() -> mainController.showAlertPopup(new Exception(jsonString),"unexpected error at get requests"));
-                } else {
-                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                    PermissionsDto sheetPermissionDto = gson.fromJson(jsonString, PermissionsDto.class);
-                    Platform.runLater(()-> updatePermissionsTable(sheetPermissionDto));
-                }
-            }
-        });
+//        mainController.getPermissions(sheetName, new Callback() {
+//            @Override
+//            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+//                Platform.runLater(()->mainController.showAlertPopup(new Exception(e.getMessage()),"unexpected error at get requests"));
+//            }
+//
+//            @Override
+//            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+//                assert response.body() != null;
+//                String jsonString = response.body().string();
+//                if (response.code() != 200) {
+//                    Platform.runLater(() -> mainController.showAlertPopup(new Exception(jsonString),"unexpected error at get requests"));
+//                } else {
+//                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+//                    Type setType = new TypeToken<List<RequestDto>>(){}.getType();
+//                    List<RequestDto> listRequestDto = gson.fromJson(jsonString, setType);
+//                    Platform.runLater(()-> updatePermissionsTable(listRequestDto));
+//                }
+//            }
+//        });
     }
 
     private void updateSheetsTable(Set<SheetOverviewDto> sheetOverviewDtos) {
         System.out.println("pulling sheets from server");
-        // TODO
-        sheetTableLines.clear();
-        sheetOverviewDtos.forEach(sheetOverviewDto -> {
-            String userName = mainController.getUserName();
+        // TODO, done by itay 25/10.
 
-           sheetTableLines.add(new SheetTableLine(userName,
-                   sheetOverviewDto.sheetName(),
-                   sheetOverviewDto.layout().toString(),
-                   sheetOverviewDto.userPerm().toString()));
+        sheetOverviewDtos.forEach(sheetOverviewDto -> {
+
+            String sheetName = sheetOverviewDto.sheetName();
+            Integer lineIndex = sheetNameToIndexInSheetList.get(sheetName);
+
+            if(lineIndex == null) {
+
+                sheetTableLines.add(new SheetTableLine(
+                        sheetOverviewDto.owner(),
+                        sheetOverviewDto.sheetName(),
+                        sheetOverviewDto.layout().toString(),
+                        sheetOverviewDto.userPerm().toString()));
+
+                //size is always bigger be one.
+                sheetNameToIndexInSheetList.put(sheetName, sheetTableLines.size() - 1);
+            }
+            else {
+               SheetTableLine line = sheetTableLines.get(lineIndex);
+
+                if(!line.getPermission().equals(sheetOverviewDto.userPerm().toString())) {
+
+                    sheetTableLines.set(lineIndex, new SheetTableLine(
+                            sheetOverviewDto.owner(),
+                            sheetOverviewDto.sheetName(),
+                            sheetOverviewDto.layout().toString(),
+                            sheetOverviewDto.userPerm().toString()));
+                }
+            }
+
         });
     }
 
-    private void updatePermissionsTable(PermissionsDto sheetPermissionDto) {
-        System.out.println("Work!");
+    private void updatePermissionsTable(PermissionsDto permissionsDto) {
+        System.out.println("pulling permissions from server !");
         // TODO
+        int sizeOfObservableList = requestTableLines.size();
+
+        List<RequestDto> requests = permissionsDto.requests();
+
+        for(int indexLine = 0; indexLine < requests.size(); indexLine++) {
+
+            RequestDto requestDtoNewLine = requests.get(indexLine);
+
+            if (indexLine < sizeOfObservableList) {
+                // +1 only bcz in ui we put the owner in first line.
+                if(!requestDtoNewLine.equals(requestTableLines.get(indexLine + 1))) {
+
+                    requestTableLines.set(indexLine + 1, requestDtoNewLine);
+                }
+            }
+            else {
+                //add the request.
+                requestTableLines.add(requestDtoNewLine);
+            }
+        }
+
     }
 
 }
