@@ -1,6 +1,7 @@
 package engine.impl;
 
 import dto.*;
+import dto.enums.PermissionType;
 import engine.api.Engine;
 import engine.jaxb.parser.STLSheetToSheet;
 import engine.permissions.impl.PermissionManagerImpl;
@@ -481,8 +482,9 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public boolean isUserHasPermission(String userName, String sheetName, String permission) {
-        return false;
+    public PermissionType getUserPermission(String userName, String sheetName) {
+
+        return permissionManagers.get(sheetName).getPermission(userName);
     }
 
     @Override
@@ -495,6 +497,28 @@ public class EngineImpl implements Engine, Serializable {
         this.userManager.addUser(userName);
     }
 
+    //itay added
+
+    @Override
+    public Set<SheetOverviewDto> getSheetOverviewDto(String userName) {
+        if(!userManager.isUserExists(userName)) {
+            throw new RuntimeException("User " + userName + " does not exist");
+        }
+
+        Set<SheetOverviewDto> sheetOverviewDtoSet = new HashSet<>();
+
+        synchronized (this) {
+            versionManagers.forEach((sheetName, versionManager) -> {
+                Sheet sheet = versionManager.getLastVersion();
+                String owner = permissionManagers.get(sheetName).getOwner();
+                PermissionType userPermission = getUserPermission(userName, sheetName);
+
+                sheetOverviewDtoSet.add(new SheetOverviewDto(sheet, userPermission, owner));
+            });
+        }
+
+        return sheetOverviewDtoSet;
+    }
 
     //sort function helper
     private Comparator<List<CellGetters>> createComparator(List<Integer> sortByColumns, int startCol) {

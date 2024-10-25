@@ -293,7 +293,14 @@ public class MainController {
 
     // Get all sheets overview
     public void getSheetsOverview(Callback callback) {
+        String finalUrl = HttpUrl
+                .parse(Constants.OVERVIEW_URL)
+                .newBuilder()
+                .addQueryParameter("userName", userNameProperty.get())
+                .build()
+                .toString();
 
+        HttpClientUtil.runAsync(finalUrl, callback);
 
     }
 

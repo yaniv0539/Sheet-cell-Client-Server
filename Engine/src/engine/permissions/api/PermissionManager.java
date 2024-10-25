@@ -16,4 +16,6 @@ public interface PermissionManager {
 
     boolean canRead(String reader);
     boolean canWrite(String writer);
+
+    PermissionType getPermission(String userName);
 }

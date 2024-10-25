@@ -45,6 +45,23 @@ public class PermissionManagerImpl implements PermissionManager {
     }
 
     @Override
+    public PermissionType getPermission(String userName) {
+        PermissionType permissionType = PermissionType.NONE;
+
+        if(owner.equals(userName)) {
+            permissionType = PermissionType.OWNER;
+
+        } else if (readers.contains(userName)) {
+            permissionType = PermissionType.READER;
+        }
+        else if (writers.contains(userName)) {
+            permissionType = PermissionType.WRITER;
+        }
+
+        return permissionType;
+    }
+
+    @Override
     public void addRequest(String requesterName, PermissionType permissionType) {
         Request pendingRequest = new Request(requesterName, permissionType, Status.PENDING);
         Request comfirmedRequest = new Request(requesterName, permissionType, Status.CONFIRMED);

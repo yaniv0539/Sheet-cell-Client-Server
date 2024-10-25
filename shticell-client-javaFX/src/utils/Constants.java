@@ -25,6 +25,7 @@ public class Constants {
     // First Layer
     public final static String SHEET_URL = FULL_SERVER_PATH + "/sheet";
     public final static String PERMISSIONS_URL = FULL_SERVER_PATH + "/permissions";
+    public final static String OVERVIEW_URL = FULL_SERVER_PATH + "/Overview";
 
     // Second Layer
     public final static String CELL_URL = SHEET_URL + "/cell";

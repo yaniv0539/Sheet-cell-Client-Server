@@ -448,8 +448,17 @@ public class DashBoardController {
     }
 
     private void updateSheetsTable(Set<SheetOverviewDto> sheetOverviewDtos) {
-        System.out.println("Work!");
+        System.out.println("pulling sheets from server");
         // TODO
+        sheetTableLines.clear();
+        sheetOverviewDtos.forEach(sheetOverviewDto -> {
+            String userName = mainController.getUserName();
+
+           sheetTableLines.add(new SheetTableLine(userName,
+                   sheetOverviewDto.sheetName(),
+                   sheetOverviewDto.layout().toString(),
+                   sheetOverviewDto.userPerm().toString()));
+        });
     }
 
     private void updatePermissionsTable(PermissionsDto sheetPermissionDto) {

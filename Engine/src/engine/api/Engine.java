@@ -2,6 +2,7 @@ package engine.api;
 
 import dto.*;
 
+import dto.enums.PermissionType;
 import sheet.range.boundaries.api.Boundaries;
 
 import java.io.InputStream;
@@ -36,7 +37,7 @@ public interface Engine {
 
                 // Get Functions
                 PermissionsDto getSheetPermissions(String sheetName);
-                boolean isUserHasPermission(String userName, String sheetName, String permission);
+                PermissionType getUserPermission(String userName, String sheetName);
 
 // Cells:
 
@@ -62,4 +63,6 @@ public interface Engine {
 
         Set<String> getUsers();
         void addUser(String userName);
+
+        Set<SheetOverviewDto> getSheetOverviewDto(String userName);
 }
