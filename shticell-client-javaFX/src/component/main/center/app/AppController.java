@@ -1,11 +1,16 @@
 package component.main.center.app;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import component.main.MainController;
 import component.main.center.app.commands.CommandsController;
 import component.main.center.app.header.HeaderController;
 import component.main.center.app.ranges.RangesController;
 import component.main.center.app.sheet.SheetController;
 import dto.*;
+import dto.deserializer.CellDtoDeserializer;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
@@ -28,10 +33,17 @@ import component.main.center.app.model.impl.TextFieldDesign;
 import component.main.center.app.model.impl.VersionDesignManager;
 import component.main.center.app.progress.ProgressController;
 import okhttp3.*;
+import org.jetbrains.annotations.NotNull;
 import sheet.coordinate.impl.CoordinateFactory;
 
+import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static utils.Constants.GSON_INSTANCE;
 
 public class AppController {
 
@@ -45,7 +57,7 @@ public class AppController {
     @FXML private RangesController rangesComponentController;
     private ScrollPane sheetComponent;
 
-    MainController mainController;
+    private MainController mainController;
 
     private Stage loadingStage;
 
@@ -65,6 +77,8 @@ public class AppController {
 
     private int mostUpdatedVersionNumber;
     private boolean OperationView;
+    private ScheduledExecutorService executorServiceForSheet;
+    private boolean isThreadsActive;
 
 
     // Constructor
@@ -585,6 +599,36 @@ public class AppController {
 
     public void paintRangeOnSheet(RangeDto range, Color color) {
         this.sheetComponentController.paintRangeOnSheet(range, color);
+    }
+
+    public void setActive(String sheetName) {
+        if (isThreadsActive || executorServiceForSheet == null) {
+            return; // Prevent starting multiple threads
+        }
+
+        isThreadsActive = true;
+
+        executorServiceForSheet.scheduleAtFixedRate(() -> mainController.getSheet(sheetName, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> mainController.showAlertPopup(new Exception(),"show version"));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                assert response.body() != null;
+                String jsonResponse = response.body().string();
+
+                if (response.code() != 200) {
+                    mainController.showAlertPopup(new Exception(GSON_INSTANCE.fromJson(jsonResponse,String.class)), "Sheet name " + sheetName);
+                }
+                else {
+                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
+                    SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
+                    Platform.runLater(() -> getViewSheetVersionRunLater(sheetDto));
+                }
+            }
+        }), 0, 1, TimeUnit.SECONDS);
     }
 
 

@@ -174,10 +174,10 @@ public class MainController {
         dashboardComponentController.setActive();
     }
 
-    public void switchToApp() {
+    public void switchToApp(String sheetName) {
         setMainPanelTo(appComponent);
         dashboardComponentController.setInActive();
-//        appComponentController.setActive();
+        appComponentController.setActive(sheetName);
     }
 
 

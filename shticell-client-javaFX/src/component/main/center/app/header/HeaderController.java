@@ -12,18 +12,19 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.stage.FileChooser;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.io.IOException;
 
 import static utils.Constants.GSON_INSTANCE;
 
 public class HeaderController {
+
+
+        // FXML Members
 
         @FXML
         private TextField textFieldUpdatedBy;
@@ -64,6 +65,9 @@ public class HeaderController {
         @FXML
         private TextField textFieldVersionSelector;
 
+
+        // Members
+
         private AppController mainController;
 
         private SimpleStringProperty selectedFileProperty;
@@ -85,10 +89,6 @@ public class HeaderController {
                 textFieldLastUpdateInVersion.textProperty().bind(this.mainController.getCellInFocus().getLastUpdateVersion());
         }
 
-        public void setMainController(AppController mainController) {
-                this.mainController = mainController;
-        }
-
 
         // Getters
 
@@ -96,62 +96,15 @@ public class HeaderController {
                 return splitMenuButtonSelectVersion;
         }
 
-//        public Button getButtonUpdateCell() {
-//                return buttonUpdateCell;
-//        }
-//
-//        public Button getButtonUploadXmlFile() {
-//                return buttonUploadXmlFile;
-//        }
-//
-//        public Label getLabelCellId() {
-//                return labelCellId;
-//        }
-//
-//        public Label getLabelOriginalValue() {
-//                return labelOriginalValue;
-//        }
-//
-//        public Label getLabelVersionSelector() {
-//                return labelVersionSelector;
-//        }
-//
-//        public Label getLableFileName() {
-//                return lableFileName;
-//        }
-//
-//        public TextField getTextFieldCellId() {
-//                return textFieldCellId;
-//        }
-//
-//        public TextField getTextFieldFileName() {
-//                return textFieldFileName;
-//        }
-//
-//        public TextField getTextFieldOrignalValue() {
-//                return textFieldOrignalValue;
-//        }
-//
-//        public TextField getTextFieldLastUpdateInVersion() {
-//                return textFieldLastUpdateInVersion;
-//        }
-//
-//        public TextField getTextFieldVersionSelector() {
-//                return textFieldVersionSelector;
-//        }
-//
-//        public AppController getMainController() {
-//                return mainController;
-//        }
-//
-//        public String getSelectedFileProperty() {
-//                return selectedFileProperty.get();
-//        }
-//
-//        public SimpleStringProperty selectedFilePropertyProperty() {
-//                return selectedFileProperty;
-//        }
 
+        // Setters
+
+        public void setMainController(AppController mainController) {
+                this.mainController = mainController;
+        }
+
+
+        // FXML Methods
 
         @FXML
         void buttonUpdateCellAction(ActionEvent event) {
@@ -166,7 +119,7 @@ public class HeaderController {
                             assert response.body() != null;
                             String jsonResponse = response.body().string();
 
-                                if (response.code() != 201) {
+                                if (response.code() != 200) {
                                         Platform.runLater(()-> mainController.showAlertPopup(new Exception(GSON_INSTANCE.fromJson(jsonResponse,String.class)), "updating cell " + "\"") );
                                 } else{
                                         Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
@@ -177,42 +130,8 @@ public class HeaderController {
                 });
         }
 
-        @FXML
-        public void buttonUploadXmlFileAction(ActionEvent event) {
-//                FileChooser fileChooser = new FileChooser();
-//                fileChooser.setTitle("Select xml file");
-//                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("XML files", "*.xml"));
-//                File selectedFile = fileChooser.showOpenDialog(mainController.getPrimaryStage());
-//                if (selectedFile == null) {
-//                        return;
-//                }
-//                selectedFileProperty = new SimpleStringProperty(selectedFile.getAbsolutePath());
-//                textFieldFileName.textProperty().bind(selectedFileProperty);
-//                mainController.uploadXml(selectedFileProperty.get(), new Callback() {
-//                        @Override
-//                        public void onFailure(@NotNull Call call, @NotNull IOException e) {
-//                                System.err.println("Failed to upload file: " + e.getMessage());
-//                                Platform.runLater(() -> mainController.showAlertPopup(new Exception(),"Loading file"));
-//                        }
-//
-//                        @Override
-//                        public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-//                                assert response.body() != null;
-//                                String jsonResponse = response.body().string(); // Raw response
-//                                System.out.println(jsonResponse);
-//                                SheetDto sheetDto = GSON_INSTANCE.fromJson(jsonResponse, SheetDto.class);
-//                                Platform.runLater(() -> mainController.onFinishLoadingFile(sheetDto));
-//                        }
-//                });
-        }
-
-        @FXML //no need
-        void textFieldFileNameAction(ActionEvent event) {
-
-        }
-
         @FXML //maybe
-        void textFieldOrignalValueAction(ActionEvent event) {
+        void textFieldOriginalValueAction(ActionEvent event) {
                 buttonUpdateCellAction(event);
         }
 
@@ -242,11 +161,9 @@ public class HeaderController {
 
                                         if (response.code() != 200) {
                                                 mainController.showAlertPopup(new Exception(GSON_INSTANCE.fromJson(jsonResponse,String.class)), "show version: " + numberOfVersion);
-                                        }
-                                        else {
+                                        } else {
                                                 Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
                                                 SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
-
                                                 Platform.runLater(() -> mainController.getViewSheetVersionRunLater(sheetDto));
                                         }
                                 }

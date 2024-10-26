@@ -45,28 +45,21 @@ import static dto.enums.Status.*;
 public class DashBoardController {
 
     // Members
-    MainController mainController;
-    ScheduledExecutorService executorServiceForSheetTable;
-    ScheduledExecutorService executorServiceForRequestTable;
+    private MainController mainController;
+    private ScheduledExecutorService executorServiceForSheetTable;
+    private ScheduledExecutorService executorServiceForRequestTable;
+    private PermissionType RequestedPermission;
+    private String focusSheetName = null;
     private boolean isThreadsActive;
-    PermissionType RequestedPermission;
-    String focusSheetName = null;
-
-    //index for current focus in tables.params
-    private int focusItemIndexInSheetTable;
-
 
     //set's for check if sheet and permission change
-    private Map<String,Integer> sheetNameToIndexInSheetList = new HashMap<>();
+    private final Map<String,Integer> sheetNameToIndexInSheetList = new HashMap<>();
 
-    BooleanProperty isSelectedNonePendingRequest = new SimpleBooleanProperty(false);
-    BooleanProperty disableLoadSheetButton = new SimpleBooleanProperty(false);
-    BooleanBinding disableConfirmDenyButton;
-    BooleanBinding disableRequestPermissionButton;
-    BooleanBinding disableViewSheetButton;
+    private final BooleanProperty isSelectedNonePendingRequest = new SimpleBooleanProperty(false);
+    private final BooleanProperty disableLoadSheetButton = new SimpleBooleanProperty(false);
 
-    ObservableList<SheetTableLine> sheetTableLines = FXCollections.observableArrayList();
-    ObservableList<RequestTableLine> requestTableLines = FXCollections.observableArrayList();
+    private final ObservableList<SheetTableLine> sheetTableLines = FXCollections.observableArrayList();
+    private final ObservableList<RequestTableLine> requestTableLines = FXCollections.observableArrayList();
 
 
     // FXML Members
@@ -130,7 +123,7 @@ public class DashBoardController {
 
                     Platform.runLater(()->{
                         mainController.uploadSheetToWorkspace(sheetDto); //prepare the scene
-                        mainController.switchToApp();
+                        mainController.switchToApp(sheetDto.name());
                     });
                 }
             }
@@ -163,13 +156,6 @@ public class DashBoardController {
                 String jsonResponse = response.body().string(); // Raw response
                 if (response.code() != 200) {
                     Platform.runLater(()-> mainController.showAlertPopup(new Exception(jsonResponse),"loading sheet failed"));
-                } else {
-                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
-                    SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
-
-                    Platform.runLater(()->{
-                        mainController.uploadSheetToWorkspace(sheetDto); //prepare the scene
-                    });
                 }
             }
         });
@@ -234,15 +220,15 @@ public class DashBoardController {
 
     private void initBindButtonDisableProperty() {
         // Init booleans
-        disableViewSheetButton = sheetTableView.getSelectionModel().selectedItemProperty().isNull()
+        BooleanBinding disableViewSheetButton = sheetTableView.getSelectionModel().selectedItemProperty().isNull()
                 .or(requestTableView.focusedProperty());
 
-        disableRequestPermissionButton = sheetTableView.getSelectionModel().selectedItemProperty().isNull()
+        BooleanBinding disableRequestPermissionButton = sheetTableView.getSelectionModel().selectedItemProperty().isNull()
                 .or(redearCheckBox.selectedProperty().not().and(writerCheckBox.selectedProperty().not()));
 
-        disableConfirmDenyButton = requestTableView.getSelectionModel().selectedItemProperty().isNull()
+        BooleanBinding disableConfirmDenyButton = requestTableView.getSelectionModel().selectedItemProperty().isNull()
                 .or(requestTableView.getSelectionModel().selectedItemProperty().isNotNull())
-                        .and(isSelectedNonePendingRequest)
+                .and(isSelectedNonePendingRequest)
                 .or(sheetTableView.focusedProperty());
 
 

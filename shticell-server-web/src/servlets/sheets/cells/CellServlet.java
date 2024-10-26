@@ -1,7 +1,7 @@
 package servlets.sheets.cells;
 
 import com.google.gson.Gson;
-import utils.Constants;
+import jakarta.servlet.annotation.MultipartConfig;
 import dto.CellDto;
 import dto.SheetDto;
 import engine.api.Engine;
@@ -14,7 +14,8 @@ import utils.ServletUtils;
 
 import java.io.IOException;
 
-@WebServlet(name = "CellServlet", urlPatterns = {"/sheet/cell"})
+@WebServlet(name = "CellServlet", urlPatterns = "/sheet/cell")
+@MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 1024 * 1024 * 5, maxRequestSize = 1024 * 1024 * 5 * 5)
 public class CellServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -32,10 +33,10 @@ public class CellServlet extends HttpServlet {
                 throw new ServletException("Invalid sheet name");
             }
 
-            String cellName = request.getParameter(Constants.CELL_NAME_PARAMETER);
+            String cellName = ServletUtils.getCellName(request);
             CellDto cellDto = sheetDTO.activeCells().get(cellName);
 
-            if (cellName == null || cellDto == null) {
+            if (cellDto == null) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 throw new ServletException("Invalid cell name");
             }

@@ -25,12 +25,12 @@ public class UniqueColumnsServlet extends HttpServlet {
 
             String userName = ServletUtils.getUserName(request);
             String sheetName = ServletUtils.getSheetName(request);
-            int sheetVersion = ServletUtils.getSheetVersion(request);
             int column = ServletUtils.getColumn(request);
             int startRow = ServletUtils.getStartRow(request);
             int endRow = ServletUtils.getEndRow(request);
+            int sheetVersion = ServletUtils.getSheetVersion(request);
 
-            List<String> columnUniqueValuesInRange = engine.getColumnUniqueValuesInRange(userName, sheetName, sheetVersion, column, startRow, endRow);
+            List<String> columnUniqueValuesInRange = engine.getColumnUniqueValuesInRange(userName, sheetName, column, startRow, endRow, sheetVersion);
 
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
