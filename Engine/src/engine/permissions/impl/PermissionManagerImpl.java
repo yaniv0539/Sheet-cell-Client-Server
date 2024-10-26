@@ -18,6 +18,7 @@ public class PermissionManagerImpl implements PermissionManager {
         this.readers = new HashSet<>();
         this.writers = new HashSet<>();
         this.requestsHistory = new ArrayList<>();
+        this.requestsHistory.add(new Request(owner,PermissionType.OWNER,Status.CONFIRMED));
     }
 
     public static PermissionManagerImpl create(String owner) {
