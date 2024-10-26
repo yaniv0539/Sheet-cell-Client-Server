@@ -2,20 +2,27 @@ package dto;
 
 import engine.permissions.api.PermissionManager;
 
-import java.util.Set;
+import java.util.*;
 
-public class PermissionsDto {
-    public String owner;
-    public Set<String> readers;
-    public Set<String> writers;
-    public Set<RequestDto> requests;
-
-    public PermissionsDto() {}
-
+public record PermissionsDto(
+        String owner,
+        Set<String> readers,
+        Set<String> writers,
+        List<RequestDto> requests
+) {
     public PermissionsDto(PermissionManager permissionManager) {
-        this.owner = permissionManager.getOwner();
-        this.readers = permissionManager.getReaders();
-        this.writers = permissionManager.getWriters();
-        permissionManager.getRequestsHistory().forEach(request -> this.requests.add(new RequestDto(request)));
+        this(
+                permissionManager.getOwner(),
+                permissionManager.getReaders(),
+                permissionManager.getWriters(),
+                createRanges(permissionManager)
+        );
+    }
+
+    private static List<RequestDto> createRanges(PermissionManager permissionManager) {
+        List<RequestDto> requests = new ArrayList<>();
+        permissionManager.getRequestsHistory().forEach(request -> requests.add(new RequestDto(request)));
+
+        return Collections.unmodifiableList(requests);  // Ensure immutability
     }
 }

@@ -163,7 +163,8 @@ public class HeaderController {
 
                         @Override
                         public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                                String jsonResponse = response.body().string();
+                            assert response.body() != null;
+                            String jsonResponse = response.body().string();
 
                                 if (response.code() != 201) {
                                         Platform.runLater(()-> mainController.showAlertPopup(new Exception(GSON_INSTANCE.fromJson(jsonResponse,String.class)), "updating cell " + "\"") );

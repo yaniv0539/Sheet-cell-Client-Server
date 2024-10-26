@@ -1,6 +1,7 @@
 package engine.impl;
 
 import dto.*;
+import dto.enums.PermissionType;
 import engine.api.Engine;
 import engine.jaxb.parser.STLSheetToSheet;
 import engine.permissions.impl.PermissionManagerImpl;
@@ -26,6 +27,7 @@ import sheet.impl.SheetImpl;
 import sheet.layout.api.Layout;
 import sheet.layout.api.LayoutGetters;
 import sheet.layout.impl.LayoutImpl;
+import sheet.layout.size.api.Size;
 import sheet.range.api.RangeGetters;
 import sheet.range.boundaries.api.Boundaries;
 import sheet.range.boundaries.impl.BoundariesFactory;
@@ -77,10 +79,14 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public void addNewSheet(String userName, InputStream inputStream) {
+    public String addNewSheet(String userName, InputStream inputStream) {
         try {
             STLSheet stlSheet = deserializeFrom(inputStream);
             Sheet sheet = STLSheetToSheet.generate(stlSheet);
+
+            if (this.versionManagers.containsKey(sheet.getName())) {
+                throw new RuntimeException("Sheet " + sheet.getName() + " already exists");
+            }
 
             if (!isValidLayout(sheet.getLayout())) {
                 throw new IndexOutOfBoundsException("Layout is invalid !" + "\n" +
@@ -91,6 +97,8 @@ public class EngineImpl implements Engine, Serializable {
             versionManager.init(sheet);
 
             this.permissionManagers.computeIfAbsent(sheet.getName(), k -> PermissionManagerImpl.create(userName));
+
+            return sheet.getName();
 
         } catch (JAXBException e) {
             throw new RuntimeException("Failed to read XML file", e);
@@ -476,8 +484,9 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public boolean isUserHasPermission(String userName, String sheetName, String permission) {
-        return false;
+    public PermissionType getUserPermission(String userName, String sheetName) {
+
+        return permissionManagers.get(sheetName).getPermission(userName);
     }
 
     @Override
@@ -490,6 +499,28 @@ public class EngineImpl implements Engine, Serializable {
         this.userManager.addUser(userName);
     }
 
+    //itay added
+
+    @Override
+    public Set<SheetOverviewDto> getSheetOverviewDto(String userName) {
+        if(!userManager.isUserExists(userName)) {
+            throw new RuntimeException("User " + userName + " does not exist");
+        }
+
+        Set<SheetOverviewDto> sheetOverviewDtoSet = new HashSet<>();
+
+        synchronized (this) {
+            versionManagers.forEach((sheetName, versionManager) -> {
+                Sheet sheet = versionManager.getLastVersion();
+                String owner = permissionManagers.get(sheetName).getOwner();
+                PermissionType userPermission = getUserPermission(userName, sheetName);
+
+                sheetOverviewDtoSet.add(new SheetOverviewDto(sheet, userPermission, owner));
+            });
+        }
+
+        return sheetOverviewDtoSet;
+    }
 
     //sort function helper
     private Comparator<List<CellGetters>> createComparator(List<Integer> sortByColumns, int startCol) {
@@ -594,4 +625,5 @@ public class EngineImpl implements Engine, Serializable {
             throw new RuntimeException("Permission manager is not allowed to write sheet " + sheetName);
         }
     }
+
 }

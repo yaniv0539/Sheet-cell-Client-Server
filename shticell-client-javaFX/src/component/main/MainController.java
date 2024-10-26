@@ -5,6 +5,7 @@ import component.main.center.dashboard.DashBoardController;
 import component.main.center.login.LoginController;
 import component.main.top.TopController;
 import dto.FilterDto;
+import dto.RequestDto;
 import dto.SheetDto;
 import dto.SortDto;
 import dto.enums.PermissionType;
@@ -59,6 +60,7 @@ public class MainController {
     private SplitPane splitPaneApp;
 
     private StringProperty userNameProperty;
+
 
     // Constructor
 
@@ -139,6 +141,7 @@ public class MainController {
         return primaryStage;
     }
 
+
     // Setters
 
     public void setUserName(String userName) {
@@ -168,11 +171,12 @@ public class MainController {
 
     public void switchToDashboard() {
         setMainPanelTo(dashboardComponent);
-//        dashboardComponentController.setActive();
+        dashboardComponentController.setActive();
     }
 
     public void switchToApp() {
         setMainPanelTo(appComponent);
+        dashboardComponentController.setInActive();
 //        appComponentController.setActive();
     }
 
@@ -288,12 +292,25 @@ public class MainController {
         HttpClientUtil.runAsyncPost(finalUrl, body, callback);
     }
 
-    // Get user details
-    public void getUserDetails(String userName, Callback callback) {
+    // Get all sheets overview
+    public void getSheetsOverview(Callback callback) {
         String finalUrl = HttpUrl
-                .parse(Constants.LOGIN_PAGE)
+                .parse(Constants.OVERVIEW_URL)
                 .newBuilder()
-                .addQueryParameter("userName", userName)
+                .addQueryParameter("userName", userNameProperty.get())
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsync(finalUrl, callback);
+
+    }
+
+    // Get permissions for specific sheet
+    public void getPermissions(String sheetName, Callback callback) {
+        String finalUrl = HttpUrl
+                .parse(Constants.PERMISSIONS_URL)
+                .newBuilder()
+                .addQueryParameter("sheetName", sheetName)
                 .build()
                 .toString();
 
@@ -361,7 +378,7 @@ public class MainController {
         String finalUrl = HttpUrl
                 .parse(Constants.LOGIN_PAGE)
                 .newBuilder()
-                .addQueryParameter("username", userName)
+                .addQueryParameter("userName", userName)
                 .build()
                 .toString();
 
@@ -385,15 +402,14 @@ public class MainController {
     }
 
     // Post new permission response for specific sheet
-    public void postResponsePermission(String sheetName, String userNameToConfirm, Callback callback) {
-        RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
+    public void postResponsePermission(String sheetName, RequestDto requestDto, Callback callback) {
+        //transfer the request to confirm. : itay
+        RequestBody body = RequestBody.create(GSON_INSTANCE.toJson(requestDto), MediaType.parse("text/plain"));
 
         String finalUrl = HttpUrl
                 .parse(RESPONSE_PERMISSION_URL)
                 .newBuilder()
-                .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
-                .addQueryParameter("userNameToConfirm", userNameToConfirm)
                 .build()
                 .toString();
 
@@ -448,7 +464,7 @@ public class MainController {
     }
 
     public void uploadSheetToWorkspace(SheetDto sheetDto) {
-
+        appComponentController.onFinishLoadingFile(sheetDto);
     }
 
 }

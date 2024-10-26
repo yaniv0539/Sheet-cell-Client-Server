@@ -116,9 +116,9 @@ public class SortController {
         flowPaneColumns.getChildren().clear();
         anyChecked.setValue(false);
         columToSort.clear();
-        boundariesDto = sortDto.getBoundariesDto();
+        boundariesDto = sortDto.boundariesDto();
         //adding all possible numeric column
-        sortDto.getSortByColumns().forEach(columnLetter -> {
+        sortDto.sortByColumns().forEach(columnLetter -> {
             CheckBox checkBox = new CheckBox(columnLetter);
             checkBox.selectedProperty().addListener((observable,oldValue,newValue) -> this.handleCheckBoxSelect(columnLetter,newValue));
             flowPaneColumns.getChildren().add(checkBox);

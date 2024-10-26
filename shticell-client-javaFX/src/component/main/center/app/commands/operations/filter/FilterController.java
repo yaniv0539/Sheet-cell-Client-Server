@@ -74,8 +74,8 @@ public class FilterController {
 
             mainController.getColumnUniqueValuesInRange(
                     filteringByColumn.toUpperCase().toCharArray()[0] - 'A',
-                    boundariesToFilter.getFrom().getRow(),
-                    boundariesToFilter.getTo().getRow(),
+                    boundariesToFilter.from().row(),
+                    boundariesToFilter.to().row(),
                     new Callback() {
                         @Override
                         public void onFailure(@NotNull Call call, @NotNull IOException e) {
@@ -180,7 +180,7 @@ public class FilterController {
         this.boundariesToFilter = boundaries;
         List<String> ranges = new ArrayList<>();
 
-        for (int i = boundariesToFilter.getFrom().getColumn(); i <= boundariesToFilter.getTo().getColumn(); i++) {
+        for (int i = boundariesToFilter.from().column(); i <= boundariesToFilter.to().column(); i++) {
             char character = (char) ('A' + i); // Compute the character
             String str = String.valueOf(character);
             ranges.add(str);

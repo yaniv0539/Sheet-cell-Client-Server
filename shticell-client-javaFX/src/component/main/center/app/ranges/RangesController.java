@@ -124,7 +124,7 @@ public class RangesController {
     void deleteRangeAction(ActionEvent event) {
         RangeDto selectedRange = tableViewActiveRanges.getSelectionModel().getSelectedItem();
 
-        this.mainController.deleteRange(selectedRange.name, new Callback() {
+        this.mainController.deleteRange(selectedRange.name(), new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 Platform.runLater(() -> mainController.showAlertPopup(new Exception(),"add range"));
@@ -132,6 +132,7 @@ public class RangesController {
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                assert response.body() != null;
                 String jsonResponse = response.body().string();
 
                 if (response.code() != 204) {
@@ -185,8 +186,8 @@ public class RangesController {
 
                         Platform.runLater(()->{
                             mainController.updateCellRunLater(sheetDto);
-                            RangeDto rangeDto = sheetDto.ranges.stream()
-                                    .filter(rangeDto1 -> rangeDto1.name.equals(name.toUpperCase()))
+                            RangeDto rangeDto = sheetDto.ranges().stream()
+                                    .filter(rangeDto1 -> rangeDto1.name().equals(name.toUpperCase()))
                                     .findFirst().get();
 
                             runLaterAddRange(rangeDto);

@@ -52,7 +52,7 @@ public class LoginController {
             return;
         }
 
-        this.mainController.getUserDetails(userNameTextField.getText(), new Callback() {
+        this.mainController.postUser(userNameTextField.getText(), new Callback() {
 
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
@@ -63,7 +63,7 @@ public class LoginController {
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                if (response.code() != 200) {
+                if (response.code() != 201) {
                     assert response.body() != null;
                     String responseBody = response.body().string();
                     Platform.runLater(() ->
