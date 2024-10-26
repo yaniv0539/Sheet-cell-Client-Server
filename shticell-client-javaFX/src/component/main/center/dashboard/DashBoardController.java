@@ -282,8 +282,6 @@ public class DashBoardController {
 
                 if (newValue != null ) {
                    focusSheetName = newValue.getSheetName();
-                   requestTableLines.clear();
-                   requestTableLines.addFirst(new RequestTableLine(newValue.getUserName(),PermissionType.OWNER,Status.CONFIRMED));
                 }
 
         });
@@ -506,9 +504,9 @@ public class DashBoardController {
 
             if (indexLine < sizeOfObservableList) {
                 // +1 only bcz in ui we put the owner in first line.
-                if(!requestTableLineNewLine.equals(requestTableLines.get(indexLine + 1))) {
+                if (!requestTableLineNewLine.equals(requestTableLines.get(indexLine))) {
 
-                    requestTableLines.set(indexLine + 1, requestTableLineNewLine);
+                    requestTableLines.set(indexLine, requestTableLineNewLine);
                 }
             }
             else {
