@@ -14,7 +14,6 @@ import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -59,8 +58,10 @@ public class DashBoardController {
     //set's for check if sheet and permission change
     private Map<String,Integer> sheetNameToIndexInSheetList = new HashMap<>();
 
-    BooleanProperty isSelectedNonePendingRequest = new SimpleBooleanProperty(false);
+    BooleanProperty isSelectedRequestPending = new SimpleBooleanProperty(false);
+    BooleanProperty isSelectedSheetOwnByUser = new SimpleBooleanProperty(false);
     BooleanProperty disableLoadSheetButton = new SimpleBooleanProperty(false);
+
     BooleanBinding disableConfirmDenyButton;
     BooleanBinding disableRequestPermissionButton;
     BooleanBinding disableViewSheetButton;
@@ -177,15 +178,12 @@ public class DashBoardController {
 
     @FXML
     void requestPermissionAction(ActionEvent event) {
-
-        SheetTableLine sheetTableLine = sheetTableView.getSelectionModel().getSelectedItem();
-        String sheetName = sheetTableLine.getSheetName();
-
+        String sheetName = focusSheetName;
         //to complete function in main
         mainController.postRequestPermission(sheetName, RequestedPermission, new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(()-> System.out.println("(()->mainController.showPopupAlert())"));
+                Platform.runLater(() -> mainController.showAlertPopup(e,"request permission"));
             }
 
             @Override
@@ -194,8 +192,9 @@ public class DashBoardController {
                 String jsonString = response.body().string();
 
                 if(response.code() != 201) {
-                    Platform.runLater(()-> System.out.println("(()->mainController.showPopupAlert(jsonString))"));
+                    Platform.runLater(()-> mainController.showAlertPopup(new Exception(jsonString),"request permission"));
                 }
+                //maybe to show the user that the action is done successfully.
             }
         });
     }
@@ -240,14 +239,14 @@ public class DashBoardController {
         disableRequestPermissionButton = sheetTableView.getSelectionModel().selectedItemProperty().isNull()
                 .or(redearCheckBox.selectedProperty().not().and(writerCheckBox.selectedProperty().not()));
 
-        disableConfirmDenyButton = requestTableView.getSelectionModel().selectedItemProperty().isNull()
-                .or(requestTableView.getSelectionModel().selectedItemProperty().isNotNull())
-                        .and(isSelectedNonePendingRequest)
-                .or(sheetTableView.focusedProperty());
+
+        disableConfirmDenyButton = requestTableView.focusedProperty().not()
+                .or(requestTableView.getSelectionModel().selectedItemProperty().isNull())
+                .or(isSelectedRequestPending.not())
+                .or(isSelectedSheetOwnByUser.not());
 
 
         loadSheetButton.disableProperty().bind(disableLoadSheetButton); //always false.
-
         confirmButton.disableProperty().bind(disableConfirmDenyButton);
         denyButton.disableProperty().bind(disableConfirmDenyButton);
         requestPermissionButton.disableProperty().bind(disableRequestPermissionButton);
@@ -279,18 +278,16 @@ public class DashBoardController {
         redearCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> checkBoxPermissionListener(PermissionType.READER, writerCheckBox, newValue));
         writerCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> checkBoxPermissionListener(PermissionType.WRITER, redearCheckBox, newValue));
         sheetTableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-
                 if (newValue != null ) {
                    focusSheetName = newValue.getSheetName();
-                   requestTableLines.clear();
-                   requestTableLines.addFirst(new RequestTableLine(newValue.getUserName(),PermissionType.OWNER,Status.CONFIRMED));
+                    isSelectedSheetOwnByUser.set(newValue.getPermission().equals(PermissionType.OWNER.toString()));
                 }
 
         });
 
         requestTableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                isSelectedNonePendingRequest.set(newValue.getRequestStatus() != PENDING);
+                isSelectedRequestPending.set(newValue.getRequestStatus() == PENDING);
             }
         });
     }
@@ -506,9 +503,9 @@ public class DashBoardController {
 
             if (indexLine < sizeOfObservableList) {
                 // +1 only bcz in ui we put the owner in first line.
-                if(!requestTableLineNewLine.equals(requestTableLines.get(indexLine + 1))) {
+                if (!requestTableLineNewLine.equals(requestTableLines.get(indexLine))) {
 
-                    requestTableLines.set(indexLine + 1, requestTableLineNewLine);
+                    requestTableLines.set(indexLine, requestTableLineNewLine);
                 }
             }
             else {
