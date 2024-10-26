@@ -3,14 +3,16 @@ package component.main.center.dashboard.model;
 import dto.enums.PermissionType;
 import dto.enums.Status;
 
+import java.util.Objects;
+
 public class RequestTableLine {
     private String userName;
-    private PermissionType permissionRequested;
+    private PermissionType permissionType;
     private Status requestStatus;
 
-    public RequestTableLine(String userName, PermissionType permissionRequested, Status requestStatus) {
+    public RequestTableLine(String userName, PermissionType permissionType, Status requestStatus) {
         this.userName = userName;
-        this.permissionRequested = permissionRequested;
+        this.permissionType = permissionType;
         this.requestStatus = requestStatus;
     }
 
@@ -18,15 +20,24 @@ public class RequestTableLine {
         return userName;
     }
 
-    public PermissionType getPermissionRequested() {
-        return permissionRequested;
+    public PermissionType getPermissionType() {
+        return permissionType;
     }
 
     public Status getRequestStatus() {
         return requestStatus;
     }
 
-    public void setRequestStatus(Status ownerAnswer) {
-        this.requestStatus = ownerAnswer;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RequestTableLine that = (RequestTableLine) o;
+        return Objects.equals(userName, that.userName) && permissionType == that.permissionType && requestStatus == that.requestStatus;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userName, permissionType, requestStatus);
     }
 }

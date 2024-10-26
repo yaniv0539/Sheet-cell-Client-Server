@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import component.main.MainController;
+import component.main.center.dashboard.model.RequestTableLine;
 import component.main.center.dashboard.model.SheetTableLine;
 import dto.*;
 import dto.deserializer.CellDtoDeserializer;
@@ -13,6 +14,7 @@ import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -64,7 +66,7 @@ public class DashBoardController {
     BooleanBinding disableViewSheetButton;
 
     ObservableList<SheetTableLine> sheetTableLines = FXCollections.observableArrayList();
-    ObservableList<RequestDto> requestTableLines = FXCollections.observableArrayList();
+    ObservableList<RequestTableLine> requestTableLines = FXCollections.observableArrayList();
 
 
     // FXML Members
@@ -91,7 +93,7 @@ public class DashBoardController {
     private CheckBox writerCheckBox;
 
     @FXML
-    private TableView<RequestDto> requestTableView;
+    private TableView<RequestTableLine> requestTableView;
 
     @FXML
     private TableView<SheetTableLine> sheetTableView;
@@ -265,9 +267,9 @@ public class DashBoardController {
 
     private void initRequestTableView() {
         // Bind columns to fields in data model.
-        requestTableView.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("requesterName"));
+        requestTableView.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("userName"));
         requestTableView.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("permissionType"));
-        requestTableView.getColumns().get(2).setCellValueFactory(new PropertyValueFactory<>("status"));
+        requestTableView.getColumns().get(2).setCellValueFactory(new PropertyValueFactory<>("requestStatus"));
 
         // Set observable list to table
         requestTableView.setItems(requestTableLines);
@@ -276,19 +278,19 @@ public class DashBoardController {
     private void initListeners() {
         redearCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> checkBoxPermissionListener(PermissionType.READER, writerCheckBox, newValue));
         writerCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> checkBoxPermissionListener(PermissionType.WRITER, redearCheckBox, newValue));
-        sheetTableView.focusedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-               SheetTableLine focusItem = sheetTableView.getSelectionModel().getSelectedItem();
+        sheetTableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 
-                if (focusItemIndexInSheetTable != -1) {
-                   focusSheetName = focusItem.getSheetName();
+                if (newValue != null ) {
+                   focusSheetName = newValue.getSheetName();
+                   requestTableLines.clear();
+                   requestTableLines.addFirst(new RequestTableLine(newValue.getUserName(),PermissionType.OWNER,Status.CONFIRMED));
                 }
-            }
+
         });
 
-        requestTableView.focusedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                isSelectedNonePendingRequest.set(requestTableView.getSelectionModel().getSelectedItem().status() != PENDING);
+        requestTableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                isSelectedNonePendingRequest.set(newValue.getRequestStatus() != PENDING);
             }
         });
     }
@@ -333,26 +335,33 @@ public class DashBoardController {
                     }
                 }
             }), 0, 1, TimeUnit.SECONDS); // Sends requests every second
-        executorServiceForRequestTable.scheduleAtFixedRate(()-> mainController.getPermissions(focusSheetName,new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(()->mainController.showAlertPopup(new Exception(e.getMessage()),"unexpected error at get requests"));
-            }
+        executorServiceForRequestTable.scheduleAtFixedRate(()-> {
 
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                assert response.body() != null;
-                String jsonString = response.body().string();
-                if (response.code() != 200) {
-                    Platform.runLater(() -> mainController.showAlertPopup(new Exception(jsonString),"unexpected error at get requests"));
-                } else {
-                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            //only if is there sheet selected
+            if(focusSheetName != null) {
+
+                mainController.getPermissions(focusSheetName,new Callback() {
+                    @Override
+                    public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                        Platform.runLater(()->mainController.showAlertPopup(new Exception(e.getMessage()),"unexpected error at get requests"));
+                    }
+
+                    @Override
+                    public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                        assert response.body() != null;
+                        String jsonString = response.body().string();
+                        if (response.code() != 200) {
+                            Platform.runLater(() -> mainController.showAlertPopup(new Exception(jsonString),"unexpected error at get requests"));
+                        } else {
+                            Gson gson = new GsonBuilder().setPrettyPrinting().create();
 //                    Type setType = new TypeToken<List<RequestDto>>(){}.getType();
-                    PermissionsDto permissionsDto = gson.fromJson(jsonString, PermissionsDto.class);
-                    Platform.runLater(()-> updatePermissionsTable(permissionsDto));
-                }
+                            PermissionsDto permissionsDto = gson.fromJson(jsonString, PermissionsDto.class);
+                            Platform.runLater(()-> updatePermissionsTable(permissionsDto));
+                        }
+                    }
+                });
             }
-        }), 0,500 , TimeUnit.MILLISECONDS);
+        }, 0,500 , TimeUnit.MILLISECONDS);
     }
 
     public void setInActive() {
@@ -400,9 +409,10 @@ public class DashBoardController {
 
     private void confirmDenyOnAction(Status ownerAnswer) {
 
-        RequestDto selectedLine = requestTableView.getSelectionModel().getSelectedItem();
+        RequestTableLine selectedLine = requestTableView.getSelectionModel().getSelectedItem();
+        RequestDto requestDto = new RequestDto(selectedLine.getUserName(),selectedLine.getPermissionType(),selectedLine.getRequestStatus());
 
-        mainController.postResponsePermission(focusSheetName, selectedLine, new Callback() {
+        mainController.postResponsePermission(focusSheetName, requestDto, new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 Platform.runLater(()-> mainController.showAlertPopup(new Exception(e.getMessage()),"unexpected error" ));
@@ -491,17 +501,19 @@ public class DashBoardController {
         for(int indexLine = 0; indexLine < requests.size(); indexLine++) {
 
             RequestDto requestDtoNewLine = requests.get(indexLine);
+            //converting to ui model
+            RequestTableLine requestTableLineNewLine = new RequestTableLine(requestDtoNewLine.requesterName(),requestDtoNewLine.permissionType(),requestDtoNewLine.status());
 
             if (indexLine < sizeOfObservableList) {
                 // +1 only bcz in ui we put the owner in first line.
-                if(!requestDtoNewLine.equals(requestTableLines.get(indexLine + 1))) {
+                if(!requestTableLineNewLine.equals(requestTableLines.get(indexLine + 1))) {
 
-                    requestTableLines.set(indexLine + 1, requestDtoNewLine);
+                    requestTableLines.set(indexLine + 1, requestTableLineNewLine);
                 }
             }
             else {
                 //add the request.
-                requestTableLines.add(requestDtoNewLine);
+                requestTableLines.add(requestTableLineNewLine);
             }
         }
 
