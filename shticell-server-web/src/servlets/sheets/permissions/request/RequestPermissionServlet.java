@@ -29,12 +29,12 @@ public class RequestPermissionServlet extends HttpServlet {
 
             // TODO: Call the right method from the engine.
 
-            SheetDto sheetDTO = engine.getSheetDTO(userName, sheetName);
+           //engine.addRequestPermission(sheetName,userName,permissionType);
 
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
 
-            response.getWriter().print(gson.toJson(sheetDTO));
+            response.getWriter().print("request has been sent !");
             response.setStatus(HttpServletResponse.SC_CREATED);
         } catch (Exception e) {
             response.setContentType("text/plain");
