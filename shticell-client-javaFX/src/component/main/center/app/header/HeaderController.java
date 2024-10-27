@@ -120,7 +120,7 @@ public class HeaderController {
                             String jsonResponse = response.body().string();
 
                                 if (response.code() != 201) {
-                                        Platform.runLater(()-> mainController.showAlertPopup(new Exception(GSON_INSTANCE.fromJson(jsonResponse,String.class)), "updating cell " + "\"") );
+                                        Platform.runLater(()-> mainController.showAlertPopup(new Exception(jsonResponse), "updating cell " + "\"") );
                                 } else{
                                         Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
                                         SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
