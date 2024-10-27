@@ -233,8 +233,8 @@ public class DashBoardController {
                 .or(redearCheckBox.selectedProperty().not().and(writerCheckBox.selectedProperty().not()));
 
 
-        disableConfirmDenyButton = requestTableView.focusedProperty().not()
-                .or(requestTableView.getSelectionModel().selectedItemProperty().isNull())
+        disableConfirmDenyButton = //requestTableView.focusedProperty().not()
+                (requestTableView.getSelectionModel().selectedItemProperty().isNull())
                 .or(isSelectedRequestPending.not())
                 .or(isSelectedSheetOwnByUser.not());
 
@@ -272,7 +272,8 @@ public class DashBoardController {
         writerCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> checkBoxPermissionListener(PermissionType.WRITER, redearCheckBox, newValue));
         sheetTableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
                 if (newValue != null ) {
-                   focusSheetName = newValue.getSheetName();
+                    focusSheetName = newValue.getSheetName();
+                    requestTableLines.clear();
                     isSelectedSheetOwnByUser.set(newValue.getPermission().equals(PermissionType.OWNER.toString()));
                 }
 
@@ -402,7 +403,7 @@ public class DashBoardController {
         RequestTableLine selectedLine = requestTableView.getSelectionModel().getSelectedItem();
         RequestDto requestDto = new RequestDto(selectedLine.getUserName(),selectedLine.getPermissionType(),selectedLine.getRequestStatus());
 
-        mainController.postResponsePermission(focusSheetName, requestDto, new Callback() {
+        mainController.postResponsePermission(focusSheetName, ownerAnswer, requestDto, new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 Platform.runLater(()-> mainController.showAlertPopup(new Exception(e.getMessage()),"unexpected error" ));
@@ -413,36 +414,11 @@ public class DashBoardController {
                 assert response.body() != null;
                 String jsonResponse = response.body().string();
 
-                if (response.code() != 200) {
+                if (response.code() != 201) {
                     Platform.runLater(()-> mainController.showAlertPopup(new Exception(jsonResponse),"update permission for user"));
                 }
             }
         });
-    }
-
-    //no need this function we have a thread
-    private void sentHttpRequestForPermission(String sheetName) {
-
-//        mainController.getPermissions(sheetName, new Callback() {
-//            @Override
-//            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-//                Platform.runLater(()->mainController.showAlertPopup(new Exception(e.getMessage()),"unexpected error at get requests"));
-//            }
-//
-//            @Override
-//            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-//                assert response.body() != null;
-//                String jsonString = response.body().string();
-//                if (response.code() != 200) {
-//                    Platform.runLater(() -> mainController.showAlertPopup(new Exception(jsonString),"unexpected error at get requests"));
-//                } else {
-//                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
-//                    Type setType = new TypeToken<List<RequestDto>>(){}.getType();
-//                    List<RequestDto> listRequestDto = gson.fromJson(jsonString, setType);
-//                    Platform.runLater(()-> updatePermissionsTable(listRequestDto));
-//                }
-//            }
-//        });
     }
 
     private void updateSheetsTable(Set<SheetOverviewDto> sheetOverviewDtos) {

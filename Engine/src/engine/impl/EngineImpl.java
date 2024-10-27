@@ -2,6 +2,7 @@ package engine.impl;
 
 import dto.*;
 import dto.enums.PermissionType;
+import dto.enums.Status;
 import engine.api.Engine;
 import engine.jaxb.parser.STLSheetToSheet;
 import engine.permissions.impl.PermissionManagerImpl;
@@ -499,8 +500,6 @@ public class EngineImpl implements Engine, Serializable {
         this.userManager.addUser(userName);
     }
 
-    //itay added
-
     @Override
     public Set<SheetOverviewDto> getSheetOverviewDto(String userName) {
         if(!userManager.isUserExists(userName)) {
@@ -520,6 +519,30 @@ public class EngineImpl implements Engine, Serializable {
         }
 
         return sheetOverviewDtoSet;
+    }
+
+    @Override
+    public void addRequestPermission(String sheetName, String userName, PermissionType permissionType) {
+
+        if (!userManager.isUserExists(userName)) {
+            throw new RuntimeException("User " + userName + " does not exist");
+        }
+
+        PermissionManager permissionManager = getPermissionManager(sheetName);
+
+        permissionManager.addRequest(userName, permissionType);
+
+
+    }
+
+    @Override
+    public void setResponseToRequest(String sheetName, String userName, PermissionType permissionType, Status status,Status response) {
+        if (!userManager.isUserExists(userName)) {
+            throw new RuntimeException("User " + userName + " does not exist");
+        }
+
+        PermissionManager permissionManager = getPermissionManager(sheetName);
+        permissionManager.updateRequest(userName,permissionType,status,response);
     }
 
     //sort function helper

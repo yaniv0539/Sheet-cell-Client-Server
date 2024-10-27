@@ -11,4 +11,6 @@ public class Constants {
     public static final String SHEET_START_ROW_PARAMETER = "startRow";
     public static final String SHEET_END_ROW_PARAMETER = "endRow";
     public static final String PERMISSION_TYPE_PARAMETER = "permissionType";
+    public static final String STATUS_PARAMETER = "status";
+    public static final String RESPONSE_PARAMETER = "response";
 }
