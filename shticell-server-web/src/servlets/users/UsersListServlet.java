@@ -1,5 +1,6 @@
 package servlets.users;
 
+import com.google.gson.Gson;
 import engine.api.Engine;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -10,30 +11,27 @@ import jakarta.servlet.http.HttpServletResponse;
 import utils.ServletUtils;
 
 import java.io.IOException;
+import java.util.List;
 
-
-@WebServlet(name = "UserServlet", urlPatterns = "/user")
+@WebServlet(name = "UsersListServlet", urlPatterns = "/userslist")
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 1024 * 1024 * 5, maxRequestSize = 1024 * 1024 * 5 * 5)
-public class UserServlet extends HttpServlet {
+public class UsersListServlet extends HttpServlet {
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             Engine engine = ServletUtils.getEngine(getServletContext());
+            Gson gson = ServletUtils.getGson(getServletContext());
 
-            String userName = ServletUtils.getUserName(request);
-
-            engine.addUser(userName);
+            List<String> users = engine.getUsers();
 
             response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
-
-            response.setStatus(HttpServletResponse.SC_CREATED);
+            response.getWriter().println(gson.toJson(users));
+            response.setStatus(HttpServletResponse.SC_OK);
         } catch (Exception e) {
             response.setContentType("text/plain");
             response.getWriter().println(e.getMessage());
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
-
 }

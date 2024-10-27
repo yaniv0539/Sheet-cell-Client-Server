@@ -73,8 +73,7 @@ public class LoginController {
                     Platform.runLater(() -> {
                         mainController.setUserName(userName);
                         mainController.switchToDashboard();
-                        // TODO: Implement this.
-//                        mainController.showChatInBottomPanel();
+                        mainController.switchToChatRoom();
                     });
                 }
             }

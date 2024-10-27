@@ -490,7 +490,7 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public Set<String> getUsers() {
+    public List<String> getUsers() {
         return userManager.getUsers();
     }
 

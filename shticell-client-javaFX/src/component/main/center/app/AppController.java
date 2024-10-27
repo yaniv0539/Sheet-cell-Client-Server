@@ -39,6 +39,7 @@ import sheet.coordinate.impl.CoordinateFactory;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -184,6 +185,57 @@ public class AppController {
 
     private void saveDesignVersion(GridPane gridPane) {
         sheetToVersionDesignManager.get(currentSheet.name()).saveVersionDesign(gridPane);
+    }
+
+    public void setActive(String sheetName) {
+        if (isThreadsActive || executorServiceForSheet == null) {
+            return; // Prevent starting multiple threads
+        }
+
+        isThreadsActive = true;
+
+        executorServiceForSheet.scheduleAtFixedRate(() -> mainController.getSheet(sheetName, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> mainController.showAlertPopup(new Exception(),"show version"));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                assert response.body() != null;
+                String jsonResponse = response.body().string();
+
+                if (response.code() != 200) {
+                    mainController.showAlertPopup(new Exception(GSON_INSTANCE.fromJson(jsonResponse,String.class)), "Sheet name " + sheetName);
+                } else if (response.code() == 201) {
+//                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
+//                    SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
+                    SheetDto sheetDto = null;
+                    Platform.runLater(() -> updateSheetView(sheetDto));
+                } else {
+
+                }
+            }
+        }), 0, 1, TimeUnit.SECONDS);
+    }
+
+    public void setInActive() {
+        if (!isThreadsActive) {
+            return;
+        }
+
+        isThreadsActive = false;
+        executorServiceForSheet.shutdownNow(); // Stop the background thread
+
+        try {
+            // Await termination of all tasks
+            executorServiceForSheet.awaitTermination(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // Reinitialize the executor service to start again if needed
+        executorServiceForSheet = Executors.newSingleThreadScheduledExecutor();
     }
 
     @FXML
@@ -601,34 +653,22 @@ public class AppController {
         this.sheetComponentController.paintRangeOnSheet(range, color);
     }
 
-    public void setActive(String sheetName) {
-        if (isThreadsActive || executorServiceForSheet == null) {
-            return; // Prevent starting multiple threads
+    private void updateSheetView(SheetDto sheetDto) {
+
+        if (sheetDto == null) {
+//            throw new RuntimeException("Sheet deleted!");
+            return;
         }
 
-        isThreadsActive = true;
-
-        executorServiceForSheet.scheduleAtFixedRate(() -> mainController.getSheet(sheetName, new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(() -> mainController.showAlertPopup(new Exception(),"show version"));
+        if (sheetDto.version() == mostUpdatedVersionNumber) {
+            if (sheetDto.ranges().size() != currentSheet.ranges().size()) {
+                currentSheet.ranges().clear();
+                currentSheet.ranges().addAll(sheetDto.ranges());
             }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                assert response.body() != null;
-                String jsonResponse = response.body().string();
-
-                if (response.code() != 200) {
-                    mainController.showAlertPopup(new Exception(GSON_INSTANCE.fromJson(jsonResponse,String.class)), "Sheet name " + sheetName);
-                }
-                else {
-                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
-                    SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
-                    Platform.runLater(() -> getViewSheetVersionRunLater(sheetDto));
-                }
-            }
-        }), 0, 1, TimeUnit.SECONDS);
+        } else {
+//            getViewSheetVersionRunLater(sheetDto);
+            currentSheet = sheetDto;
+        }
     }
 
 
