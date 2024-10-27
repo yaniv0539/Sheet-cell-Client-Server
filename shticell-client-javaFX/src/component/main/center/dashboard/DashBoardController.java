@@ -51,10 +51,6 @@ public class DashBoardController {
     PermissionType RequestedPermission;
     String focusSheetName = null;
 
-    //index for current focus in tables.params
-    private int focusItemIndexInSheetTable;
-
-
     //set's for check if sheet and permission change
     private Map<String,Integer> sheetNameToIndexInSheetList = new HashMap<>();
 
@@ -104,14 +100,8 @@ public class DashBoardController {
 
     @FXML
     void viewSheetAction(ActionEvent event) {
-        SheetTableLine selectedLine = sheetTableView.getSelectionModel().getSelectedItem();
-        String sheetName = null;
 
-        if (selectedLine != null) {
-            sheetName = selectedLine.getSheetName();
-        }
-
-        mainController.getSheet(sheetName, new Callback() {
+        mainController.getSheet(focusSheetName, new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 Platform.runLater(()-> mainController.showAlertPopup(new Exception(e.getMessage()),"unexpected error" ));
