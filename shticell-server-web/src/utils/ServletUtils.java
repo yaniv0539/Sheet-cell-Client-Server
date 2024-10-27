@@ -8,6 +8,7 @@ import dto.CoordinateDto;
 import dto.deserializer.CellDtoDeserializer;
 import dto.deserializer.CoordinateMapDeserializer;
 import dto.enums.PermissionType;
+import dto.enums.Status;
 import dto.serializer.CellDtoSerializer;
 import dto.serializer.CoordinateMapSerializer;
 import engine.api.Engine;
@@ -152,6 +153,26 @@ public class ServletUtils {
         }
 
         return PermissionType.valueOf(permissionType);
+    }
+
+    public static Status getStatus(HttpServletRequest request) {
+        String status = request.getParameter(Constants.STATUS_PARAMETER);
+
+        if (status == null || status.isEmpty()) {
+            throw new RuntimeException("Status parameter is null");
+        }
+
+        return Status.valueOf(status);
+    }
+
+    public static Status getResponse(HttpServletRequest request) {
+        String response = request.getParameter(Constants.RESPONSE_PARAMETER);
+
+        if (response == null || response.isEmpty()) {
+            throw new RuntimeException("Status parameter is null");
+        }
+
+        return Status.valueOf(response);
     }
 }
 

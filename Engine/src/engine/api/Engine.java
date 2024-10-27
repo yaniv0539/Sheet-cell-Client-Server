@@ -3,6 +3,7 @@ package engine.api;
 import dto.*;
 
 import dto.enums.PermissionType;
+import dto.enums.Status;
 import sheet.range.boundaries.api.Boundaries;
 
 import java.io.InputStream;
@@ -65,4 +66,8 @@ public interface Engine {
         void addUser(String userName);
 
         Set<SheetOverviewDto> getSheetOverviewDto(String userName);
+
+        void addRequestPermission(String sheetName, String userName, PermissionType permissionType);
+
+        void setResponseToRequest(String sheetName, String userName, PermissionType permissionType, Status status,Status response);
 }
