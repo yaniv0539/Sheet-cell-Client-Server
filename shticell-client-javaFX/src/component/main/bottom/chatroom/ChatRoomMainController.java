@@ -50,11 +50,12 @@ public class ChatRoomMainController implements Closeable, ChatCommands {
     }
 
     public void setMainController(MainController mainController) {
-        this.mainController= mainController;
+        this.mainController = mainController;
     }
 
     @Override
     public void logout() {
         mainController.switchToLogin();
     }
+
 }

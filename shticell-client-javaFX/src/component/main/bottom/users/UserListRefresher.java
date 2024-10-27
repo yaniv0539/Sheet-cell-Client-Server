@@ -1,5 +1,11 @@
 package component.main.bottom.users;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import component.main.MainController;
+import dto.SheetOverviewDto;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -9,8 +15,10 @@ import utils.Constants;
 import utils.http.HttpClientUtil;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.TimerTask;
 import java.util.function.Consumer;
 
@@ -22,6 +30,7 @@ public class UserListRefresher extends TimerTask {
     private int requestNumber;
     private final BooleanProperty shouldUpdate;
 
+    private MainController mainController;
 
     public UserListRefresher(BooleanProperty shouldUpdate, Consumer<List<String>> usersListConsumer) {
         this.shouldUpdate = shouldUpdate;
@@ -47,9 +56,16 @@ public class UserListRefresher extends TimerTask {
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 assert response.body() != null;
-                String jsonArrayOfUsersNames = response.body().string();
-                String[] usersNames = GSON_INSTANCE.fromJson(jsonArrayOfUsersNames, String[].class);
-                usersListConsumer.accept(Arrays.asList(usersNames));
+                String jsonString = response.body().string();
+
+                if (!response.isSuccessful()) {
+//                    Platform.runLater(()-> mainController.showAlertPopup(new Exception(),"pull thread fail.."));
+                } else {
+                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                    Type setType = new TypeToken<List<String>>(){}.getType();
+                    List<String> usersNames = gson.fromJson(jsonString, setType);
+                    usersListConsumer.accept(usersNames);
+                }
             }
         });
     }

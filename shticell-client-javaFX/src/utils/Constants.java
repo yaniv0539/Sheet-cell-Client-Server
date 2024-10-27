@@ -13,6 +13,7 @@ public class Constants {
     public final static String LOGIN_PAGE_FXML_RESOURCE_LOCATION = "/component/main/center/login/login.fxml";
     public final static String DASHBOARD_PAGE_FXML_RESOURCE_LOCATION = "/component/main/center/dashboard/dashboard.fxml";
     public final static String APP_PAGE_FXML_RESOURCE_LOCATION = "/component/main/center/app/app.fxml";
+    public final static String CHAT_ROOM_FXML_RESOURCE_LOCATION = "/component/main/bottom/chatroom/chat-room-main.fxml";
 
     // Server resources locations
 
@@ -41,7 +42,7 @@ public class Constants {
     public final static String UNIQUE_COL_VALUES_URL = FILTER_SHEET_URL + "/uniqueColumnValues";
     public final static String GET_NUMERIC_COLUMNS_IN_RANGE_URL = SORT_SHEET_URL + "/numericColumns";
 
-    public final static String LOGIN_PAGE = FULL_SERVER_PATH + "/login";
+    public final static String USER_URL = FULL_SERVER_PATH + "/user";
     public final static String USERS_LIST = FULL_SERVER_PATH + "/userslist";
     public final static String LOGOUT = FULL_SERVER_PATH + "/chat/logout";
     public final static String SEND_CHAT_LINE = FULL_SERVER_PATH + "/pages/chatroom/sendChat";

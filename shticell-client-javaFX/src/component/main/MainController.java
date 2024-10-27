@@ -1,5 +1,6 @@
 package component.main;
 
+import component.main.bottom.chatroom.ChatRoomMainController;
 import component.main.center.app.AppController;
 import component.main.center.dashboard.DashBoardController;
 import component.main.center.login.LoginController;
@@ -51,6 +52,9 @@ public class MainController {
     private BorderPane appComponent;
     private AppController appComponentController;
 
+    private Parent chatRoomComponent;
+    private ChatRoomMainController chatRoomComponentController;
+
     @FXML
     private AnchorPane anchorPaneBottomApp;
 
@@ -84,6 +88,7 @@ public class MainController {
             loadLoginPage();
             loadDashboardPage();
             loadAppPage();
+            loadChatRoomPage();
         }
     }
 
@@ -127,6 +132,18 @@ public class MainController {
         }
     }
 
+    private void loadChatRoomPage() {
+        URL loginPageUrl = getClass().getResource(CHAT_ROOM_FXML_RESOURCE_LOCATION);
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader();
+            fxmlLoader.setLocation(loginPageUrl);
+            chatRoomComponent = fxmlLoader.load();
+            chatRoomComponentController = fxmlLoader.getController();
+            chatRoomComponentController.setMainController(this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     // Getters
 
@@ -165,14 +182,20 @@ public class MainController {
         AnchorPane.setRightAnchor(pane, 1.0);
     }
 
+    private void setBottomPanelTo(Parent pane) {
+        splitPaneApp.getItems().add(pane);
+    }
+
     public void switchToLogin() {
         setMainPanelTo(loginComponent);
+        chatRoomComponentController.setInActive();
 //        loginComponentController.setActive();
     }
 
     public void switchToDashboard() {
         setMainPanelTo(dashboardComponent);
         dashboardComponentController.setActive();
+        appComponentController.setInActive();
     }
 
     public void switchToApp(String sheetName) {
@@ -181,6 +204,10 @@ public class MainController {
         appComponentController.setActive(sheetName);
     }
 
+    public void switchToChatRoom() {
+        setBottomPanelTo(chatRoomComponent);
+        chatRoomComponentController.setActive();
+    }
 
     // Http requests to shticell servlet
 
@@ -377,7 +404,7 @@ public class MainController {
         RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
 
         String finalUrl = HttpUrl
-                .parse(Constants.LOGIN_PAGE)
+                .parse(Constants.USER_URL)
                 .newBuilder()
                 .addQueryParameter("userName", userName)
                 .build()
@@ -471,5 +498,6 @@ public class MainController {
     public void uploadSheetToWorkspace(SheetDto sheetDto) {
         appComponentController.onFinishLoadingFile(sheetDto);
     }
+
 
 }

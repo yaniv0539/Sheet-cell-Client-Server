@@ -62,7 +62,7 @@ public interface Engine {
 
 // Users:
 
-        Set<String> getUsers();
+        List<String> getUsers();
         void addUser(String userName);
 
         Set<SheetOverviewDto> getSheetOverviewDto(String userName);
