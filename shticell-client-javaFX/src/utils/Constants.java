@@ -33,8 +33,8 @@ public class Constants {
     public final static String RANGE_URL = SHEET_URL + "/ranges";
     public final static String FILTER_SHEET_URL = SHEET_URL + "/filter";
     public final static String SORT_SHEET_URL = SHEET_URL + "/sort";
-    public final static String REQUEST_PERMISSION_URL = FULL_SERVER_PATH + "/request";
-    public final static String RESPONSE_PERMISSION_URL = FULL_SERVER_PATH + "/response";
+    public final static String REQUEST_PERMISSION_URL = PERMISSIONS_URL + "/request";
+    public final static String RESPONSE_PERMISSION_URL = PERMISSIONS_URL + "/response";
 
 
     // Third Layer

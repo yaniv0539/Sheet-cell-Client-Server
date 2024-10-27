@@ -72,7 +72,6 @@ public class PermissionManagerImpl implements PermissionManager {
 //        } else if (requestsHistory.contains(pendingRequest)) {
 //            throw new RuntimeException("Request already pending.");
 //        }
-
         //itsay add
         if(requestsHistory.contains(pendingRequest)) {
             throw new RuntimeException("Request already pending.");
@@ -98,8 +97,10 @@ public class PermissionManagerImpl implements PermissionManager {
 
         if (permissionType == PermissionType.WRITER) {
             writers.add(requesterName);
+            readers.remove(requesterName);
         } else if (permissionType == PermissionType.READER) {
             readers.add(requesterName);
+            writers.remove(requesterName);
         } else {
             throw new IllegalArgumentException("Unsupported permission type: " + permissionType);
         }
@@ -121,6 +122,21 @@ public class PermissionManagerImpl implements PermissionManager {
         //it contain
         int index = requestsHistory.indexOf(pendingRequest);
         requestsHistory.set(index,deniedRequest); //switch
+    }
+
+    @Override
+    public void updateRequest(String userName, PermissionType permissionType, Status status, Status response) {
+
+        if(status != Status.PENDING) {
+            throw new RuntimeException("Request is not PENDING.");
+        }
+
+        if (response.equals(Status.CONFIRMED)) {
+            confirmRequest(userName, permissionType);
+        } else if (response.equals(Status.DENIED)) {
+            denyRequest(userName, permissionType);
+        }
+
     }
 
     @Override

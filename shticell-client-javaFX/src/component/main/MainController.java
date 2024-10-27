@@ -10,6 +10,7 @@ import dto.RequestDto;
 import dto.SheetDto;
 import dto.SortDto;
 import dto.enums.PermissionType;
+import dto.enums.Status;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
@@ -429,14 +430,18 @@ public class MainController {
     }
 
     // Post new permission response for specific sheet
-    public void postResponsePermission(String sheetName, RequestDto requestDto, Callback callback) {
+    public void postResponsePermission(String sheetName, Status ownerAnswer, RequestDto requestDto, Callback callback) {
         //transfer the request to confirm. : itay
-        RequestBody body = RequestBody.create(GSON_INSTANCE.toJson(requestDto), MediaType.parse("text/plain"));
+        RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
 
         String finalUrl = HttpUrl
                 .parse(RESPONSE_PERMISSION_URL)
                 .newBuilder()
+                .addQueryParameter("userName", requestDto.requesterName())
                 .addQueryParameter("sheetName", sheetName)
+                .addQueryParameter("permissionType", requestDto.permissionType().toString())
+                .addQueryParameter("status", requestDto.status().toString())
+                .addQueryParameter("response", ownerAnswer.toString())
                 .build()
                 .toString();
 

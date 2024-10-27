@@ -1,6 +1,7 @@
 package engine.permissions.api;
 
 import dto.enums.PermissionType;
+import dto.enums.Status;
 import engine.permissions.request.Request;
 
 import java.util.List;
@@ -19,4 +20,6 @@ public interface PermissionManager {
     boolean canWrite(String writer);
 
     PermissionType getPermission(String userName);
+
+    void updateRequest(String userName, PermissionType permissionType, Status status, Status response);
 }
