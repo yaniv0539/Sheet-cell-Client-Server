@@ -218,7 +218,7 @@ public class DashBoardController {
     @FXML
     void initialize() {
         initPullThread();
-//        initBindButtonDisableProperty();
+        initBindButtonDisableProperty();
         initSheetTableView();
         initRequestTableView();
         initListeners();
