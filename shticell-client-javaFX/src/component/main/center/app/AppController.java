@@ -70,6 +70,7 @@ public class AppController {
     private SimpleBooleanProperty showCommands;
     private SimpleBooleanProperty showRanges;
     private SimpleBooleanProperty showHeaders;
+    private boolean isEditor;
 
     private SheetController sheetComponentController;
     private ProgressController progressComponentController;
@@ -357,33 +358,56 @@ public class AppController {
         commandsComponentController.getButtonFilter().setDisable(false);
     }
 
-    public void onFinishLoadingFile(SheetDto sheetDto) {
+    public void onFinishLoadingFile(SheetDto sheetDto,boolean isEditor) {
         //methode
-        showHeaders.set(true);
-        showRanges.set(true);
+        setDisableBoolean(isEditor);
+
+        this.currentSheet = sheetDto;//this what server bring
+        rangesComponentController.uploadRanges(currentSheet.ranges());
+        setEffectiveValuesPoolProperty(currentSheet, this.effectiveValuesPool);
+        setSheet(currentSheet);
+        mostUpdatedVersionNumber = sheetDto.version();
+        setVersionSplitMenuButton();
+        setDesignVersions();
+    }
+
+    private void setDisableBoolean(boolean isEditor) {
+
+        this.isEditor = isEditor;
+        showHeaders.set(isEditor); //depandes if writer
+        showRanges.set(isEditor);//depandes if writer
         headerComponentController.getSplitMenuButtonSelectVersion().setDisable(false);
         commandsComponentController.getButtonFilter().setDisable(false);
         commandsComponentController.getButtonSort().setDisable(false);
         commandsComponentController.resetButtonFilter();
         commandsComponentController.resetButtonSort();
+    }
 
-        this.currentSheet = sheetDto;//this what server bring
-        setEffectiveValuesPoolProperty(currentSheet, this.effectiveValuesPool);
-        setSheet(currentSheet);
-        mostUpdatedVersionNumber = sheetDto.version();
+    private void setVersionSplitMenuButton() {
         headerComponentController.clearVersionButton();
         //itay added: if the sheet we want to view is in a version bigger then one.
         for(int i = 1 ; i <= mostUpdatedVersionNumber; i++) {
             headerComponentController.addMenuOptionToVersionSelection(String.valueOf(i));
         }
+    }
 
-        rangesComponentController.uploadRanges(currentSheet.ranges());
+    //itay added
+    private void setDesignVersions() {
+        
+        if(sheetToVersionDesignManager.get(currentSheet.name()) == null) {
+            VersionDesignManager designManagerForSheet = new VersionDesignManager();
+            designManagerForSheet.setMainController(this);
+            sheetToVersionDesignManager.put(currentSheet.name(), designManagerForSheet);
+            saveDesignVersion(sheetComponentController.getGridPane());
+        }
+        
+        int lastVersionInMap = sheetToVersionDesignManager.get(currentSheet.name()).getNumberOfVersions();
 
-        VersionDesignManager designManagerForSheet = new VersionDesignManager();
-        designManagerForSheet.setMainController(this);
-        sheetToVersionDesignManager.put(currentSheet.name(), designManagerForSheet);
-        saveDesignVersion(sheetComponentController.getGridPane());
-        sheetToVersionDesignManager.get(currentSheet.name()).addVersion();
+        for(int i = lastVersionInMap  ; i <= mostUpdatedVersionNumber; i++) {
+            sheetToVersionDesignManager.get(currentSheet.name()).addVersion();
+        }
+
+        resetSheetToVersionDesign(mostUpdatedVersionNumber);
     }
 
     public void getSortedSheetRunLater(SortDesignDto sortDesignDto) {
@@ -458,9 +482,9 @@ public class AppController {
         currentSheet = sheetDto;
         int numberOfVersion = currentSheet.version();
 
-        showCommands.set(numberOfVersion == mostUpdatedVersionNumber);
-        showRanges.set(numberOfVersion == mostUpdatedVersionNumber);
-        showHeaders.set(numberOfVersion == mostUpdatedVersionNumber);
+        showCommands.set(numberOfVersion == mostUpdatedVersionNumber && isEditor);
+        showRanges.set(numberOfVersion == mostUpdatedVersionNumber && isEditor);
+        showHeaders.set(numberOfVersion == mostUpdatedVersionNumber && isEditor);
         setEffectiveValuesPoolProperty(currentSheet, effectiveValuesPool);
         resetSheetToVersionDesign(numberOfVersion);
     }
@@ -556,7 +580,10 @@ public class AppController {
         if(numberOfVersion == mostUpdatedVersionNumber){
             numberOfVersion++;
         }
-        sheetComponentController.setGridPaneDesign(sheetToVersionDesignManager.get(currentSheet.name()).getVersionDesign(numberOfVersion));
+        VersionDesignManager.VersionDesign versionDesign = sheetToVersionDesignManager.get(currentSheet.name()).getVersionDesign(numberOfVersion);
+        if(versionDesign != null) {
+            sheetComponentController.setGridPaneDesign(versionDesign);
+        }
     }
 
     public void resetOperationView() {
