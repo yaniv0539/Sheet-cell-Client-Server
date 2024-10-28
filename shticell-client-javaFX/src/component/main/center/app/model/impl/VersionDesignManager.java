@@ -64,6 +64,11 @@ public class VersionDesignManager {
         rowsLayouts.put(numberOfVersions,new HashMap<>());
         columnsLayouts.put(numberOfVersions,new HashMap<>());
     }
+
+    public int getNumberOfVersions() {
+        return numberOfVersions;
+    }
+
     public void saveVersionDesign(GridPane CurrGridPane) {
         setCellsDesign(CurrGridPane);
         setRowsLayouts(CurrGridPane);
@@ -113,7 +118,14 @@ public class VersionDesignManager {
     }
 
     public VersionDesign getVersionDesign(int version){
-        return new VersionDesign(version);
+
+        VersionDesign versionDesign = new VersionDesign(version);
+
+        if(versionDesign.cellDesignsVersion == null || versionDesign.rowsLayoutVersion == null || versionDesign.columnsLayoutVersion == null) {
+
+           versionDesign = null;
+        }
+        return versionDesign;
     }
 //    public static <K, V> Map<K, V> deepCopy(Map<K, V> originalMap) {
 //        // Create a new map and populate it with copies of the original map's entries

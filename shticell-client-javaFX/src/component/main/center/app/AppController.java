@@ -359,8 +359,8 @@ public class AppController {
 
     public void onFinishLoadingFile(SheetDto sheetDto) {
         //methode
-        showHeaders.set(true);
-        showRanges.set(true);
+        showHeaders.set(true); //depandes if writer
+        showRanges.set(true);//depandes if writer
         headerComponentController.getSplitMenuButtonSelectVersion().setDisable(false);
         commandsComponentController.getButtonFilter().setDisable(false);
         commandsComponentController.getButtonSort().setDisable(false);
@@ -379,11 +379,20 @@ public class AppController {
 
         rangesComponentController.uploadRanges(currentSheet.ranges());
 
-        VersionDesignManager designManagerForSheet = new VersionDesignManager();
-        designManagerForSheet.setMainController(this);
-        sheetToVersionDesignManager.put(currentSheet.name(), designManagerForSheet);
-        saveDesignVersion(sheetComponentController.getGridPane());
-        sheetToVersionDesignManager.get(currentSheet.name()).addVersion();
+        if(sheetToVersionDesignManager.get(currentSheet.name()) == null) {
+            VersionDesignManager designManagerForSheet = new VersionDesignManager();
+            designManagerForSheet.setMainController(this);
+            sheetToVersionDesignManager.put(currentSheet.name(), designManagerForSheet);
+            saveDesignVersion(sheetComponentController.getGridPane());
+        }
+
+        int lastVersionInMap = sheetToVersionDesignManager.get(currentSheet.name()).getNumberOfVersions();
+
+        for(int i = lastVersionInMap  ; i <= mostUpdatedVersionNumber; i++) {
+            sheetToVersionDesignManager.get(currentSheet.name()).addVersion();
+        }
+
+        resetSheetToVersionDesign(mostUpdatedVersionNumber);
     }
 
     public void getSortedSheetRunLater(SortDesignDto sortDesignDto) {
@@ -556,7 +565,10 @@ public class AppController {
         if(numberOfVersion == mostUpdatedVersionNumber){
             numberOfVersion++;
         }
-        sheetComponentController.setGridPaneDesign(sheetToVersionDesignManager.get(currentSheet.name()).getVersionDesign(numberOfVersion));
+        VersionDesignManager.VersionDesign versionDesign = sheetToVersionDesignManager.get(currentSheet.name()).getVersionDesign(numberOfVersion);
+        if(versionDesign != null) {
+            sheetComponentController.setGridPaneDesign(versionDesign);
+        }
     }
 
     public void resetOperationView() {
