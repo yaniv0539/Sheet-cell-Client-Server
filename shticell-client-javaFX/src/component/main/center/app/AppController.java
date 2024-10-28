@@ -207,12 +207,11 @@ public class AppController {
 
                 if (response.code() != 200) {
                     mainController.showAlertPopup(new Exception(GSON_INSTANCE.fromJson(jsonResponse,String.class)), "Sheet name " + sheetName);
-                } else if (response.code() == 201) {
-//                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
-//                    SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
-                    SheetDto sheetDto = null;
+                }
+                else {
+                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
+                    SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
                     Platform.runLater(() -> updateSheetView(sheetDto));
-                } else {
 
                 }
             }
@@ -660,8 +659,7 @@ public class AppController {
     private void updateSheetView(SheetDto sheetDto) {
 
         if (sheetDto == null) {
-//            throw new RuntimeException("Sheet deleted!");
-            return;
+            throw new RuntimeException("Sheet deleted!");
         }
 
         if (sheetDto.version() == mostUpdatedVersionNumber) {
