@@ -1,6 +1,7 @@
 package component.main.bottom.chatarea;
 
 import component.main.bottom.chatarea.model.ChatLinesWithVersion;
+import component.main.bottom.chatroom.ChatRoomMainController;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -35,6 +36,7 @@ public class ChatAreaController implements Closeable {
     private final BooleanProperty autoUpdate;
     private ChatAreaRefresher chatAreaRefresher;
     private Timer timer;
+    private ChatRoomMainController chatRoomMainController;
 
     @FXML private ToggleButton autoScrollButton;
     @FXML private TextArea chatLineTextArea;
@@ -59,15 +61,7 @@ public class ChatAreaController implements Closeable {
 
     @FXML
     void sendButtonClicked(ActionEvent event) {
-        String chatLine = chatLineTextArea.getText();
-        String finalUrl = HttpUrl
-                .parse(Constants.SEND_CHAT_LINE)
-                .newBuilder()
-                .addQueryParameter("userstring", chatLine)
-                .build()
-                .toString();
-
-        HttpClientUtil.runAsync(finalUrl, new Callback() {
+        chatRoomMainController.sendMessage(chatLineTextArea.getText(), new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
 
@@ -127,5 +121,9 @@ public class ChatAreaController implements Closeable {
             chatAreaRefresher.cancel();
             timer.cancel();
         }
+    }
+
+    public void setChatCommands(ChatRoomMainController chatRoomMainController) {
+        this.chatRoomMainController = chatRoomMainController;
     }
 }

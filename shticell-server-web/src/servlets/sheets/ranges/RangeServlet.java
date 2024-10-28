@@ -21,12 +21,14 @@ public class RangeServlet extends HttpServlet {
             Engine engine = ServletUtils.getEngine(getServletContext());
             Gson gson = ServletUtils.getGson(getServletContext());
 
-            String userName = ServletUtils.getSheetName(request);
+            String userName = ServletUtils.getUserName(request);
             String sheetName = ServletUtils.getSheetName(request);
             String rangeName = ServletUtils.getRangeName(request);
             String rangeValue = ServletUtils.getBoundaries(request);
 
-            engine.addRange(userName, sheetName, rangeName, rangeValue);
+            int sheetVersion = ServletUtils.getSheetVersion(request);
+
+            engine.addRange(userName, sheetName, sheetVersion, rangeName, rangeValue);
 
             SheetDto sheetDTO = engine.getSheetDTO(userName, sheetName);
 
@@ -51,7 +53,9 @@ public class RangeServlet extends HttpServlet {
             String sheetName = ServletUtils.getSheetName(request);
             String rangeName = ServletUtils.getRangeName(request);
 
-            engine.deleteRange(userName, sheetName, rangeName);
+            int sheetVersion = ServletUtils.getSheetVersion(request);
+
+            engine.deleteRange(userName, sheetName, sheetVersion, rangeName);
 
             response.setStatus(HttpServletResponse.SC_NO_CONTENT);
         } catch (Exception e) {

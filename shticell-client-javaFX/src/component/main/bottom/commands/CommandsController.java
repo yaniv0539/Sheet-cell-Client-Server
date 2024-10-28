@@ -47,7 +47,6 @@ public class CommandsController {
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 if (response.isSuccessful() || response.isRedirect()) {
-                    HttpClientUtil.removeCookiesOf(Constants.BASE_DOMAIN);
                     chatCommands.logout();
                 }
             }

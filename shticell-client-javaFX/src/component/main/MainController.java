@@ -363,7 +363,7 @@ public class MainController {
     }
 
     // Post new cell to specific sheet
-    public void postCell(String sheetName, String coordinate, String originalValue, Callback callback) {
+    public void postCell(String sheetName, String sheetVersion, String coordinate, String originalValue, Callback callback) {
 
         RequestBody body = RequestBody.create(originalValue, MediaType.parse("text/plain"));
 
@@ -372,6 +372,7 @@ public class MainController {
                 .newBuilder()
                 .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
+                .addQueryParameter("sheetVersion", sheetVersion)
                 .addQueryParameter("target", coordinate)
                 .build()
                 .toString();
@@ -448,6 +449,20 @@ public class MainController {
         HttpClientUtil.runAsyncPost(finalUrl, body, callback);
     }
 
+    // Post new message by user
+    public void postMessage(String message, Callback callback) {
+        RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
+
+        String finalUrl = HttpUrl
+                .parse(Constants.SEND_CHAT_LINE)
+                .newBuilder()
+                .addQueryParameter("message", message)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsyncPost(finalUrl, body, callback);
+    }
+
     // Delete range in a specific sheet
     public void deleteRange(String sheetName, String sheetVersion, String rangeName, Callback callback) {
 
@@ -457,7 +472,6 @@ public class MainController {
                 .newBuilder()
                 .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
-                //to check if it is really the most update sheet: itay.
                 .addQueryParameter("sheetVersion", sheetVersion)
                 .addQueryParameter("rangeName",rangeName)
                 .build()

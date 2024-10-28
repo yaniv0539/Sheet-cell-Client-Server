@@ -8,6 +8,7 @@ import component.main.bottom.users.UsersListController;
 import javafx.fxml.FXML;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import okhttp3.Callback;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -26,6 +27,7 @@ public class ChatRoomMainController implements Closeable, ChatCommands {
     @FXML
     public void initialize() {
         actionCommandsComponentController.setChatCommands(this);
+        chatAreaComponentController.setChatCommands(this);
 
         chatAreaComponentController.autoUpdatesProperty().bind(actionCommandsComponentController.autoUpdatesProperty());
         usersListComponentController.autoUpdatesProperty().bind(actionCommandsComponentController.autoUpdatesProperty());
@@ -58,4 +60,7 @@ public class ChatRoomMainController implements Closeable, ChatCommands {
         mainController.switchToLogin();
     }
 
+    public void sendMessage(String text, Callback callback) {
+        this.mainController.postMessage(text, callback);
+    }
 }

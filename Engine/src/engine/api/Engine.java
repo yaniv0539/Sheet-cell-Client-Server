@@ -43,22 +43,20 @@ public interface Engine {
 // Cells:
 
         // Post Functions
-        void updateCell(String userName, String sheetName, String cellName, String cellValue);
+        void updateCell(String userName, String sheetName, int sheetVersion, String cellName, String cellValue);
 
 // Ranges:
 
         // Post Functions
-        void addRange(String userName, String sheetName, String rangeName, String boundariesString);
+        void addRange(String userName, String sheetName, int sheetVersion, String rangeName, String boundariesString);
 
         // Delete Functions
-        void deleteRange(String userName, String sheetName, String name);
+        void deleteRange(String userName, String sheetName, int sheetVersion, String name);
 
 // Boundaries:
 
         // Get Functions
         BoundariesDto getBoundaries(String userName, String sheetName, String boundaries);
-
-        // Post Functions
 
 // Users:
 

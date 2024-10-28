@@ -62,9 +62,11 @@ public class CellServlet extends HttpServlet {
             String sheetName = ServletUtils.getSheetName(request);
             String cellName = ServletUtils.getCellName(request);
 
+            int sheetVersion = ServletUtils.getSheetVersion(request);
+
             String jsonBody = ServletUtils.getJsonBody(request);
 
-            engine.updateCell(userName, sheetName, cellName, jsonBody);
+            engine.updateCell(userName, sheetName, sheetVersion, cellName, jsonBody);
             SheetDto sheetDTO = engine.getSheetDTO(userName, sheetName);
 
             response.getWriter().print(gson.toJson(sheetDTO));

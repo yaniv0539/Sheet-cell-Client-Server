@@ -6,12 +6,16 @@ import component.main.center.app.AppController;
 import dto.CellDto;
 import dto.SheetDto;
 import dto.deserializer.CellDtoDeserializer;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.Background;
+import javafx.util.Duration;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
@@ -71,6 +75,8 @@ public class HeaderController {
         private AppController mainController;
 
         private SimpleStringProperty selectedFileProperty;
+
+        private Timeline blinkTimeline; // Store the Timeline
 
 
         // Initializers
@@ -140,7 +146,6 @@ public class HeaderController {
 
         }
 
-
         public void addMenuOptionToVersionSelection(String numberOfVersion) {
 
                 MenuItem menuItem = new MenuItem(numberOfVersion + " (Editable)");
@@ -177,5 +182,25 @@ public class HeaderController {
 
         public void clearVersionButton() {
                 splitMenuButtonSelectVersion.getItems().clear();
+        }
+
+        public void makeSplitMenuButtonBlink() {
+                // Initialize the Timeline if not already created
+                if (blinkTimeline == null) {
+                        blinkTimeline = new Timeline(
+                                new KeyFrame(Duration.seconds(0.5), e -> splitMenuButtonSelectVersion.setStyle("-fx-background-color: green;")),
+                                new KeyFrame(Duration.seconds(1.0), e -> splitMenuButtonSelectVersion.setStyle(""))
+                        );
+                        blinkTimeline.setCycleCount(Timeline.INDEFINITE); // Repeat indefinitely
+                }
+                blinkTimeline.play(); // Start the blinking
+        }
+
+        public void stopSplitMenuButtonBlink() {
+                if (blinkTimeline != null) {
+                        blinkTimeline.stop(); // Stop the blinking
+                        splitMenuButtonSelectVersion.setStyle(""); // Reset color
+                        blinkTimeline = null;
+                }
         }
 }
