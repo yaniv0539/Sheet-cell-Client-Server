@@ -49,13 +49,17 @@ public class DashBoardController {
     ScheduledExecutorService executorServiceForRequestTable;
     private boolean isThreadsActive;
     PermissionType RequestedPermission;
+
+    //current focus property
     String focusSheetName = null;
+    String focusPermission = null;
 
     //set's for check if sheet and permission change
     private Map<String,Integer> sheetNameToIndexInSheetList = new HashMap<>();
 
     BooleanProperty isSelectedRequestPending = new SimpleBooleanProperty(false);
     BooleanProperty isSelectedSheetOwnByUser = new SimpleBooleanProperty(false);
+    BooleanProperty isSelectedSheetPermissionIsNone = new SimpleBooleanProperty(false);
     BooleanProperty disableLoadSheetButton = new SimpleBooleanProperty(false);
 
     BooleanBinding disableConfirmDenyButton;
@@ -216,15 +220,19 @@ public class DashBoardController {
 
     private void initBindButtonDisableProperty() {
         // Init booleans
-        disableViewSheetButton = sheetTableView.getSelectionModel().selectedItemProperty().isNull()
-                .or(requestTableView.focusedProperty());
+        disableViewSheetButton =
+                sheetTableView.getSelectionModel().selectedItemProperty().isNull()
+                .or(requestTableView.focusedProperty())
+                        .or(isSelectedSheetPermissionIsNone);
 
-        disableRequestPermissionButton = sheetTableView.getSelectionModel().selectedItemProperty().isNull()
-                .or(redearCheckBox.selectedProperty().not().and(writerCheckBox.selectedProperty().not()));
+        disableRequestPermissionButton =
+                sheetTableView.getSelectionModel().selectedItemProperty().isNull()
+                .or(redearCheckBox.selectedProperty().not().and(writerCheckBox.selectedProperty().not()))
+                        .or(isSelectedSheetOwnByUser);
 
 
-        disableConfirmDenyButton = //requestTableView.focusedProperty().not()
-                (requestTableView.getSelectionModel().selectedItemProperty().isNull())
+        disableConfirmDenyButton =
+                requestTableView.getSelectionModel().selectedItemProperty().isNull()
                 .or(isSelectedRequestPending.not())
                 .or(isSelectedSheetOwnByUser.not());
 
@@ -265,6 +273,7 @@ public class DashBoardController {
                     focusSheetName = newValue.getSheetName();
                     requestTableLines.clear();
                     isSelectedSheetOwnByUser.set(newValue.getPermission().equals(PermissionType.OWNER.toString()));
+                    isSelectedSheetPermissionIsNone.set(newValue.getPermission().equals(PermissionType.NONE.toString()));
                 }
 
         });

@@ -373,7 +373,11 @@ public class AppController {
         setSheet(currentSheet);
         mostUpdatedVersionNumber = sheetDto.version();
         headerComponentController.clearVersionButton();
-        headerComponentController.addMenuOptionToVersionSelection("1");
+        //itay added: if the sheet we want to view is in a version bigger then one.
+        for(int i = 1 ; i <= mostUpdatedVersionNumber; i++) {
+            headerComponentController.addMenuOptionToVersionSelection(String.valueOf(i));
+        }
+
         rangesComponentController.uploadRanges(currentSheet.ranges());
 
         VersionDesignManager designManagerForSheet = new VersionDesignManager();
