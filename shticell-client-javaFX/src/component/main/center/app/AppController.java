@@ -78,6 +78,7 @@ public class AppController {
     private Map<String,VersionDesignManager> sheetToVersionDesignManager;
 
     private int mostUpdatedVersionNumber;
+    private int tempMostUpdatedVersionNumber;
     private boolean OperationView;
     private ScheduledExecutorService executorServiceForSheet;
     private boolean isThreadsActive;
@@ -116,6 +117,8 @@ public class AppController {
             //cell in focus init.
             cellInFocus.getDependOn().addListener((ListChangeListener<CoordinateDto>) change -> sheetComponentController.changeColorDependedCoordinate(change));
             cellInFocus.getInfluenceOn().addListener((ListChangeListener<CoordinateDto>) change -> sheetComponentController.changeColorInfluenceCoordinate(change));
+
+            initPullThread();
         }
     }
 
@@ -126,6 +129,9 @@ public class AppController {
         loadingStage.setScene(new Scene(progressComponentController.getProgressVbox()));
     }
 
+    private void initPullThread() {
+        this.executorServiceForSheet = Executors.newSingleThreadScheduledExecutor();
+    }
 
     // Getters
 
@@ -208,12 +214,10 @@ public class AppController {
 
                 if (response.code() != 200) {
                     mainController.showAlertPopup(new Exception(GSON_INSTANCE.fromJson(jsonResponse,String.class)), "Sheet name " + sheetName);
-                }
-                else {
+                } else {
                     Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
                     SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
-                    Platform.runLater(() -> updateSheetView(sheetDto));
-
+                    updateSheetView(sheetDto);
                 }
             }
         }), 0, 1, TimeUnit.SECONDS);
@@ -288,7 +292,7 @@ public class AppController {
     }
 
     public void updateCell(Callback callback) {
-        this.mainController.postCell(this.currentSheet.name(), cellInFocus.getCoordinate().get(), cellInFocus.getOriginalValue().get(), callback);
+        this.mainController.postCell(this.currentSheet.name(), String.valueOf(this.currentSheet.version()), cellInFocus.getCoordinate().get(), cellInFocus.getOriginalValue().get(), callback);
     }
 
 
@@ -393,14 +397,14 @@ public class AppController {
 
     //itay added
     private void setDesignVersions() {
-        
+
         if(sheetToVersionDesignManager.get(currentSheet.name()) == null) {
             VersionDesignManager designManagerForSheet = new VersionDesignManager();
             designManagerForSheet.setMainController(this);
             sheetToVersionDesignManager.put(currentSheet.name(), designManagerForSheet);
             saveDesignVersion(sheetComponentController.getGridPane());
         }
-        
+
         int lastVersionInMap = sheetToVersionDesignManager.get(currentSheet.name()).getNumberOfVersions();
 
         for(int i = lastVersionInMap  ; i <= mostUpdatedVersionNumber; i++) {
@@ -423,7 +427,7 @@ public class AppController {
         sortedSheetComponentController.setMainController(this);
         ScrollPane sheetComponent = sortedSheetComponentController.getInitializedSheet(sortedSheet.layout(),effectiveValuesPoolProperty);
 
-        //design the cells
+        //design the cells.
         VersionDesignManager.VersionDesign design;
 
         if (currentSheet.version() == mostUpdatedVersionNumber) {
@@ -482,9 +486,9 @@ public class AppController {
         currentSheet = sheetDto;
         int numberOfVersion = currentSheet.version();
 
-        showCommands.set(numberOfVersion == mostUpdatedVersionNumber && isEditor);
-        showRanges.set(numberOfVersion == mostUpdatedVersionNumber && isEditor);
-        showHeaders.set(numberOfVersion == mostUpdatedVersionNumber && isEditor);
+        showCommands.set(numberOfVersion == tempMostUpdatedVersionNumber && isEditor);
+        showRanges.set(numberOfVersion == tempMostUpdatedVersionNumber && isEditor);
+        showHeaders.set(numberOfVersion == tempMostUpdatedVersionNumber && isEditor);
         setEffectiveValuesPoolProperty(currentSheet, effectiveValuesPool);
         resetSheetToVersionDesign(numberOfVersion);
     }
@@ -577,7 +581,7 @@ public class AppController {
     }
 
     private void resetSheetToVersionDesign(int numberOfVersion) {
-        if(numberOfVersion == mostUpdatedVersionNumber){
+        if(numberOfVersion == mostUpdatedVersionNumber) {
             numberOfVersion++;
         }
         VersionDesignManager.VersionDesign versionDesign = sheetToVersionDesignManager.get(currentSheet.name()).getVersionDesign(numberOfVersion);
@@ -689,14 +693,19 @@ public class AppController {
             throw new RuntimeException("Sheet deleted!");
         }
 
-        if (sheetDto.version() == mostUpdatedVersionNumber) {
-            if (sheetDto.ranges().size() != currentSheet.ranges().size()) {
-                currentSheet.ranges().clear();
-                currentSheet.ranges().addAll(sheetDto.ranges());
+        if (sheetDto.version() != mostUpdatedVersionNumber) {
+            if (sheetDto.version() != tempMostUpdatedVersionNumber) {
+                tempMostUpdatedVersionNumber = sheetDto.version();
+                Platform.runLater(() -> {
+                    headerComponentController.addMenuOptionToVersionSelection(String.valueOf(sheetDto.version()));
+                    headerComponentController.makeSplitMenuButtonBlink();
+                });
             }
-        } else {
-//            getViewSheetVersionRunLater(sheetDto);
-            currentSheet = sheetDto;
+        }
+
+        if (currentSheet.version() == tempMostUpdatedVersionNumber) {
+            Platform.runLater(() -> headerComponentController.stopSplitMenuButtonBlink());
+            mostUpdatedVersionNumber = tempMostUpdatedVersionNumber;
         }
     }
 
