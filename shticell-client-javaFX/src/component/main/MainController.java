@@ -495,8 +495,8 @@ public class MainController {
         alert.showAndWait();  // Display the popup
     }
 
-    public void uploadSheetToWorkspace(SheetDto sheetDto) {
-        appComponentController.onFinishLoadingFile(sheetDto);
+    public void uploadSheetToWorkspace(SheetDto sheetDto,boolean isEditor) {
+        appComponentController.onFinishLoadingFile(sheetDto,isEditor);
     }
 
 

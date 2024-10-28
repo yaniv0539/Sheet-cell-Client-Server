@@ -52,7 +52,7 @@ public class DashBoardController {
 
     //current focus property
     String focusSheetName = null;
-    String focusPermission = null;
+    PermissionType focusPermission = null;
 
     //set's for check if sheet and permission change
     private Map<String,Integer> sheetNameToIndexInSheetList = new HashMap<>();
@@ -124,7 +124,7 @@ public class DashBoardController {
                     SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
 
                     Platform.runLater(()->{
-                        mainController.uploadSheetToWorkspace(sheetDto); //prepare the scene
+                        mainController.uploadSheetToWorkspace(sheetDto,focusPermission != PermissionType.READER); //prepare the scene
                         mainController.switchToApp(sheetDto.name());
                     });
                 }
@@ -271,6 +271,7 @@ public class DashBoardController {
         sheetTableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
                 if (newValue != null ) {
                     focusSheetName = newValue.getSheetName();
+                    focusPermission = PermissionType.valueOf(newValue.getPermission());
                     requestTableLines.clear();
                     isSelectedSheetOwnByUser.set(newValue.getPermission().equals(PermissionType.OWNER.toString()));
                     isSelectedSheetPermissionIsNone.set(newValue.getPermission().equals(PermissionType.NONE.toString()));
