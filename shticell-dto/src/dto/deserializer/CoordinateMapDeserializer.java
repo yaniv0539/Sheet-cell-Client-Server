@@ -15,7 +15,7 @@ public class CoordinateMapDeserializer implements JsonDeserializer<Map<Coordinat
 
         for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
             // Deserialize the key and value
-            CoordinateDto key = context.deserialize(new JsonParser().parse(entry.getKey()), CoordinateDto.class);
+            CoordinateDto key = context.deserialize(JsonParser.parseString(entry.getKey()), CoordinateDto.class);
             CoordinateDto value = context.deserialize(entry.getValue(), CoordinateDto.class);
             map.put(key, value);
         }

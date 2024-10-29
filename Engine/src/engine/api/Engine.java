@@ -13,13 +13,14 @@ import java.util.Set;
 
 public interface Engine {
 
-    // Sheet:
+// Sheet:
 
-        // Get Functions
+        // Get Methods
+        Set<SheetOverviewDto> getSheetOverviewDto(String userName);
         SheetDto getSheetDTO(String userName, String sheetName);
         SheetDto getSheetDTO(String userName, String sheetName, int sheetVersion);
 
-        // Post Functions
+        // Post Methods
         String addNewSheet(String userName, InputStream inputStream);
 
         // Logical Operations:
@@ -36,36 +37,40 @@ public interface Engine {
 
         // Permissions:
 
-                // Get Functions
+                // Get Methods
                 PermissionsDto getSheetPermissions(String sheetName);
                 PermissionType getUserPermission(String userName, String sheetName);
 
+                // Post Methods
+                void addRequestPermission(String sheetName, String userName, PermissionType permissionType);
+                void setResponseToRequest(String sheetName, String userName, PermissionType permissionType, Status status,Status response);
+
 // Cells:
 
-        // Post Functions
+        // Post Methods
         void updateCell(String userName, String sheetName, int sheetVersion, String cellName, String cellValue);
 
 // Ranges:
 
-        // Post Functions
+        // Post Methods
         void addRange(String userName, String sheetName, int sheetVersion, String rangeName, String boundariesString);
 
-        // Delete Functions
+        // Delete Methods
         void deleteRange(String userName, String sheetName, int sheetVersion, String name);
 
 // Boundaries:
 
-        // Get Functions
+        // Get Methods
         BoundariesDto getBoundaries(String userName, String sheetName, String boundaries);
 
 // Users:
 
+        // Get Methods
         List<String> getUsers();
+
+        // Post Methods
         void addUser(String userName);
 
-        Set<SheetOverviewDto> getSheetOverviewDto(String userName);
-
-        void addRequestPermission(String sheetName, String userName, PermissionType permissionType);
-
-        void setResponseToRequest(String sheetName, String userName, PermissionType permissionType, Status status,Status response);
+        // Delete Methods
+        void deleteUser(String userName);
 }

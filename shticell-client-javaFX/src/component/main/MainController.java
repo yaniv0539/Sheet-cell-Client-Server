@@ -27,24 +27,33 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import okhttp3.*;
+import org.jetbrains.annotations.NotNull;
 import utils.Constants;
 import utils.http.HttpClientUtil;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Objects;
 
 import static utils.Constants.*;
 
 public class MainController {
 
+    // FXML Members
+
     @FXML private GridPane topComponent;
     @FXML private TopController topComponentController;
+    @FXML private AnchorPane anchorPaneBottomApp;
+    @FXML private AnchorPane mainPanel;
+    @FXML private SplitPane splitPaneApp;
+
+
+    // Members
 
     private Stage primaryStage;
 
     private GridPane loginComponent;
-    private LoginController loginComponentController;
 
     private ScrollPane dashboardComponent;
     private DashBoardController dashboardComponentController;
@@ -54,15 +63,6 @@ public class MainController {
 
     private Parent chatRoomComponent;
     private ChatRoomMainController chatRoomComponentController;
-
-    @FXML
-    private AnchorPane anchorPaneBottomApp;
-
-    @FXML
-    private AnchorPane mainPanel;
-
-    @FXML
-    private SplitPane splitPaneApp;
 
     private StringProperty userNameProperty;
 
@@ -98,7 +98,7 @@ public class MainController {
             FXMLLoader fxmlLoader = new FXMLLoader();
             fxmlLoader.setLocation(loginPageUrl);
             loginComponent = fxmlLoader.load();
-            loginComponentController = fxmlLoader.getController();
+            LoginController loginComponentController = fxmlLoader.getController();
             loginComponentController.setMainController(this);
             setMainPanelTo(loginComponent);
         } catch (IOException e) {
@@ -145,11 +145,8 @@ public class MainController {
         }
     }
 
-    // Getters
 
-    public String getUserName() {
-        return userNameProperty.get();
-    }
+    // Getters
 
     public StringProperty userNameProperty() {
         return userNameProperty;
@@ -182,14 +179,13 @@ public class MainController {
         AnchorPane.setRightAnchor(pane, 1.0);
     }
 
-    private void setBottomPanelTo(Parent pane) {
-        splitPaneApp.getItems().add(pane);
-    }
-
     public void switchToLogin() {
-        setMainPanelTo(loginComponent);
         chatRoomComponentController.setInActive();
-//        loginComponentController.setActive();
+        dashboardComponentController.setInActive();
+        appComponentController.setInActive();
+        setUserName("Guest");
+        setMainPanelTo(loginComponent);
+        splitPaneApp.getItems().remove(chatRoomComponent);
     }
 
     public void switchToDashboard() {
@@ -205,16 +201,17 @@ public class MainController {
     }
 
     public void switchToChatRoom() {
-        setBottomPanelTo(chatRoomComponent);
         chatRoomComponentController.setActive();
+        splitPaneApp.getItems().add(chatRoomComponent);
     }
+
 
     // Http requests to shticell servlet
 
     // Get sheet by version
     public void getSheet(String sheetName, String sheetVersion, Callback callback) {
-        String finalUrl = HttpUrl
-                .parse(SHEET_URL)
+        String finalUrl = Objects.requireNonNull(HttpUrl
+                        .parse(SHEET_URL))
                 .newBuilder()
                 .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
@@ -227,8 +224,8 @@ public class MainController {
 
     // Get sheet by last version
     public void getSheet(String sheetName, Callback callback) {
-        String finalUrl = HttpUrl
-                .parse(SHEET_URL)
+        String finalUrl = Objects.requireNonNull(HttpUrl
+                        .parse(SHEET_URL))
                 .newBuilder()
                 .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
@@ -241,8 +238,8 @@ public class MainController {
     // Get boundaries from a specific sheet if exists
     public void getBoundariesDto(String sheetName, String boundaries, Callback callback) {
 
-        String finalUrl = HttpUrl
-                .parse(GET_BOUNDARIES_URL)
+        String finalUrl = Objects.requireNonNull(HttpUrl
+                        .parse(GET_BOUNDARIES_URL))
                 .newBuilder()
                 .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
@@ -255,8 +252,8 @@ public class MainController {
 
     // Get the unique values in a specific range that selected
     public void getColumnUniqueValuesInRange(String sheetName, String sheetVersion, String column, String startRow, String endRow, Callback callback) {
-        String finalUrl = HttpUrl
-                .parse(UNIQUE_COL_VALUES_URL)
+        String finalUrl = Objects.requireNonNull(HttpUrl
+                        .parse(UNIQUE_COL_VALUES_URL))
                 .newBuilder()
                 .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
@@ -276,8 +273,8 @@ public class MainController {
         String jsonString = GSON_INSTANCE.toJson(data);
         RequestBody body = RequestBody.create(jsonString, MediaType.parse("text/plain"));
 
-        String finalUrl = HttpUrl
-                .parse(FILTER_SHEET_URL)
+        String finalUrl = Objects.requireNonNull(HttpUrl
+                        .parse(FILTER_SHEET_URL))
                 .newBuilder()
                 .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName",sheetName)
@@ -290,8 +287,8 @@ public class MainController {
 
     // Get only the columns that have numerical values
     public void getNumericColumnsInBoundaries(String sheetName, String sheetVersion, String boundaries, Callback callback) {
-        String finalUrl = HttpUrl
-                .parse(GET_NUMERIC_COLUMNS_IN_RANGE_URL)
+        String finalUrl = Objects.requireNonNull(HttpUrl
+                        .parse(GET_NUMERIC_COLUMNS_IN_RANGE_URL))
                 .newBuilder()
                 .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
@@ -308,8 +305,8 @@ public class MainController {
         String jsonString = GSON_INSTANCE.toJson(sortDto);
         RequestBody body = RequestBody.create(jsonString, MediaType.parse("text/plain"));
 
-        String finalUrl = HttpUrl
-                .parse(SORT_SHEET_URL)
+        String finalUrl = Objects.requireNonNull(HttpUrl
+                        .parse(SORT_SHEET_URL))
                 .newBuilder()
                 .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
@@ -322,8 +319,8 @@ public class MainController {
 
     // Get all sheets overview
     public void getSheetsOverview(Callback callback) {
-        String finalUrl = HttpUrl
-                .parse(Constants.OVERVIEW_URL)
+        String finalUrl = Objects.requireNonNull(HttpUrl
+                        .parse(OVERVIEW_URL))
                 .newBuilder()
                 .addQueryParameter("userName", userNameProperty.get())
                 .build()
@@ -335,8 +332,8 @@ public class MainController {
 
     // Get permissions for specific sheet
     public void getPermissions(String sheetName, Callback callback) {
-        String finalUrl = HttpUrl
-                .parse(Constants.PERMISSIONS_URL)
+        String finalUrl = Objects.requireNonNull(HttpUrl
+                        .parse(PERMISSIONS_URL))
                 .newBuilder()
                 .addQueryParameter("sheetName", sheetName)
                 .build()
@@ -348,8 +345,8 @@ public class MainController {
     // Get users list
     public void getUsersList(Callback callback) {
 
-        String finalUrl = HttpUrl
-                .parse(Constants.USERS_LIST)
+        String finalUrl = Objects.requireNonNull(HttpUrl
+                        .parse(USERS_LIST))
                 .newBuilder()
                 .build()
                 .toString();
@@ -359,8 +356,8 @@ public class MainController {
 
     // Get chat
     public void getChat(String chatVersion, Callback callback) {
-        String finalUrl = HttpUrl
-                .parse(Constants.CHAT_LINES_LIST)
+        String finalUrl = Objects.requireNonNull(HttpUrl
+                        .parse(CHAT_LINES_LIST))
                 .newBuilder()
                 .addQueryParameter("chatVersion", chatVersion)
                 .build()
@@ -376,8 +373,8 @@ public class MainController {
                 .addFormDataPart("sheet",f.getName(),RequestBody.create(f, MediaType.parse("text/plain")))
                 .build();
 
-        String finalUrl = HttpUrl
-                .parse(SHEET_URL)
+        String finalUrl = Objects.requireNonNull(HttpUrl
+                        .parse(SHEET_URL))
                 .newBuilder()
                 .addQueryParameter("userName", userNameProperty.get())
                 .build()
@@ -391,8 +388,8 @@ public class MainController {
 
         RequestBody body = RequestBody.create(originalValue, MediaType.parse("text/plain"));
 
-        String finalUrl = HttpUrl
-                .parse(CELL_URL)
+        String finalUrl = Objects.requireNonNull(HttpUrl
+                        .parse(CELL_URL))
                 .newBuilder()
                 .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
@@ -409,8 +406,8 @@ public class MainController {
 
         RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
 
-        String finalUrl = HttpUrl
-                .parse(RANGE_URL)
+        String finalUrl = Objects.requireNonNull(HttpUrl
+                        .parse(RANGE_URL))
                 .newBuilder()
                 .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
@@ -428,8 +425,8 @@ public class MainController {
 
         RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
 
-        String finalUrl = HttpUrl
-                .parse(Constants.USER_URL)
+        String finalUrl = Objects.requireNonNull(HttpUrl
+                        .parse(USER_URL))
                 .newBuilder()
                 .addQueryParameter("userName", userName)
                 .build()
@@ -442,8 +439,8 @@ public class MainController {
     public void postRequestPermission(String sheetName, PermissionType requestedPermission, Callback callback) {
         RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
 
-        String finalUrl = HttpUrl
-                .parse(REQUEST_PERMISSION_URL)
+        String finalUrl = Objects.requireNonNull(HttpUrl
+                        .parse(REQUEST_PERMISSION_URL))
                 .newBuilder()
                 .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
@@ -459,8 +456,8 @@ public class MainController {
         //transfer the request to confirm. : itay
         RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
 
-        String finalUrl = HttpUrl
-                .parse(RESPONSE_PERMISSION_URL)
+        String finalUrl = Objects.requireNonNull(HttpUrl
+                        .parse(RESPONSE_PERMISSION_URL))
                 .newBuilder()
                 .addQueryParameter("userName", requestDto.requesterName())
                 .addQueryParameter("sheetName", sheetName)
@@ -477,9 +474,10 @@ public class MainController {
     public void postMessage(String message, Callback callback) {
         RequestBody body = RequestBody.create(message, MediaType.parse("text/plain"));
 
-        String finalUrl = HttpUrl
-                .parse(Constants.SEND_CHAT_LINE)
+        String finalUrl = Objects.requireNonNull(HttpUrl
+                        .parse(SEND_CHAT_LINE))
                 .newBuilder()
+                .addQueryParameter("userName", userNameProperty.get())
                 .build()
                 .toString();
 
@@ -490,8 +488,8 @@ public class MainController {
     public void deleteRange(String sheetName, String sheetVersion, String rangeName, Callback callback) {
 
         RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
-        String finalUrl = HttpUrl
-                .parse(RANGE_URL)
+        String finalUrl = Objects.requireNonNull(HttpUrl
+                        .parse(RANGE_URL))
                 .newBuilder()
                 .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)
@@ -501,6 +499,29 @@ public class MainController {
                 .toString();
 
         HttpClientUtil.runAsyncDelete(finalUrl, body, callback);
+    }
+
+    // Delete User
+    public void deleteUser() {
+        RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
+        String finalUrl = Objects.requireNonNull(HttpUrl
+                        .parse(USER_URL))
+                .newBuilder()
+                .addQueryParameter("userName", userNameProperty.get())
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsyncDelete(finalUrl, body, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) {
+                response.close();
+            }
+        });
     }
 
 
@@ -535,5 +556,4 @@ public class MainController {
     public void uploadSheetToWorkspace(SheetDto sheetDto,boolean isEditor) {
         appComponentController.onFinishLoadingFile(sheetDto,isEditor);
     }
-
 }

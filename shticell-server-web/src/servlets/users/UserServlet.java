@@ -17,7 +17,7 @@ import java.io.IOException;
 public class UserServlet extends HttpServlet {
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
             Engine engine = ServletUtils.getEngine(getServletContext());
 
@@ -36,4 +36,23 @@ public class UserServlet extends HttpServlet {
         }
     }
 
+    @Override
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        try {
+            Engine engine = ServletUtils.getEngine(getServletContext());
+
+            String userName = ServletUtils.getUserName(request);
+
+            engine.deleteUser(userName);
+
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+
+            response.setStatus(HttpServletResponse.SC_CREATED);
+        } catch (Exception e) {
+            response.setContentType("text/plain");
+            response.getWriter().println(e.getMessage());
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+    }
 }
