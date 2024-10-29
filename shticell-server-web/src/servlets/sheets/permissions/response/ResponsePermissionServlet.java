@@ -32,9 +32,6 @@ public class ResponsePermissionServlet extends HttpServlet {
             Status status = ServletUtils.getStatus(request);
             Status responseToRequest = ServletUtils.getResponse(request);
 
-
-            // TODO: Call the right method from the engine.
-
             engine.setResponseToRequest(sheetName,userName,permissionType,status,responseToRequest);
 
             response.setContentType("application/json");

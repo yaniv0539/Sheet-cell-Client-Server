@@ -28,13 +28,6 @@ public class OverviewServlet extends HttpServlet {
 
             Set<SheetOverviewDto> sheetOverviewDtoSet = engine.getSheetOverviewDto(userName);
 
-            //take from engine all the sheets
-            //for each sheet
-              //check whom owner
-              //check the permission of user
-              //creat overviewDto
-                //add it to a set<overviewDto>
-
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
             response.getWriter().print(gson.toJson(sheetOverviewDtoSet));

@@ -29,6 +29,8 @@ public class ServletUtils {
     private static final Object engineLock = new Object();
     private static final Object chatLock = new Object();
     private static final Object gsonLock = new Object();
+    private static final Object versionLock = new Object();
+
 
     public static Engine getEngine(ServletContext servletContext) {
 
@@ -196,5 +198,11 @@ public class ServletUtils {
         }
         return Integer.parseInt(chatVersion);
     }
+
+    public static Object getVersionLock() {
+        return versionLock;
+    }
+
+
 }
 
