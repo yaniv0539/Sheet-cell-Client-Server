@@ -82,19 +82,22 @@ public class EngineImpl implements Engine, Serializable {
             STLSheet stlSheet = deserializeFrom(inputStream);
             Sheet sheet = STLSheetToSheet.generate(stlSheet);
 
-            if (this.versionManagers.containsKey(sheet.getName())) {
-                throw new RuntimeException("Sheet " + sheet.getName() + " already exists");
+            synchronized (this) {
+
+                if (this.versionManagers.containsKey(sheet.getName())) {
+                    throw new RuntimeException("Sheet " + sheet.getName() + " already exists");
+                }
+
+                if (!isValidLayout(sheet.getLayout())) {
+                    throw new IndexOutOfBoundsException("Layout is invalid !" + "\n" +
+                            "valid scale: rows <= 50 , columns <= 20");
+                }
+
+                VersionManager versionManager = this.versionManagers.computeIfAbsent(sheet.getName(), k -> VersionManagerImpl.create());
+                versionManager.init(sheet);
+
+                this.permissionManagers.computeIfAbsent(sheet.getName(), k -> PermissionManagerImpl.create(userName));
             }
-
-            if (!isValidLayout(sheet.getLayout())) {
-                throw new IndexOutOfBoundsException("Layout is invalid !" + "\n" +
-                        "valid scale: rows <= 50 , columns <= 20");
-            }
-
-            VersionManager versionManager = this.versionManagers.computeIfAbsent(sheet.getName(), k -> VersionManagerImpl.create());
-            versionManager.init(sheet);
-
-            this.permissionManagers.computeIfAbsent(sheet.getName(), k -> PermissionManagerImpl.create(userName));
 
             return sheet.getName();
 
