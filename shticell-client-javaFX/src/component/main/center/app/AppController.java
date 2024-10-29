@@ -712,6 +712,13 @@ public class AppController {
             mostUpdatedVersionNumber = tempMostUpdatedVersionNumber;
         }
 
+        // TODO: Ask Aviad
+        if (currentSheet.ranges().size() != sheetDto.ranges().size()) {
+            currentSheet.ranges().clear();
+            currentSheet.ranges().addAll(sheetDto.ranges());
+            rangesComponentController.uploadRanges(currentSheet.ranges());
+        }
+
         lastVersionNumberBeforeUpdate = tempMostUpdatedVersionNumber;
     }
 

@@ -4,7 +4,6 @@ import dto.*;
 import dto.enums.PermissionType;
 import dto.enums.Status;
 import engine.api.Engine;
-import engine.chat.ChatManager;
 import engine.jaxb.parser.STLSheetToSheet;
 import engine.permissions.impl.PermissionManagerImpl;
 import engine.permissions.api.PermissionManager;
@@ -29,7 +28,6 @@ import sheet.impl.SheetImpl;
 import sheet.layout.api.Layout;
 import sheet.layout.api.LayoutGetters;
 import sheet.layout.impl.LayoutImpl;
-import sheet.layout.size.api.Size;
 import sheet.range.api.RangeGetters;
 import sheet.range.boundaries.api.Boundaries;
 import sheet.range.boundaries.impl.BoundariesFactory;
@@ -67,7 +65,6 @@ public class EngineImpl implements Engine, Serializable {
     @Override
     public SheetDto getSheetDTO(String userName, String sheetName, int sheetVersion) {
         VersionManager versionManager = this.versionManagers.get(sheetName);
-        PermissionManager permissionManager = getPermissionManager(sheetName);
         Sheet sheet = versionManager.getVersion(sheetVersion);
 
         canRead(userName, sheetName);
@@ -115,7 +112,6 @@ public class EngineImpl implements Engine, Serializable {
     public void updateCell(String userName, String sheetName, int sheetVersion, String cellName, String cellValue) {
 
         VersionManager versionManager = getVersionManager(sheetName);
-        PermissionManager permissionManager = getPermissionManager(sheetName);
 
         canWrite(userName, sheetName, sheetVersion);
 
@@ -286,13 +282,11 @@ public class EngineImpl implements Engine, Serializable {
 //                    }
                 });
 
-        RangeImpl.create("dummy",boundaries).toCoordinateCollection().stream()
-                .forEach(coordinate -> {
-                    newSheet.setCell(coordinate,
-                            dataToSort.get(coordinate.getRow() - startRow)
-                                    .get(coordinate.getCol() - startCol)
-                                    .getEffectiveValue().toString());
-                });
+        RangeImpl.create("dummy",boundaries).toCoordinateCollection()
+                .forEach(coordinate -> newSheet.setCell(coordinate,
+                                                        dataToSort.get(coordinate.getRow() - startRow)
+                                                                    .get(coordinate.getCol() - startCol)
+                                                                    .getEffectiveValue().toString()));
 
         return new SheetDto(newSheet);
     }
@@ -441,7 +435,7 @@ public class EngineImpl implements Engine, Serializable {
         Collection<Coordinate> coordinates = lastVersion.rangeUses(range);
 
         if (!coordinates.isEmpty()) {
-            throw new RuntimeException("Can not delete range in use !\nCells that using range: " + coordinates.toString());
+            throw new RuntimeException("Can not delete range in use !\nCells that using range: " + coordinates);
         }
 
         lastVersion.deleteRange(range);
@@ -497,6 +491,11 @@ public class EngineImpl implements Engine, Serializable {
     @Override
     public synchronized void addUser(String userName) {
         this.userManager.addUser(userName);
+    }
+
+    @Override
+    public void deleteUser(String userName) {
+        this.userManager.removeUser(userName);
     }
 
     @Override

@@ -22,6 +22,15 @@ import static utils.Constants.REFRESH_RATE;
 
 public class UsersListController implements Closeable {
 
+
+    // FXML Members
+
+    @FXML private ListView<String> usersListView;
+    @FXML private Label chatUsersLabel;
+
+
+    // Members
+
     private ChatRoomMainController chatRoomMainController;
 
     private Timer timer;
@@ -29,29 +38,47 @@ public class UsersListController implements Closeable {
     private final BooleanProperty autoUpdate;
     private final IntegerProperty totalUsers;
 
-    @FXML private ListView<String> usersListView;
-    @FXML private Label chatUsersLabel;
+
+    // Constructor
 
     public UsersListController() {
         autoUpdate = new SimpleBooleanProperty();
         totalUsers = new SimpleIntegerProperty();
     }
 
+
+    // Initializers
+
     @FXML
     public void initialize() {
         chatUsersLabel.textProperty().bind(Bindings.concat("Chat Users: (", totalUsers.asString(), ")"));
-//        ((UserListRefresher) this.listRefresher).setUsersListController(this);
     }
 
-    public void setChatCommands(ChatRoomMainController chatRoomMainController) {
-        this.chatRoomMainController = chatRoomMainController;
-    }
+
+    // Getters
 
     public BooleanProperty autoUpdatesProperty() {
         return autoUpdate;
     }
 
-    private void updateUsersList(List<String> usersNames) {
+
+    // Setters
+
+    public void setChatCommands(ChatRoomMainController chatRoomMainController) {
+        this.chatRoomMainController = chatRoomMainController;
+    }
+
+
+    // Http requests
+
+    public void getUsersList(Callback callback) {
+        this.chatRoomMainController.getUsersList(callback);
+    }
+
+
+    // General Methods
+
+    public void updateUsersList(List<String> usersNames) {
         Platform.runLater(() -> {
             ObservableList<String> items = usersListView.getItems();
             items.clear();
@@ -61,12 +88,17 @@ public class UsersListController implements Closeable {
     }
 
     public void startListRefresher() {
-        listRefresher = new UserListRefresher(
-                autoUpdate,
-                this::updateUsersList);
+        UserListRefresher newListRefresher = new UserListRefresher(autoUpdate);
+        newListRefresher.setUsersListController(this);
+
+        listRefresher = newListRefresher;
+
         timer = new Timer();
         timer.schedule(listRefresher, REFRESH_RATE, REFRESH_RATE);
     }
+
+
+    // Implementations
 
     @Override
     public void close() {
@@ -76,9 +108,5 @@ public class UsersListController implements Closeable {
             listRefresher.cancel();
             timer.cancel();
         }
-    }
-
-    public void getUsersList(Callback callback) {
-        this.chatRoomMainController.getUsersList(callback);
     }
 }

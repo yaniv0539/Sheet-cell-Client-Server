@@ -8,18 +8,14 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleButton;
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.HttpUrl;
 import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
-import utils.Constants;
-import utils.http.HttpClientUtil;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -31,6 +27,17 @@ import static utils.Constants.REFRESH_RATE;
 
 public class ChatAreaController implements Closeable {
 
+
+    // FXML Members
+
+    @FXML private ToggleButton autoScrollButton;
+    @FXML private TextArea chatLineTextArea;
+    @FXML private TextArea mainChatLinesTextArea;
+    @FXML private Label chatVersionLabel;
+
+
+    // Members
+
     private final IntegerProperty chatVersion;
     private final BooleanProperty autoScroll;
     private final BooleanProperty autoUpdate;
@@ -38,10 +45,8 @@ public class ChatAreaController implements Closeable {
     private Timer timer;
     private ChatRoomMainController chatRoomMainController;
 
-    @FXML private ToggleButton autoScrollButton;
-    @FXML private TextArea chatLineTextArea;
-    @FXML private TextArea mainChatLinesTextArea;
-    @FXML private Label chatVersionLabel;
+
+    // Constructors
 
     public ChatAreaController() {
         chatVersion = new SimpleIntegerProperty();
@@ -49,30 +54,58 @@ public class ChatAreaController implements Closeable {
         autoUpdate = new SimpleBooleanProperty();
     }
 
+
+    // Initializers
+
     @FXML
     public void initialize() {
         autoScroll.bind(autoScrollButton.selectedProperty());
         chatVersionLabel.textProperty().bind(Bindings.concat("Chat Version: ", chatVersion.asString()));
     }
 
+
+    // Getters
+
     public BooleanProperty autoUpdatesProperty() {
         return autoUpdate;
     }
 
+
+    // Setters
+
+    public void setChatCommands(ChatRoomMainController chatRoomMainController) {
+        this.chatRoomMainController = chatRoomMainController;
+    }
+
+
+    // FXML Methods
+
     @FXML
-    void sendButtonClicked(ActionEvent event) {
-        chatRoomMainController.sendMessage(chatLineTextArea.getText(), new Callback() {
+    void sendButtonClicked() {
+        chatRoomMainController.postMessage(chatLineTextArea.getText(), new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {}
 
             @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {}
+            public void onResponse(@NotNull Call call, @NotNull Response response) {
+                response.close();
+            }
         });
 
         chatLineTextArea.clear();
     }
 
-    private void updateChatLines(ChatLinesWithVersion chatLinesWithVersion) {
+
+    // Http requests
+
+    public void getChat(String chatVersion, Callback callback) {
+        this.chatRoomMainController.getChat(chatVersion, callback);
+    }
+
+
+    // General Methods
+
+    public void updateChatLines(ChatLinesWithVersion chatLinesWithVersion) {
         if (chatLinesWithVersion.getVersion() != chatVersion.get()) {
             String deltaChatLines = chatLinesWithVersion
                     .getEntries()
@@ -99,30 +132,23 @@ public class ChatAreaController implements Closeable {
     }
 
     public void startListRefresher() {
-        chatAreaRefresher = new ChatAreaRefresher(
-                chatVersion,
-                autoUpdate,
-                this::updateChatLines);
+        chatAreaRefresher = new ChatAreaRefresher(chatVersion, autoUpdate, this);
+        chatAreaRefresher.setChatAreaController(this);
+
         timer = new Timer();
         timer.schedule(chatAreaRefresher, REFRESH_RATE, REFRESH_RATE);
-        chatAreaRefresher.setChatAreaController(this);
     }
 
+
+    // Implementations
+
     @Override
-    public void close() throws IOException {
+    public void close() {
         chatVersion.set(0);
         chatLineTextArea.clear();
         if (chatAreaRefresher != null && timer != null) {
             chatAreaRefresher.cancel();
             timer.cancel();
         }
-    }
-
-    public void setChatCommands(ChatRoomMainController chatRoomMainController) {
-        this.chatRoomMainController = chatRoomMainController;
-    }
-
-    public void getChat(String chatVersion, Callback callback) {
-        this.chatRoomMainController.getChat(chatVersion, callback);
     }
 }

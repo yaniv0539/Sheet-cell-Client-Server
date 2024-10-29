@@ -136,7 +136,7 @@ public class RangesController {
                 String jsonResponse = response.body().string();
 
                 if (response.code() != 204) {
-                    Platform.runLater(() -> mainController.showAlertPopup(new Exception(jsonResponse),"add range"));
+                    Platform.runLater(() -> mainController.showAlertPopup(new Exception(jsonResponse),"delete range"));
                 } else {
                     Platform.runLater(() -> runLaterRemoveRange(selectedRange));
                 }

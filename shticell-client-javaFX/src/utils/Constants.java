@@ -46,9 +46,8 @@ public class Constants {
     public final static String USERS_LIST = FULL_SERVER_PATH + "/userslist";
     public final static String SEND_CHAT_LINE = FULL_SERVER_PATH + "/sendChat";
     public final static String CHAT_LINES_LIST = FULL_SERVER_PATH + "/chat";
-    public final static String LOGOUT = FULL_SERVER_PATH + "/chat/logout";
 
-    public final static int REFRESH_RATE = 2000;
+    public final static int REFRESH_RATE = 1000;
     public final static String CHAT_LINE_FORMATTING = "%tH:%tM:%tS | %.10s: %s%n";
 
     // GSON instance
