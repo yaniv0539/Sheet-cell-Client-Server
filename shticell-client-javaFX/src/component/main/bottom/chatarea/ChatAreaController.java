@@ -63,16 +63,10 @@ public class ChatAreaController implements Closeable {
     void sendButtonClicked(ActionEvent event) {
         chatRoomMainController.sendMessage(chatLineTextArea.getText(), new Callback() {
             @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-
-            }
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {}
 
             @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                if (!response.isSuccessful()) {
-
-                }
-            }
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {}
         });
 
         chatLineTextArea.clear();
@@ -111,6 +105,7 @@ public class ChatAreaController implements Closeable {
                 this::updateChatLines);
         timer = new Timer();
         timer.schedule(chatAreaRefresher, REFRESH_RATE, REFRESH_RATE);
+        chatAreaRefresher.setChatAreaController(this);
     }
 
     @Override
@@ -125,5 +120,9 @@ public class ChatAreaController implements Closeable {
 
     public void setChatCommands(ChatRoomMainController chatRoomMainController) {
         this.chatRoomMainController = chatRoomMainController;
+    }
+
+    public void getChat(String chatVersion, Callback callback) {
+        this.chatRoomMainController.getChat(chatVersion, callback);
     }
 }

@@ -148,7 +148,7 @@ public class HeaderController {
 
         public void addMenuOptionToVersionSelection(String numberOfVersion) {
 
-                MenuItem menuItem = new MenuItem(numberOfVersion + " (Editable)");
+                MenuItem menuItem = new MenuItem(numberOfVersion + "  (Editable)");
 
                 // Add an action listener to the MenuItem
                 menuItem.setOnAction(event -> {
@@ -175,7 +175,7 @@ public class HeaderController {
                         });
                 });
 
-                splitMenuButtonSelectVersion.getItems().forEach(item -> item.setText(item.getText().substring(0,1)));
+                splitMenuButtonSelectVersion.getItems().forEach(item -> item.setText(item.getText().substring(0,2)));
                 // Add the MenuItem to the SplitButton
                 splitMenuButtonSelectVersion.getItems().addFirst(menuItem);
         }

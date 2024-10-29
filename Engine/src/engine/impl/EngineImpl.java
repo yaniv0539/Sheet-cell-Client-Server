@@ -4,6 +4,7 @@ import dto.*;
 import dto.enums.PermissionType;
 import dto.enums.Status;
 import engine.api.Engine;
+import engine.chat.ChatManager;
 import engine.jaxb.parser.STLSheetToSheet;
 import engine.permissions.impl.PermissionManagerImpl;
 import engine.permissions.api.PermissionManager;
