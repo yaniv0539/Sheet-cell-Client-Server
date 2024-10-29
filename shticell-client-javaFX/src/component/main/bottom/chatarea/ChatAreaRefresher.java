@@ -5,11 +5,8 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.HttpUrl;
 import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
-import utils.Constants;
-import utils.http.HttpClientUtil;
 
 import java.io.IOException;
 import java.util.TimerTask;
@@ -19,16 +16,20 @@ import static utils.Constants.GSON_INSTANCE;
 
 public class ChatAreaRefresher extends TimerTask {
 
+    private ChatAreaController chatAreaController;
+
     private final Consumer<ChatLinesWithVersion> chatlinesConsumer;
     private final IntegerProperty chatVersion;
     private final BooleanProperty shouldUpdate;
-    private int requestNumber;
 
     public ChatAreaRefresher(IntegerProperty chatVersion, BooleanProperty shouldUpdate, Consumer<ChatLinesWithVersion> chatlinesConsumer) {
         this.chatlinesConsumer = chatlinesConsumer;
         this.chatVersion = chatVersion;
         this.shouldUpdate = shouldUpdate;
-        requestNumber = 0;
+    }
+
+    public void setChatAreaController(ChatAreaController chatAreaController) {
+        this.chatAreaController = chatAreaController;
     }
 
     @Override
@@ -38,17 +39,7 @@ public class ChatAreaRefresher extends TimerTask {
             return;
         }
 
-        final int finalRequestNumber = ++requestNumber;
-
-        //noinspection ConstantConditions
-        String finalUrl = HttpUrl
-                .parse(Constants.CHAT_LINES_LIST)
-                .newBuilder()
-                .addQueryParameter("chatversion", String.valueOf(chatVersion.get()))
-                .build()
-                .toString();
-
-        HttpClientUtil.runAsync(finalUrl, new Callback() {
+        this.chatAreaController.getChat(String.valueOf(chatVersion.get()), new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
 
@@ -64,7 +55,6 @@ public class ChatAreaRefresher extends TimerTask {
                 }
             }
         });
-
     }
 
 }

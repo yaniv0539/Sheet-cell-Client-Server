@@ -79,6 +79,7 @@ public class AppController {
 
     private int mostUpdatedVersionNumber;
     private int tempMostUpdatedVersionNumber;
+    private int lastVersionNumberBeforeUpdate;
     private boolean OperationView;
     private ScheduledExecutorService executorServiceForSheet;
     private boolean isThreadsActive;
@@ -217,7 +218,7 @@ public class AppController {
                 } else {
                     Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
                     SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
-                    updateSheetView(sheetDto);
+                    Platform.runLater(() -> updateSheetView(sheetDto));
                 }
             }
         }), 0, 1, TimeUnit.SECONDS);
@@ -371,7 +372,8 @@ public class AppController {
         setEffectiveValuesPoolProperty(currentSheet, this.effectiveValuesPool);
         setSheet(currentSheet);
         mostUpdatedVersionNumber = sheetDto.version();
-        setVersionSplitMenuButton();
+        tempMostUpdatedVersionNumber = mostUpdatedVersionNumber;
+//        setVersionSplitMenuButton();
         setDesignVersions();
     }
 
@@ -387,29 +389,29 @@ public class AppController {
         commandsComponentController.resetButtonSort();
     }
 
-    private void setVersionSplitMenuButton() {
-        headerComponentController.clearVersionButton();
-        //itay added: if the sheet we want to view is in a version bigger then one.
-        for(int i = 1 ; i <= mostUpdatedVersionNumber; i++) {
-            headerComponentController.addMenuOptionToVersionSelection(String.valueOf(i));
-        }
-    }
+//    private void setVersionSplitMenuButton() {
+//        headerComponentController.clearVersionButton();
+//        //itay added: if the sheet we want to view is in a version bigger then one.
+//        for(int i = 1 ; i <= mostUpdatedVersionNumber; i++) {
+//            headerComponentController.addMenuOptionToVersionSelection(String.valueOf(i));
+//        }
+//    }
 
     //itay added
     private void setDesignVersions() {
 
-        if(sheetToVersionDesignManager.get(currentSheet.name()) == null) {
+        if (sheetToVersionDesignManager.get(currentSheet.name()) == null) {
             VersionDesignManager designManagerForSheet = new VersionDesignManager();
             designManagerForSheet.setMainController(this);
             sheetToVersionDesignManager.put(currentSheet.name(), designManagerForSheet);
             saveDesignVersion(sheetComponentController.getGridPane());
         }
 
-        int lastVersionInMap = sheetToVersionDesignManager.get(currentSheet.name()).getNumberOfVersions();
-
-        for(int i = lastVersionInMap  ; i <= mostUpdatedVersionNumber; i++) {
-            sheetToVersionDesignManager.get(currentSheet.name()).addVersion();
-        }
+//        int lastVersionInMap = sheetToVersionDesignManager.get(currentSheet.name()).getNumberOfVersions();
+//
+//        for (int i = lastVersionInMap; i <= mostUpdatedVersionNumber; i++) {
+//            sheetToVersionDesignManager.get(currentSheet.name()).addVersion();
+//        }
 
         resetSheetToVersionDesign(mostUpdatedVersionNumber);
     }
@@ -496,10 +498,9 @@ public class AppController {
     public void updateCellRunLater(SheetDto sheetDto){
         if (sheetDto.version() != currentSheet.version()) {
             currentSheet = sheetDto;
-            mostUpdatedVersionNumber = currentSheet.version();
+            mostUpdatedVersionNumber = sheetDto.version();
             setEffectiveValuesPoolProperty(currentSheet, effectiveValuesPool);
-            sheetToVersionDesignManager.get(currentSheet.name()).addVersion();
-            headerComponentController.addMenuOptionToVersionSelection(String.valueOf(currentSheet.version()));
+//            sheetToVersionDesignManager.get(currentSheet.name()).addVersion();
         }
     }
 
@@ -581,11 +582,11 @@ public class AppController {
     }
 
     private void resetSheetToVersionDesign(int numberOfVersion) {
-        if(numberOfVersion == mostUpdatedVersionNumber) {
+        if (numberOfVersion == mostUpdatedVersionNumber) {
             numberOfVersion++;
         }
         VersionDesignManager.VersionDesign versionDesign = sheetToVersionDesignManager.get(currentSheet.name()).getVersionDesign(numberOfVersion);
-        if(versionDesign != null) {
+        if (versionDesign != null) {
             sheetComponentController.setGridPaneDesign(versionDesign);
         }
     }
@@ -693,20 +694,23 @@ public class AppController {
             throw new RuntimeException("Sheet deleted!");
         }
 
-        if (sheetDto.version() != mostUpdatedVersionNumber) {
-            if (sheetDto.version() != tempMostUpdatedVersionNumber) {
-                tempMostUpdatedVersionNumber = sheetDto.version();
-                Platform.runLater(() -> {
-                    headerComponentController.addMenuOptionToVersionSelection(String.valueOf(sheetDto.version()));
-                    headerComponentController.makeSplitMenuButtonBlink();
-                });
+        tempMostUpdatedVersionNumber = sheetDto.version();
+
+        if (tempMostUpdatedVersionNumber > lastVersionNumberBeforeUpdate) {
+            for (int i = lastVersionNumberBeforeUpdate + 1; i <= tempMostUpdatedVersionNumber; i++) {
+                headerComponentController.addMenuOptionToVersionSelection(String.valueOf(i));
+                sheetToVersionDesignManager.get(sheetDto.name()).addVersion();
             }
         }
 
-        if (currentSheet.version() == tempMostUpdatedVersionNumber) {
-            Platform.runLater(() -> headerComponentController.stopSplitMenuButtonBlink());
+        if (currentSheet.version() < tempMostUpdatedVersionNumber) {
+            headerComponentController.makeSplitMenuButtonBlink();
+        } else {
+            headerComponentController.stopSplitMenuButtonBlink();
             mostUpdatedVersionNumber = tempMostUpdatedVersionNumber;
         }
+
+        lastVersionNumberBeforeUpdate = tempMostUpdatedVersionNumber;
     }
 
 

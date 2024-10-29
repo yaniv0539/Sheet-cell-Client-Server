@@ -26,6 +26,7 @@ public class ChatRoomMainController implements Closeable, ChatCommands {
 
     @FXML
     public void initialize() {
+        usersListComponentController.setChatCommands(this);
         actionCommandsComponentController.setChatCommands(this);
         chatAreaComponentController.setChatCommands(this);
 
@@ -62,5 +63,13 @@ public class ChatRoomMainController implements Closeable, ChatCommands {
 
     public void sendMessage(String text, Callback callback) {
         this.mainController.postMessage(text, callback);
+    }
+
+    public void getChat(String chatVersion, Callback callback) {
+        this.mainController.getChat(chatVersion, callback);
+    }
+
+    public void getUsersList(Callback callback) {
+        this.mainController.getUsersList(callback);
     }
 }

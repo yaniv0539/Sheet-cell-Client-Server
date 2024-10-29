@@ -345,6 +345,30 @@ public class MainController {
         HttpClientUtil.runAsync(finalUrl, callback);
     }
 
+    // Get users list
+    public void getUsersList(Callback callback) {
+
+        String finalUrl = HttpUrl
+                .parse(Constants.USERS_LIST)
+                .newBuilder()
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsync(finalUrl, callback);
+    }
+
+    // Get chat
+    public void getChat(String chatVersion, Callback callback) {
+        String finalUrl = HttpUrl
+                .parse(Constants.CHAT_LINES_LIST)
+                .newBuilder()
+                .addQueryParameter("chatVersion", chatVersion)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsync(finalUrl, callback);
+    }
+
     // Post new xml sheet
     public void postXMLFile(String path, Callback callback) {
         File f = new File(path);
@@ -451,12 +475,11 @@ public class MainController {
 
     // Post new message by user
     public void postMessage(String message, Callback callback) {
-        RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
+        RequestBody body = RequestBody.create(message, MediaType.parse("text/plain"));
 
         String finalUrl = HttpUrl
                 .parse(Constants.SEND_CHAT_LINE)
                 .newBuilder()
-                .addQueryParameter("message", message)
                 .build()
                 .toString();
 
@@ -512,6 +535,5 @@ public class MainController {
     public void uploadSheetToWorkspace(SheetDto sheetDto,boolean isEditor) {
         appComponentController.onFinishLoadingFile(sheetDto,isEditor);
     }
-
 
 }

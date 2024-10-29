@@ -12,6 +12,7 @@ import dto.enums.Status;
 import dto.serializer.CellDtoSerializer;
 import dto.serializer.CoordinateMapSerializer;
 import engine.api.Engine;
+import engine.chat.ChatManager;
 import engine.impl.EngineImpl;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,9 +23,11 @@ import java.util.Map;
 public class ServletUtils {
 
     private static final String ENGINE_ATTRIBUTE_NAME = "engine";
+    private static final String CHAT_ATTRIBUTE_NAME = "chat";
     private static final String GSON_ATTRIBUTE_NAME = "gson";
 
     private static final Object engineLock = new Object();
+    private static final Object chatLock = new Object();
     private static final Object gsonLock = new Object();
 
     public static Engine getEngine(ServletContext servletContext) {
@@ -35,6 +38,16 @@ public class ServletUtils {
             }
         }
         return (Engine) servletContext.getAttribute(ENGINE_ATTRIBUTE_NAME);
+    }
+
+    public static ChatManager getChatManager(ServletContext servletContext) {
+
+        synchronized (chatLock) {
+            if (servletContext.getAttribute(CHAT_ATTRIBUTE_NAME) == null) {
+                servletContext.setAttribute(CHAT_ATTRIBUTE_NAME, ChatManager.create());
+            }
+        }
+        return (ChatManager) servletContext.getAttribute(CHAT_ATTRIBUTE_NAME);
     }
 
     public static Gson getGson(ServletContext servletContext) {
@@ -173,6 +186,15 @@ public class ServletUtils {
         }
 
         return Status.valueOf(response);
+    }
+
+    public static int getChatVersion(HttpServletRequest request) {
+        String chatVersion = request.getParameter(Constants.CHAT_VERSION_PARAMETER);
+
+        if (chatVersion == null || chatVersion.isEmpty()) {
+            throw new RuntimeException("Chat version parameter is null");
+        }
+        return Integer.parseInt(chatVersion);
     }
 }
 

@@ -13,4 +13,6 @@ public class Constants {
     public static final String PERMISSION_TYPE_PARAMETER = "permissionType";
     public static final String STATUS_PARAMETER = "status";
     public static final String RESPONSE_PARAMETER = "response";
+    public static final String CHAT_MESSAGE_PARAMETER = "message";
+    public static final String CHAT_VERSION_PARAMETER = "chatVersion";
 }
