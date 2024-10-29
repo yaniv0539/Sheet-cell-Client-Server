@@ -13,24 +13,32 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.TimerTask;
-import java.util.function.Consumer;
 
 
 public class UserListRefresher extends TimerTask {
 
+
+    // Members
+
+    private final BooleanProperty shouldUpdate;
     private UsersListController usersListController;
 
-    private final Consumer<List<String>> usersListConsumer;
-    private final BooleanProperty shouldUpdate;
 
-    public UserListRefresher(BooleanProperty shouldUpdate, Consumer<List<String>> usersListConsumer) {
+    // Constructor
+
+    public UserListRefresher(BooleanProperty shouldUpdate) {
         this.shouldUpdate = shouldUpdate;
-        this.usersListConsumer = usersListConsumer;
     }
+
+
+    // Setters
 
     public void setUsersListController(UsersListController usersListController) {
         this.usersListController = usersListController;
     }
+
+
+    // Implementations
 
     @Override
     public void run() {
@@ -51,13 +59,11 @@ public class UserListRefresher extends TimerTask {
                 assert response.body() != null;
                 String jsonString = response.body().string();
 
-                if (!response.isSuccessful()) {
-//                    Platform.runLater(()->`    mainController.showAlertPopup(new Exception(),"pull thread fail.."));
-                } else {
+                if (response.isSuccessful()) {
                     Gson gson = new GsonBuilder().setPrettyPrinting().create();
                     Type setType = new TypeToken<List<String>>(){}.getType();
                     List<String> usersNames = gson.fromJson(jsonString, setType);
-                    usersListConsumer.accept(usersNames);
+                    usersListController.updateUsersList(usersNames);
                 }
             }
         });

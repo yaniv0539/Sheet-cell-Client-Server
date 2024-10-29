@@ -10,27 +10,36 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.TimerTask;
-import java.util.function.Consumer;
 
 import static utils.Constants.GSON_INSTANCE;
 
 public class ChatAreaRefresher extends TimerTask {
 
-    private ChatAreaController chatAreaController;
 
-    private final Consumer<ChatLinesWithVersion> chatlinesConsumer;
+    // Members
+
+    private ChatAreaController chatAreaController;
     private final IntegerProperty chatVersion;
     private final BooleanProperty shouldUpdate;
 
-    public ChatAreaRefresher(IntegerProperty chatVersion, BooleanProperty shouldUpdate, Consumer<ChatLinesWithVersion> chatlinesConsumer) {
-        this.chatlinesConsumer = chatlinesConsumer;
+
+    // Constructors
+
+    public ChatAreaRefresher(IntegerProperty chatVersion, BooleanProperty shouldUpdate, ChatAreaController chatAreaController) {
+        this.chatAreaController = chatAreaController;
         this.chatVersion = chatVersion;
         this.shouldUpdate = shouldUpdate;
     }
 
+
+    // Setters
+
     public void setChatAreaController(ChatAreaController chatAreaController) {
         this.chatAreaController = chatAreaController;
     }
+
+
+    // Implementations
 
     @Override
     public void run() {
@@ -51,7 +60,7 @@ public class ChatAreaRefresher extends TimerTask {
                     assert response.body() != null;
                     String rawBody = response.body().string();
                     ChatLinesWithVersion chatLinesWithVersion = GSON_INSTANCE.fromJson(rawBody, ChatLinesWithVersion.class);
-                    chatlinesConsumer.accept(chatLinesWithVersion);
+                    chatAreaController.updateChatLines(chatLinesWithVersion);
                 }
             }
         });

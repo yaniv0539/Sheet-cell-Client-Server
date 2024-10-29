@@ -15,6 +15,9 @@ import java.io.IOException;
 
 public class ChatRoomMainController implements Closeable, ChatCommands {
 
+
+    // FXML Members
+
     @FXML private VBox usersListComponent;
     @FXML private UsersListController usersListComponentController;
     @FXML private VBox actionCommandsComponent;
@@ -22,7 +25,13 @@ public class ChatRoomMainController implements Closeable, ChatCommands {
     @FXML private GridPane chatAreaComponent;
     @FXML private ChatAreaController chatAreaComponentController;
 
+
+    // Members
+
     private MainController mainController;
+
+
+    // Initializers
 
     @FXML
     public void initialize() {
@@ -34,11 +43,8 @@ public class ChatRoomMainController implements Closeable, ChatCommands {
         usersListComponentController.autoUpdatesProperty().bind(actionCommandsComponentController.autoUpdatesProperty());
     }
 
-    @Override
-    public void close() throws IOException {
-        usersListComponentController.close();
-        chatAreaComponentController.close();
-    }
+
+    // Setters
 
     public void setActive() {
         usersListComponentController.startListRefresher();
@@ -56,12 +62,10 @@ public class ChatRoomMainController implements Closeable, ChatCommands {
         this.mainController = mainController;
     }
 
-    @Override
-    public void logout() {
-        mainController.switchToLogin();
-    }
 
-    public void sendMessage(String text, Callback callback) {
+    // Http requests
+
+    public void postMessage(String text, Callback callback) {
         this.mainController.postMessage(text, callback);
     }
 
@@ -71,5 +75,20 @@ public class ChatRoomMainController implements Closeable, ChatCommands {
 
     public void getUsersList(Callback callback) {
         this.mainController.getUsersList(callback);
+    }
+
+
+    // Implementations
+
+    @Override
+    public void close() throws IOException {
+        usersListComponentController.close();
+        chatAreaComponentController.close();
+    }
+
+    @Override
+    public void logout() {
+        mainController.deleteUser();
+        mainController.switchToLogin();
     }
 }
