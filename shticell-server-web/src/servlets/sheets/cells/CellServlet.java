@@ -69,6 +69,7 @@ public class CellServlet extends HttpServlet {
             synchronized (ServletUtils.getVersionLock()){
                 engine.updateCell(userName, sheetName, sheetVersion, cellName, jsonBody);
             }
+
             SheetDto sheetDTO = engine.getSheetDTO(userName, sheetName);
 
             response.getWriter().print(gson.toJson(sheetDTO));

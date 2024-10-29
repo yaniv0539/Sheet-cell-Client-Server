@@ -8,6 +8,7 @@ import java.util.Set;
 public interface CellGetters {
     Coordinate getCoordinate();
     int getVersion();
+    String getUpdaterUserName();
     String getOriginalValue();
     Data getEffectiveValue();
     Set<Cell> getInfluenceFrom();

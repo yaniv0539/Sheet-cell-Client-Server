@@ -93,8 +93,8 @@ public class HeaderController {
                 textFieldCellId.textProperty().bind(this.mainController.getCellInFocus().getCoordinate());
                 textFieldOrignalValue.textProperty().bindBidirectional(this.mainController.getCellInFocus().getOriginalValue());
                 textFieldLastUpdateInVersion.textProperty().bind(this.mainController.getCellInFocus().getLastUpdateVersion());
+                textFieldUpdatedBy.textProperty().bind(this.mainController.getCellInFocus().getUpdateBy()); //return string
         }
-
 
         // Getters
 

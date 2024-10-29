@@ -30,7 +30,9 @@ public class RangeServlet extends HttpServlet {
 
             synchronized (ServletUtils.getVersionLock()){
                 engine.addRange(userName, sheetName, sheetVersion, rangeName, rangeValue);
-            }
+           }
+
+
 
             SheetDto sheetDTO = engine.getSheetDTO(userName, sheetName);
 
@@ -60,6 +62,7 @@ public class RangeServlet extends HttpServlet {
             synchronized (ServletUtils.getVersionLock()){
                 engine.deleteRange(userName, sheetName, sheetVersion, rangeName);
             }
+
 
             response.setStatus(HttpServletResponse.SC_NO_CONTENT);
         } catch (Exception e) {

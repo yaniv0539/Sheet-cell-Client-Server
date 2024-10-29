@@ -85,6 +85,8 @@ public class EngineImpl implements Engine, Serializable {
             STLSheet stlSheet = deserializeFrom(inputStream);
             Sheet sheet = STLSheetToSheet.generate(stlSheet);
 
+            sheet.getActiveCells().forEach((coordinate, cell) -> cell.setUpdateBy(userName));
+
             synchronized (this) {
 
                 if (this.versionManagers.containsKey(sheet.getName())) {
@@ -120,7 +122,15 @@ public class EngineImpl implements Engine, Serializable {
         versionManager.makeNewVersion();
 
         try {
-            versionManager.getLastVersion().setCell(CoordinateFactory.toCoordinate(cellName.toUpperCase()), cellValue);
+            Sheet lastVersion = versionManager.getLastVersion();
+            int version = lastVersion.getVersion();
+
+            lastVersion.setCell(CoordinateFactory.toCoordinate(cellName.toUpperCase()), cellValue);
+
+            lastVersion.getActiveCells().values().stream()
+                    .filter(cell -> cell.getVersion() == version)
+                    .forEach(cell -> cell.setUpdateBy(userName));
+
         } catch (Exception e) {
             versionManager.deleteLastVersion();
             throw e;

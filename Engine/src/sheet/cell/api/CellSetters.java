@@ -8,6 +8,7 @@ public interface CellSetters {
     void setInfluenceOn(Set<Cell> influenceOn);
     void setInfluenceFrom(Set<Cell> influenceFrom);
     void setVersion(int changeInVersion);
+    void setUpdateBy(String userName);
     void addInfluenceOn(Cell influenceOn);
     void addInfluenceFrom(Cell influenceFrom);
 }
