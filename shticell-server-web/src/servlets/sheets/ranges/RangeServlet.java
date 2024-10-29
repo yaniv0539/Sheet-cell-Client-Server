@@ -57,7 +57,7 @@ public class RangeServlet extends HttpServlet {
 
             int sheetVersion = ServletUtils.getSheetVersion(request);
 
-            synchronized (ServletUtils.getVersionLock()){
+            synchronized (ServletUtils.getVersionLock()) {
                 engine.deleteRange(userName, sheetName, sheetVersion, rangeName);
             }
 
