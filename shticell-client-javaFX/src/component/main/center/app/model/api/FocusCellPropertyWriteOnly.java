@@ -10,6 +10,7 @@ public interface FocusCellPropertyWriteOnly {
     void setOriginalValue(String originalValue );
     void setEffectiveValue(String effectiveValue );
     void setLastUpdateVersion(String lastUpdateVersion );
+    void setUpdateBy(String userName);
     void setDependOn(Collection<CoordinateDto> dependOn );
     void setInfluenceOn(Collection<CoordinateDto> influence );
     void clear();

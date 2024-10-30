@@ -12,6 +12,7 @@ public class CellDtoSerializer implements JsonSerializer<CellDto> {
         JsonObject cellOuter = new JsonObject();
         cellOuter.add("coordinate",context.serialize(src.coordinate()));
         cellOuter.addProperty("version",src.version());
+        cellOuter.addProperty("updateBy",src.updateBy());
         cellOuter.addProperty("originalValue",src.originalValue());
         cellOuter.addProperty("effectiveValue",src.effectiveValue());
 

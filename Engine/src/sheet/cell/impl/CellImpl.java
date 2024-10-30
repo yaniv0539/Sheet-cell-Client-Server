@@ -14,11 +14,13 @@ public class CellImpl implements Cell, Serializable {
 
     private final Coordinate coordinate;
     private int version;
+    private String updateBy;
     private String originalValue;
     private Expression expression;
     private Data effectiveValue;
     private Set<Cell> influenceFrom;
     private Set<Cell> influenceOn;
+
 
     private CellImpl(Coordinate coordinate, int version, String originalValue) {
 
@@ -45,6 +47,11 @@ public class CellImpl implements Cell, Serializable {
     @Override
     public int getVersion() {
         return this.version;
+    }
+
+    @Override
+    public String getUpdaterUserName() {
+        return this.updateBy;
     }
 
     @Override
@@ -93,6 +100,11 @@ public class CellImpl implements Cell, Serializable {
 
     @Override
     public void setVersion(int changeInVersion) { version = changeInVersion; }
+
+    @Override
+    public void setUpdateBy(String userName) {
+        this.updateBy = userName;
+    }
 
     @Override
     public void computeEffectiveValue() {

@@ -16,6 +16,7 @@ public class FocusCellPropertyImpl implements FocusCellProperty {
     public StringProperty originalValue;
     public StringProperty effectiveValue;
     public StringProperty lastUpdateVersion;
+    public StringProperty lastUpdateBy;
     private ObservableList<CoordinateDto> dependenceOn;
     private ObservableList<CoordinateDto> influenceOn;
 
@@ -24,6 +25,7 @@ public class FocusCellPropertyImpl implements FocusCellProperty {
         originalValue = new SimpleStringProperty("");
         effectiveValue = new SimpleStringProperty("");
         lastUpdateVersion = new SimpleStringProperty("");
+        lastUpdateBy = new SimpleStringProperty("");
         dependenceOn = FXCollections.observableArrayList();
         influenceOn = FXCollections.observableArrayList();
     }
@@ -49,6 +51,11 @@ public class FocusCellPropertyImpl implements FocusCellProperty {
     }
 
     @Override
+    public StringProperty getUpdateBy() {
+        return this.lastUpdateBy;
+    }
+
+    @Override
     public ObservableList<CoordinateDto> getDependOn() {
         return dependenceOn;
     }
@@ -66,6 +73,11 @@ public class FocusCellPropertyImpl implements FocusCellProperty {
     @Override
     public void setOriginalValue(String originalValue) {
         this.originalValue.set(originalValue);
+    }
+
+    @Override
+    public void setUpdateBy(String userName) {
+        this.lastUpdateBy.set(userName);
     }
 
     @Override

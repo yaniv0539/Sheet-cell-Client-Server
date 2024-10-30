@@ -24,13 +24,14 @@ public class CellDtoDeserializer implements JsonDeserializer<CellDto> {
         }
 
         int version = json.getAsJsonObject().get("version").getAsInt();
+        String updateBy = json.getAsJsonObject().get("updateBy").getAsString();
         String originalValue = json.getAsJsonObject().get("originalValue").getAsString();
         String effectiveValue = json.getAsJsonObject().get("effectiveValue").getAsString();
         Set<CellDto> influenceOn = new HashSet<>();
         Set<CellDto> influenceFrom = new HashSet<>();
 
         // Temporary cell for reference before deserializing influenceFrom
-        CellDto cellDto = new CellDto(coordinate, version, originalValue, effectiveValue, influenceOn, influenceFrom);
+        CellDto cellDto = new CellDto(coordinate, version,updateBy, originalValue, effectiveValue, influenceOn, influenceFrom);
         referenceCache.put(coordinate, cellDto);  // Add the newly created cell to the cache
 
         // Deserialize influenceFrom, ensuring we don't create recursive loops

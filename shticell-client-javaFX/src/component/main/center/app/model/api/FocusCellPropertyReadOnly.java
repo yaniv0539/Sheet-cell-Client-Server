@@ -8,6 +8,7 @@ public interface FocusCellPropertyReadOnly {
     StringProperty getCoordinate();
     StringProperty getOriginalValue();
     StringProperty getEffectiveValue();
+    StringProperty getUpdateBy();
     StringProperty getLastUpdateVersion();
     ObservableList<CoordinateDto> getDependOn();
     ObservableList<CoordinateDto> getInfluenceOn();

@@ -18,7 +18,7 @@ public interface SheetGetters {
     int getVersion();
 
     Cell getCell(Coordinate coordinate);
-    Map<Coordinate, CellGetters> getActiveCells();
+    Map<Coordinate, Cell> getActiveCells();
 
     RangeGetters getRange(String rangeName);
     Set<RangeGetters> getRanges();

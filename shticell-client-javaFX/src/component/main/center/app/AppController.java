@@ -643,6 +643,7 @@ public class AppController {
             if (cell != null) {
                 cellInFocus.setOriginalValue(cell.originalValue());
                 cellInFocus.setLastUpdateVersion(String.valueOf(cell.version()));
+                cellInFocus.setUpdateBy(cell.updateBy());
                 cellInFocus.setDependOn(cell.influenceFrom().stream()
                         .map(CellDto::coordinate)
                         .collect(Collectors.toSet()));
@@ -652,6 +653,7 @@ public class AppController {
             } else {
                 cellInFocus.setOriginalValue("");
                 cellInFocus.setLastUpdateVersion("");
+                cellInFocus.setUpdateBy("");
                 cellInFocus.setDependOn(new HashSet<>());
                 cellInFocus.setInfluenceOn(new HashSet<>());
             }

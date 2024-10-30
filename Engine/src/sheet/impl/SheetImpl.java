@@ -82,8 +82,8 @@ public class SheetImpl implements Sheet, Serializable {
     }
 
     @Override
-    public Map<Coordinate, CellGetters> getActiveCells() {
-        return Collections.unmodifiableMap(this.activeCells);
+    public Map<Coordinate, Cell> getActiveCells() {
+        return this.activeCells;
     }
 
     @Override

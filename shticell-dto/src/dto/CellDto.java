@@ -10,6 +10,7 @@ import java.util.Set;
 public record CellDto(
         CoordinateDto coordinate,
         int version,
+        String updateBy,
         String originalValue,
         String effectiveValue,
         Set<CellDto> influenceOn,
@@ -19,6 +20,7 @@ public record CellDto(
         this(
                 new CoordinateDto(cell.getCoordinate()),
                 cell.getVersion(),
+                cell.getUpdaterUserName(),
                 cell.getOriginalValue(),
                 cell.getEffectiveValue().toString(),
                 new HashSet<>(),
