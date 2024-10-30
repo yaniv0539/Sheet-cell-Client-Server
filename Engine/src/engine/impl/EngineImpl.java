@@ -179,6 +179,7 @@ public class EngineImpl implements Engine, Serializable {
                     if(oldCoordinate.getRow() < from.getRow() || oldCoordinate.getRow() > to.getRow() ||
                             oldCoordinate.getCol() < from.getCol() || oldCoordinate.getCol() > to.getCol()){
                         newSheet.setCell(oldCoordinate, sheetToFilter.getCell(oldCoordinate).getEffectiveValue().toString());
+                        newSheet.getActiveCells().get(oldCoordinate).setUpdateBy(sheetToFilter.getCell(oldCoordinate).getUpdaterUserName());
                     }
                     else{
                         if(oldRowToNewRow.containsKey(oldCoordinate.getRow())){
@@ -187,6 +188,7 @@ public class EngineImpl implements Engine, Serializable {
                                             oldRowToNewRow.get(oldCoordinate.getRow()),
                                             oldCoordinate.getCol());
                             newSheet.setCell(newCoordinate, sheetToFilter.getCell(oldCoordinate).getEffectiveValue().toString());
+                            newSheet.getActiveCells().get(newCoordinate).setUpdateBy(sheetToFilter.getCell(oldCoordinate).getUpdaterUserName());
                         }
                     }
                 });
@@ -245,11 +247,11 @@ public class EngineImpl implements Engine, Serializable {
         int startCol = from.getCol();
         int endCol = to.getCol();
 
-        SheetGetters sheetToFilter = versionManager.getVersion(version);
+        SheetGetters sheetToSort = versionManager.getVersion(version);
 
-        Sheet newSheet = SheetImpl.create(copyLayout(sheetToFilter.getLayout()));
+        Sheet newSheet = SheetImpl.create(copyLayout(sheetToSort.getLayout()));
         //get data in range from the sheet;
-        List<List<CellGetters>> dataToSort = sheetToFilter.getCellInRange(startRow,endRow,startCol,endCol);
+        List<List<CellGetters>> dataToSort = sheetToSort.getCellInRange(startRow,endRow,startCol,endCol);
         List<Integer> columnsByInt = columnsToIntList(columns);
         
         //if all columns integer; else exception
@@ -267,26 +269,29 @@ public class EngineImpl implements Engine, Serializable {
         dataToSort.sort(createComparator(columnsByInt, startCol));
 
         //put data into sheet;
-        sheetToFilter
+        sheetToSort
                 .getActiveCells()
                 .keySet().stream()
                 .filter(coordinate -> coordinate.getRow() < from.getRow() || coordinate.getRow() > to.getRow() ||
                         coordinate.getCol() < from.getCol() || coordinate.getCol() > to.getCol())
-                .forEach(coordinate -> { newSheet.setCell(coordinate, sheetToFilter.getCell(coordinate).getEffectiveValue().toString());
+                .forEach(coordinate -> {
+                    Cell cell = sheetToSort.getCell(coordinate);
+                    newSheet.setCell(coordinate, cell.getEffectiveValue().toString());
+                    newSheet.getActiveCells().get(coordinate).setUpdateBy(cell.getUpdaterUserName());
 
-//                    else{ //it means the coordinate is in the sorted range
-//                        newSheet.setCell(coordinate,
-//                                dataToSort.get(coordinate.getRow() - startRow)
-//                                                .get(coordinate.getCol() - startCol)
-//                                                    .getEffectiveValue().toString());
-//                    }
                 });
 
         RangeImpl.create("dummy",boundaries).toCoordinateCollection()
-                .forEach(coordinate -> newSheet.setCell(coordinate,
-                                                        dataToSort.get(coordinate.getRow() - startRow)
-                                                                    .get(coordinate.getCol() - startCol)
-                                                                    .getEffectiveValue().toString()));
+                .forEach(coordinate -> {
+                    CellGetters cellGetters = dataToSort.get(coordinate.getRow() - startRow)
+                            .get(coordinate.getCol() - startCol);
+                    String userNameUpdater = cellGetters.getUpdaterUserName();
+
+                    newSheet.setCell(coordinate,
+                            cellGetters.getEffectiveValue().toString());
+                    newSheet.getActiveCells().get(coordinate).setUpdateBy(userNameUpdater);
+
+                });
 
         return new SheetDto(newSheet);
     }
