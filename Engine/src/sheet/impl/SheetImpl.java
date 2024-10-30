@@ -232,6 +232,7 @@ public class SheetImpl implements Sheet, Serializable {
                 else{
                     Cell dummyCell = CellImpl.create(CoordinateFactory.createCoordinate(row, col), version, DataImpl.empty);
                     dummyCell.computeEffectiveValue();
+                    dummyCell.setUpdateBy("");
                     rowCellsInRange.add(dummyCell);
                 }
 
