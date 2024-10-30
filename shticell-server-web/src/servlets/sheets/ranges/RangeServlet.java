@@ -32,8 +32,6 @@ public class RangeServlet extends HttpServlet {
                 engine.addRange(userName, sheetName, sheetVersion, rangeName, rangeValue);
            }
 
-
-
             SheetDto sheetDTO = engine.getSheetDTO(userName, sheetName);
 
             response.setContentType("application/json");
@@ -61,6 +59,7 @@ public class RangeServlet extends HttpServlet {
 
             synchronized (ServletUtils.getVersionLock()) {
                 engine.deleteRange(userName, sheetName, sheetVersion, rangeName);
+
             }
 
 

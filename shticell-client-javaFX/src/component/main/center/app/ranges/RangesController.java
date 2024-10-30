@@ -178,7 +178,7 @@ public class RangesController {
                     assert response.body() != null;
                     String jsonResponse = response.body().string();
 
-                    if (response.code() != 201) {
+                    if (response.code() != 201 && response.code() != 200) {
                         Platform.runLater(() -> mainController.showAlertPopup(new Exception(jsonResponse),"add range"));
                     } else {
                         Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();

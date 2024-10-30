@@ -417,6 +417,12 @@ public class EngineImpl implements Engine, Serializable {
                 versionManager.deleteLastVersion();
                 versionManager.getLastVersion().addRange(name, boundaries);
             }
+
+            Sheet lastVersion = versionManager.getLastVersion();
+            lastVersion.getActiveCells().values().stream()
+                    .filter(cell -> cell.getVersion() == lastVersion.getVersion())
+                    .forEach(cell -> cell.setUpdateBy(userName));
+
         } catch (Exception e) {
             versionManager.deleteLastVersion();
             throw new RuntimeException(e);
@@ -500,6 +506,7 @@ public class EngineImpl implements Engine, Serializable {
 
     @Override
     public Set<SheetOverviewDto> getSheetOverviewDto(String userName) {
+
         if(!userManager.isUserExists(userName)) {
             throw new RuntimeException("User " + userName + " does not exist");
         }
@@ -529,7 +536,6 @@ public class EngineImpl implements Engine, Serializable {
         PermissionManager permissionManager = getPermissionManager(sheetName);
 
         permissionManager.addRequest(userName, permissionType);
-
 
     }
 
