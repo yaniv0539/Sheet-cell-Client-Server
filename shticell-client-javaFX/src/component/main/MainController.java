@@ -11,21 +11,21 @@ import dto.SheetDto;
 import dto.SortDto;
 import dto.enums.PermissionType;
 import dto.enums.Status;
+import javafx.animation.FadeTransition;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Duration;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 import utils.Constants;
@@ -552,6 +552,32 @@ public class MainController {
 
         alert.showAndWait();  // Display the popup
     }
+
+    public void showPopupMessage(String message) {
+        // Create a label with the message
+        Label messageLabel = new Label(message);
+        messageLabel.setStyle("-fx-background-color: rgba(0, 0, 0, 0.8); -fx-text-fill: white; -fx-padding: 10px; -fx-font-size: 18px;");
+
+        // Create a popup and add the message label
+        Popup popup = new Popup();
+        popup.getContent().add(messageLabel);
+        popup.setAutoHide(true);  // Automatically close the popup when clicking outside
+
+        // Center the popup relative to the main stage
+        popup.show(primaryStage);
+        popup.setX(primaryStage.getX() + (primaryStage.getWidth() - messageLabel.getWidth()) / 2);
+        popup.setY(primaryStage.getY() + (primaryStage.getHeight() - messageLabel.getHeight()) / 2);
+
+        // Create a fade-out transition for the popup
+        FadeTransition fadeOut = new FadeTransition(Duration.seconds(3), messageLabel);
+        fadeOut.setFromValue(1.0);
+        fadeOut.setToValue(0.0);
+        fadeOut.setDelay(Duration.seconds(3));  // Delay for 1 second before fading
+
+        fadeOut.setOnFinished(event -> popup.hide());  // Hide popup after fading
+        fadeOut.play();  // Start fade-out transition
+    }
+
 
     public void uploadSheetToWorkspace(SheetDto sheetDto,boolean isEditor) {
         appComponentController.onFinishLoadingFile(sheetDto,isEditor);

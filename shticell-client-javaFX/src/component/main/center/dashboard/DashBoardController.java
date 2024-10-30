@@ -159,6 +159,10 @@ public class DashBoardController {
                 if (response.code() != 200) {
                     Platform.runLater(()-> mainController.showAlertPopup(new Exception(jsonResponse),"loading sheet failed"));
                 }
+                else{
+                    Platform.runLater(()-> mainController.showPopupMessage("sheet loaded successfully !\n" +
+                            "Select him in the table, and press view to start working on him."));
+                }
             }
         });
     }
