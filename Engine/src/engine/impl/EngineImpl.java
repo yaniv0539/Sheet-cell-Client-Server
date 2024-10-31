@@ -136,16 +136,16 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     @Override
-    public SheetDto updateDynamicSheetCell(String userName, String sheetName, String cellName, String cellValue) {
+    public SheetDto updateDynamicSheetCell(String userName, String sheetName, int sheetVersion, String cellName, String cellValue) {
         Sheet sheet;
 
         if (!this.userToDynamicSheetMap.containsKey(userName)) {
-            sheet = this.userToDynamicSheetMap.put(userName, getVersionManager(sheetName).getLastVersion().copy());
+            sheet = this.userToDynamicSheetMap.put(userName, getVersionManager(sheetName).getVersion(sheetVersion).copy());
         } else {
             sheet = this.userToDynamicSheetMap.get(userName);
 
             if (!sheet.getName().equals(sheetName)) {
-                sheet = this.userToDynamicSheetMap.put(userName, getVersionManager(sheetName).getLastVersion().copy());
+                sheet = this.userToDynamicSheetMap.put(userName, getVersionManager(sheetName).getVersion(sheetVersion).copy());
             }
         }
 

@@ -2,7 +2,6 @@ package component.main.center.app;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import component.main.MainController;
 import component.main.center.app.commands.CommandsController;
 import component.main.center.app.header.HeaderController;
@@ -39,7 +38,6 @@ import org.jetbrains.annotations.NotNull;
 import sheet.coordinate.impl.CoordinateFactory;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -298,6 +296,10 @@ public class AppController {
 
     public void updateCell(Callback callback) {
         this.mainController.postCell(this.currentSheet.name(), String.valueOf(this.currentSheet.version()), cellInFocus.getCoordinate().get(), cellInFocus.getOriginalValue().get(), callback);
+    }
+
+    public void updateCellToDynamicSheet(String cellName, String cellValue, Callback callback) {
+        this.mainController.postCellToDynamicSheet(this.currentSheet.name(), String.valueOf(this.currentSheet.version()), cellName, cellValue, callback);
     }
 
 

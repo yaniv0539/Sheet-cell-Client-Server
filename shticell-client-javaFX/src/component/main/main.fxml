@@ -17,16 +17,13 @@
                   <ColumnConstraints hgrow="SOMETIMES" />
                </columnConstraints>
                <rowConstraints>
-                  <RowConstraints maxHeight="168.0" minHeight="10.0" prefHeight="59.0" vgrow="NEVER" />
+                  <RowConstraints vgrow="NEVER" />
                   <RowConstraints vgrow="ALWAYS" />
                </rowConstraints>
                <children>
                   <AnchorPane fx:id="mainPanel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" GridPane.rowIndex="1" />
                   <fx:include fx:id="topComponent" source="top/top.fxml" />
                </children>
-               <padding>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </padding>
             </GridPane>
          </content>
          <padding>

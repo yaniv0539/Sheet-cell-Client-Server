@@ -14,6 +14,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Font?>
 
+
 <ScrollPane fitToHeight="true" fitToWidth="true" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="component.main.center.dashboard.DashBoardController">
    <content>
       <GridPane hgap="10.0" prefHeight="551.0" prefWidth="800.0" vgap="10.0">
@@ -57,19 +58,21 @@
                </content>
             </ScrollPane>
             <Label id="commend-Label" alignment="CENTER" prefHeight="17.0" prefWidth="375.0" styleClass="lable" text="Commends:" GridPane.columnIndex="1" />
-            <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            <ScrollPane fitToHeight="true" fitToWidth="true" GridPane.columnIndex="1" GridPane.rowIndex="1">
                <content>
-                  <GridPane minWidth="200.0">
+                  <GridPane>
                      <columnConstraints>
                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
                      </columnConstraints>
                      <rowConstraints>
-                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                        <RowConstraints vgrow="NEVER" />
                         <RowConstraints vgrow="SOMETIMES" />
+                        <RowConstraints vgrow="NEVER" />
+                        <RowConstraints vgrow="NEVER" />
                         <RowConstraints vgrow="SOMETIMES" />
+                        <RowConstraints vgrow="NEVER" />
+                        <RowConstraints vgrow="NEVER" />
+                        <RowConstraints vgrow="NEVER" />
                      </rowConstraints>
                      <children>
                         <Button id="view-button" fx:id="viewSheetButton" mnemonicParsing="false" onAction="#viewSheetAction" prefHeight="26.0" prefWidth="301.0" styleClass="commend-button" text="View">
@@ -80,7 +83,7 @@
                               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                            </padding>
                         </Button>
-                        <Button id="Request-permission" fx:id="requestPermissionButton" mnemonicParsing="false" onAction="#requestPermissionAction" prefHeight="25.0" prefWidth="279.0" styleClass="commend-button" text="Request permission" GridPane.rowIndex="3">
+                        <Button id="Request-permission" fx:id="requestPermissionButton" mnemonicParsing="false" onAction="#requestPermissionAction" prefHeight="25.0" prefWidth="279.0" styleClass="commend-button" text="Request permission" GridPane.rowIndex="5">
                            <GridPane.margin>
                               <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
                            </GridPane.margin>
@@ -88,7 +91,7 @@
                               <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
                            </padding>
                         </Button>
-                        <Button id="aprove-button" fx:id="confirmButton" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#confirmAction" prefHeight="57.0" prefWidth="272.0" styleClass="commend-button" text="Confirm" GridPane.rowIndex="4">
+                        <Button id="aprove-button" fx:id="confirmButton" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#confirmAction" prefHeight="57.0" prefWidth="272.0" styleClass="commend-button" text="Confirm" GridPane.rowIndex="6">
                            <padding>
                               <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
                            </padding>
@@ -96,7 +99,7 @@
                               <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
                            </GridPane.margin>
                         </Button>
-                        <Button id="deny-button" fx:id="denyButton" mnemonicParsing="false" onAction="#denyAction" prefHeight="26.0" prefWidth="278.0" styleClass="commend-button" text="Deny" GridPane.rowIndex="5">
+                        <Button id="deny-button" fx:id="denyButton" mnemonicParsing="false" onAction="#denyAction" prefHeight="26.0" prefWidth="278.0" styleClass="commend-button" text="Deny" GridPane.rowIndex="7">
                            <GridPane.margin>
                               <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
                            </GridPane.margin>
@@ -104,19 +107,19 @@
                               <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
                            </padding>
                         </Button>
-                        <Label id="prmission-Lable" alignment="CENTER" prefHeight="18.0" prefWidth="281.0" styleClass="lable" text="Choose Permission:" GridPane.rowIndex="1">
+                        <Label id="prmission-Lable" alignment="CENTER" prefHeight="18.0" prefWidth="281.0" styleClass="lable" text="Choose Permission:" GridPane.rowIndex="2">
                            <font>
                               <Font size="16.0" />
                            </font>
                         </Label>
-                        <HBox prefHeight="100.0" prefWidth="200.0" spacing="70.0" GridPane.rowIndex="2">
+                        <HBox spacing="70.0" GridPane.rowIndex="3">
                            <children>
-                              <CheckBox fx:id="redearCheckBox" mnemonicParsing="false" onAction="#readerAction" text="Reader">
+                              <CheckBox fx:id="redearCheckBox" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#readerAction" text="Reader">
                                  <HBox.margin>
                                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                                  </HBox.margin>
                               </CheckBox>
-                              <CheckBox fx:id="writerCheckBox" alignment="TOP_LEFT" mnemonicParsing="false" onAction="#writerAction" text="Writer">
+                              <CheckBox fx:id="writerCheckBox" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#writerAction" text="Writer">
                                  <HBox.margin>
                                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                                  </HBox.margin>
