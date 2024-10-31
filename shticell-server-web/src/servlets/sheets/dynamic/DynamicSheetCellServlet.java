@@ -13,7 +13,7 @@ import utils.ServletUtils;
 
 import java.io.IOException;
 
-@WebServlet(name = "DynamicSheetCellServlet", urlPatterns = "/dynamicSheetCell")
+@WebServlet(name = "DynamicSheetCellServlet", urlPatterns = "/sheet/dynamic/cell")
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 1024 * 1024 * 5, maxRequestSize = 1024 * 1024 * 5 * 5)
 public class DynamicSheetCellServlet extends HttpServlet {
     @Override
@@ -27,7 +27,9 @@ public class DynamicSheetCellServlet extends HttpServlet {
             String cellName = ServletUtils.getCellName(request);
             String cellValue = ServletUtils.getJsonBody(request);
 
-            SheetDto sheetDTO = engine.updateDynamicSheetCell(userName, sheetName, cellName, cellValue);
+            int sheetVersion = ServletUtils.getSheetVersion(request);
+
+            SheetDto sheetDTO = engine.updateDynamicSheetCell(userName, sheetName, sheetVersion, cellName, cellValue);
 
             response.setContentType("application/json");
             response.getWriter().println(gson.toJson(sheetDTO));

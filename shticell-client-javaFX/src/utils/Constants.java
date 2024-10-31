@@ -30,6 +30,7 @@ public class Constants {
 
     // Second Layer
     public final static String CELL_URL = SHEET_URL + "/cell";
+    public final static String DYNAMIC_SHEET_URL = SHEET_URL + "/dynamic";
     public final static String RANGE_URL = SHEET_URL + "/ranges";
     public final static String FILTER_SHEET_URL = SHEET_URL + "/filter";
     public final static String SORT_SHEET_URL = SHEET_URL + "/sort";
@@ -38,6 +39,7 @@ public class Constants {
 
 
     // Third Layer
+    public final static String DYNAMIC_SHEET_CELL_URL = DYNAMIC_SHEET_URL + "/cell";
     public final static String GET_BOUNDARIES_URL = RANGE_URL + "/boundaries";
     public final static String UNIQUE_COL_VALUES_URL = FILTER_SHEET_URL + "/uniqueColumnValues";
     public final static String GET_NUMERIC_COLUMNS_IN_RANGE_URL = SORT_SHEET_URL + "/numericColumns";

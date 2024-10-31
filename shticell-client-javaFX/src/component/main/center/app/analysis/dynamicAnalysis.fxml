@@ -2,17 +2,14 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Slider?>
-<?import javafx.scene.control.Spinner?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<ScrollPane fitToHeight="true" fitToWidth="true" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1">
+<ScrollPane fitToHeight="true" fitToWidth="true" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="component.main.center.app.analysis.DynamicAnalysisController">
    <content>
       <GridPane>
          <columnConstraints>
@@ -25,7 +22,7 @@
          <children>
             <ScrollPane fitToHeight="true" fitToWidth="true">
                <content>
-                  <GridPane hgap="10.0" vgap="10.0">
+                  <GridPane fx:id="mainGridPane" hgap="10.0" vgap="10.0">
                      <columnConstraints>
                         <ColumnConstraints hgrow="SOMETIMES" />
                         <ColumnConstraints hgrow="SOMETIMES" />
@@ -33,23 +30,17 @@
                         <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="100.0" />
                         <ColumnConstraints hgrow="SOMETIMES" />
                         <ColumnConstraints hgrow="SOMETIMES" />
+                        <ColumnConstraints hgrow="SOMETIMES" />
                      </columnConstraints>
                      <rowConstraints>
                         <RowConstraints maxHeight="-Infinity" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints vgrow="NEVER" />
                      </rowConstraints>
                      <children>
-                        <ComboBox prefWidth="65.0" promptText="Cell" GridPane.rowIndex="1" />
-                        <Spinner editable="true" prefWidth="60.0" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-                        <Spinner editable="true" prefWidth="60.0" GridPane.columnIndex="4" GridPane.rowIndex="1" />
-                        <Slider showTickLabels="true" showTickMarks="true" snapToTicks="true" GridPane.columnIndex="3" GridPane.rowIndex="1" />
                         <Label alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Cell" />
                         <Label alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Step" GridPane.columnIndex="1" />
                         <Label alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Min." GridPane.columnIndex="2" />
                         <Label alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Max." GridPane.columnIndex="4" />
                         <Label alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Value" GridPane.columnIndex="3" />
-                        <Spinner editable="true" prefWidth="60.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                        <Button mnemonicParsing="false" text="Delete" textFill="RED" GridPane.columnIndex="5" GridPane.rowIndex="1" />
                      </children>
                      <padding>
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -59,8 +50,9 @@
             </ScrollPane>
             <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" GridPane.rowIndex="1">
                <children>
-                  <Button layoutX="414.0" layoutY="8.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Add" textFill="GREEN" />
-                  <Button layoutX="354.0" layoutY="8.0" mnemonicParsing="false" text="Clear" textFill="BLUE" />
+                  <Button fx:id="buttonAdd" layoutX="471.0" layoutY="8.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Add" textFill="GREEN" />
+                  <Button fx:id="buttonResetAll" layoutX="315.0" layoutY="8.0" mnemonicParsing="false" text="Reset All" textFill="BLUE" />
+                  <Button fx:id="buttonDeleteAll" layoutX="391.0" layoutY="8.0" mnemonicParsing="false" text="Delete All" textFill="RED" />
                </children>
             </AnchorPane>
          </children>

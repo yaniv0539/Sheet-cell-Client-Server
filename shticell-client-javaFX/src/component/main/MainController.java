@@ -18,10 +18,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -44,8 +41,8 @@ public class MainController {
 
     @FXML private GridPane topComponent;
     @FXML private TopController topComponentController;
-    @FXML private AnchorPane anchorPaneBottomApp;
-    @FXML private AnchorPane mainPanel;
+    @FXML private Pane anchorPaneBottomApp;
+    @FXML private Pane mainPanel;
     @FXML private SplitPane splitPaneApp;
 
 
@@ -390,6 +387,23 @@ public class MainController {
 
         String finalUrl = Objects.requireNonNull(HttpUrl
                         .parse(CELL_URL))
+                .newBuilder()
+                .addQueryParameter("userName", userNameProperty.get())
+                .addQueryParameter("sheetName", sheetName)
+                .addQueryParameter("sheetVersion", sheetVersion)
+                .addQueryParameter("target", coordinate)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsyncPost(finalUrl, body, callback);
+    }
+
+    // Post new cell to specific dynamic sheet
+    public void postCellToDynamicSheet(String sheetName, String sheetVersion, String coordinate, String originalValue, Callback callback) {
+        RequestBody body = RequestBody.create(originalValue, MediaType.parse("text/plain"));
+
+        String finalUrl = Objects.requireNonNull(HttpUrl
+                        .parse(DYNAMIC_SHEET_CELL_URL))
                 .newBuilder()
                 .addQueryParameter("userName", userNameProperty.get())
                 .addQueryParameter("sheetName", sheetName)

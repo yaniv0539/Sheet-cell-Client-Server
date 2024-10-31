@@ -51,7 +51,7 @@ public interface Engine {
         // Dynamic Copies:
 
                 // Post Methods
-                SheetDto updateDynamicSheetCell(String userName, String sheetName, String cellName, String cellValue);
+                SheetDto updateDynamicSheetCell(String userName, String sheetName, int sheetVersion, String cellName, String cellValue);
 
 // Cells:
 

@@ -111,12 +111,12 @@ public class DynamicAnalysisController {
 
     private void resetRow(ComboBox<String> comboBox, Spinner<Double> spinnerStep, Spinner<Integer> spinnerMin, Slider slider, Spinner<Integer> spinnerMax) {
         String coordinate = comboBox.getSelectionModel().selectedItemProperty().get();
-        int value = mainAppController.getIntValueAt(coordinate);
+//        int value = mainAppController.getIntValueAt(coordinate);
         comboBox.getSelectionModel().clearSelection();
         spinnerStep.getValueFactory().setValue(1.0); // Reset step
-        spinnerMin.getValueFactory().setValue(mainAppController.getIntValueAt(coordinate) * (-2));   // Reset min
-        spinnerMax.getValueFactory().setValue(mainAppController.getIntValueAt(coordinate) * (-2)); // Reset max
-        slider.setValue(mainAppController.getIntValueAt(coordinate));                        // Reset slider to middle
+//        spinnerMin.getValueFactory().setValue(mainAppController.getIntValueAt(coordinate) * (-2));   // Reset min
+//        spinnerMax.getValueFactory().setValue(mainAppController.getIntValueAt(coordinate) * (-2)); // Reset max
+//        slider.setValue(mainAppController.getIntValueAt(coordinate));                        // Reset slider to middle
     }
 
     private void removeRow(int targetRowIndex) {
@@ -139,8 +139,6 @@ public class DynamicAnalysisController {
         }
 
         mainGridPane.getRowConstraints().removeLast();
-
-
 
         rowIndex--;
     }
