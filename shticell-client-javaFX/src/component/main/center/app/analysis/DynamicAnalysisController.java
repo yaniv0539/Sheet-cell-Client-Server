@@ -1,5 +1,6 @@
 package component.main.center.app.analysis;
 
+import component.main.center.app.AppController;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -22,6 +23,8 @@ public class DynamicAnalysisController {
     @FXML
     private Button buttonDeleteAll;
 
+    AppController mainAppController;
+
     private int rowIndex = 1;  // Start after the header row
 
     @FXML
@@ -31,6 +34,9 @@ public class DynamicAnalysisController {
         buttonDeleteAll.setOnAction(e -> deleteAllRows());
         addRow();
     }
+    public void setMainController(AppController mainAppController) {
+        this.mainAppController = mainAppController;
+    }
 
     private void addRow() {
         // Create components for the new row
@@ -38,7 +44,7 @@ public class DynamicAnalysisController {
         comboBox.setPrefWidth(65.0);
         comboBox.setPromptText("Cell");
 
-        Spinner<Integer> spinnerStep = new Spinner<>(0, 100, 0);
+        Spinner<Double> spinnerStep = new Spinner<>(0, 100, 0);
         spinnerStep.setPrefWidth(60.0);
 
         Spinner<Integer> spinnerMin = new Spinner<>(0, 100, 0);
@@ -62,6 +68,14 @@ public class DynamicAnalysisController {
         final int finalRowIndex = rowIndex;
         deleteButton.setOnAction(e -> removeRow(finalRowIndex));
 
+
+        //here we have all the componnents
+        
+        //init disable property.
+        initDisableBind(spinnerStep, comboBox, spinnerMin, spinnerMax, resetButton, deleteButton);
+        initSliderValuesBinds(slider, spinnerMin, spinnerMax, spinnerStep);
+
+
         // Add RowConstraints to ensure the row is properly added
         RowConstraints rowConstraints = new RowConstraints();
         rowConstraints.setMinHeight(30);
@@ -79,12 +93,30 @@ public class DynamicAnalysisController {
         rowIndex++; // Move to the next row for future additions
     }
 
-    private void resetRow(ComboBox<String> comboBox, Spinner<Integer> spinnerStep, Spinner<Integer> spinnerMin, Slider slider, Spinner<Integer> spinnerMax) {
+    private static void initSliderValuesBinds(Slider slider, Spinner<Integer> spinnerMin, Spinner<Integer> spinnerMax, Spinner<Double> spinnerStep) {
+        slider.minProperty().bind(spinnerMin.valueProperty());
+        slider.maxProperty().bind(spinnerMax.valueProperty());
+        // Bind the slider's block increment to the step value of the spinner
+        slider.blockIncrementProperty().bind(spinnerStep.valueProperty());
+    }
+
+    private static void initDisableBind(Spinner<Double> spinnerStep, ComboBox<String> comboBox, Spinner<Integer> spinnerMin, Spinner<Integer> spinnerMax, Button resetButton, Button deleteButton) {
+        spinnerStep.disableProperty().bind(comboBox.getSelectionModel().selectedItemProperty().isNull());
+        spinnerMin.disableProperty().bind(comboBox.getSelectionModel().selectedItemProperty().isNull());
+        spinnerMax.disableProperty().bind(comboBox.getSelectionModel().selectedItemProperty().isNull());
+        resetButton.disableProperty().bind(comboBox.getSelectionModel().selectedItemProperty().isNull());
+        deleteButton.disableProperty().bind(comboBox.getSelectionModel().selectedItemProperty().isNull());
+    }
+
+
+    private void resetRow(ComboBox<String> comboBox, Spinner<Double> spinnerStep, Spinner<Integer> spinnerMin, Slider slider, Spinner<Integer> spinnerMax) {
+        String coordinate = comboBox.getSelectionModel().selectedItemProperty().get();
+        int value = mainAppController.getIntValueAt(coordinate);
         comboBox.getSelectionModel().clearSelection();
-        spinnerStep.getValueFactory().setValue(0); // Reset step
-        spinnerMin.getValueFactory().setValue(0);   // Reset min
-        slider.setValue(50);                        // Reset slider to middle
-        spinnerMax.getValueFactory().setValue(100); // Reset max
+        spinnerStep.getValueFactory().setValue(1.0); // Reset step
+        spinnerMin.getValueFactory().setValue(mainAppController.getIntValueAt(coordinate) * (-2));   // Reset min
+        spinnerMax.getValueFactory().setValue(mainAppController.getIntValueAt(coordinate) * (-2)); // Reset max
+        slider.setValue(mainAppController.getIntValueAt(coordinate));                        // Reset slider to middle
     }
 
     private void removeRow(int targetRowIndex) {
@@ -118,7 +150,7 @@ public class DynamicAnalysisController {
         // Loop through each row and reset values
         for (int i = 1; i < rowIndex; i++) {
             ComboBox<String> comboBox = (ComboBox<String>) getNodeByRowColumnIndex(i, 0);
-            Spinner<Integer> spinnerStep = (Spinner<Integer>) getNodeByRowColumnIndex(i, 1);
+            Spinner<Double> spinnerStep = (Spinner<Double>) getNodeByRowColumnIndex(i, 1);
             Spinner<Integer> spinnerMin = (Spinner<Integer>) getNodeByRowColumnIndex(i, 2);
             Slider slider = (Slider) getNodeByRowColumnIndex(i, 3);
             Spinner<Integer> spinnerMax = (Spinner<Integer>) getNodeByRowColumnIndex(i, 4);
