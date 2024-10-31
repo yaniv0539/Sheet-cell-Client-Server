@@ -39,14 +39,16 @@ public class EngineImpl implements Engine, Serializable {
     private final static int MAX_ROWS = 50;
     private final static int MAX_COLUMNS = 20;
 
-    private final Map<String, VersionManager> versionManagers;
-    private final Map<String, PermissionManager> permissionManagers;
+    private final Map<String, VersionManager> sheetNameToVersionManagerMap;
+    private final Map<String, PermissionManager> userToPermissionManagerMap;
     private final UserManager userManager;
+    private final Map<String, Sheet> userToDynamicSheetMap;
 
     private EngineImpl() {
-        this.versionManagers = new HashMap<>();
-        this.permissionManagers = new HashMap<>();
+        this.sheetNameToVersionManagerMap = new HashMap<>();
+        this.userToPermissionManagerMap = new HashMap<>();
         this.userManager = new UserManager();
+        this.userToDynamicSheetMap = new HashMap<>();
     }
 
     public static EngineImpl create() {
@@ -64,7 +66,7 @@ public class EngineImpl implements Engine, Serializable {
 
     @Override
     public SheetDto getSheetDTO(String userName, String sheetName, int sheetVersion) {
-        VersionManager versionManager = this.versionManagers.get(sheetName);
+        VersionManager versionManager = this.sheetNameToVersionManagerMap.get(sheetName);
         Sheet sheet = versionManager.getVersion(sheetVersion);
 
         canRead(userName, sheetName);
@@ -86,7 +88,7 @@ public class EngineImpl implements Engine, Serializable {
 
             synchronized (this) {
 
-                if (this.versionManagers.containsKey(sheet.getName())) {
+                if (this.sheetNameToVersionManagerMap.containsKey(sheet.getName())) {
                     throw new RuntimeException("Sheet " + sheet.getName() + " already exists");
                 }
 
@@ -95,10 +97,10 @@ public class EngineImpl implements Engine, Serializable {
                             "valid scale: rows <= 50 , columns <= 20");
                 }
 
-                VersionManager versionManager = this.versionManagers.computeIfAbsent(sheet.getName(), k -> VersionManagerImpl.create());
+                VersionManager versionManager = this.sheetNameToVersionManagerMap.computeIfAbsent(sheet.getName(), k -> VersionManagerImpl.create());
                 versionManager.init(sheet);
 
-                this.permissionManagers.computeIfAbsent(sheet.getName(), k -> PermissionManagerImpl.create(userName));
+                this.userToPermissionManagerMap.computeIfAbsent(sheet.getName(), k -> PermissionManagerImpl.create(userName));
             }
 
             return sheet.getName();
@@ -131,6 +133,26 @@ public class EngineImpl implements Engine, Serializable {
             versionManager.deleteLastVersion();
             throw e;
         }
+    }
+
+    @Override
+    public SheetDto updateDynamicSheetCell(String userName, String sheetName, String cellName, String cellValue) {
+        Sheet sheet;
+
+        if (!this.userToDynamicSheetMap.containsKey(userName)) {
+            sheet = this.userToDynamicSheetMap.put(userName, getVersionManager(sheetName).getLastVersion().copy());
+        } else {
+            sheet = this.userToDynamicSheetMap.get(userName);
+
+            if (!sheet.getName().equals(sheetName)) {
+                sheet = this.userToDynamicSheetMap.put(userName, getVersionManager(sheetName).getLastVersion().copy());
+            }
+        }
+
+        assert sheet != null;
+        sheet.setCell(CoordinateFactory.toCoordinate(cellName.toUpperCase()), cellValue);
+
+        return new SheetDto(sheet);
     }
 
     @Override
@@ -491,7 +513,7 @@ public class EngineImpl implements Engine, Serializable {
 
     @Override
     public PermissionType getUserPermission(String userName, String sheetName) {
-        return permissionManagers.get(sheetName).getPermission(userName);
+        return userToPermissionManagerMap.get(sheetName).getPermission(userName);
     }
 
     @Override
@@ -519,9 +541,9 @@ public class EngineImpl implements Engine, Serializable {
         Set<SheetOverviewDto> sheetOverviewDtoSet = new HashSet<>();
 
         synchronized (this) {
-            versionManagers.forEach((sheetName, versionManager) -> {
+            sheetNameToVersionManagerMap.forEach((sheetName, versionManager) -> {
                 Sheet sheet = versionManager.getLastVersion();
-                String owner = permissionManagers.get(sheetName).getOwner();
+                String owner = userToPermissionManagerMap.get(sheetName).getOwner();
                 PermissionType userPermission = getUserPermission(userName, sheetName);
 
                 sheetOverviewDtoSet.add(new SheetOverviewDto(sheet, userPermission, owner));
@@ -553,6 +575,7 @@ public class EngineImpl implements Engine, Serializable {
         PermissionManager permissionManager = getPermissionManager(sheetName);
         permissionManager.updateRequest(userName,permissionType,status,response);
     }
+
 
     //sort function helper
     private Comparator<List<CellGetters>> createComparator(List<Integer> sortByColumns, int startCol) {
@@ -627,7 +650,7 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     private VersionManager getVersionManager(String sheetName) {
-        VersionManager versionManager = this.versionManagers.get(sheetName);
+        VersionManager versionManager = this.sheetNameToVersionManagerMap.get(sheetName);
 
         if (versionManager == null) {
             throw new RuntimeException("No version manager found for sheet " + sheetName);
@@ -637,7 +660,7 @@ public class EngineImpl implements Engine, Serializable {
     }
 
     private PermissionManager getPermissionManager(String sheetName) {
-        PermissionManager permissionManager = this.permissionManagers.get(sheetName);
+        PermissionManager permissionManager = this.userToPermissionManagerMap.get(sheetName);
 
         if (permissionManager == null) {
             throw new RuntimeException("No permission manager found for sheet " + sheetName);

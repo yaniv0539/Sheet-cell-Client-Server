@@ -321,6 +321,22 @@ public class SheetImpl implements Sheet, Serializable {
         }
     }
 
+    @Override
+    public Sheet copy() {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(this);
+            oos.close();
+
+            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()));
+            return (SheetImpl) ois.readObject();
+        } catch (Exception e) {
+            // deal with the runtime error that was discovered as part of invocation
+            throw new RuntimeException(e);
+        }
+    }
+
     private boolean isRowInSheetBoundaries(int row) {
         return !(row >= this.layout.getRows());
     }

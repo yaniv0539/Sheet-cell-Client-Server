@@ -4,6 +4,9 @@ import dto.*;
 
 import dto.enums.PermissionType;
 import dto.enums.Status;
+import engine.versions.api.VersionManager;
+import sheet.api.Sheet;
+import sheet.coordinate.impl.CoordinateFactory;
 import sheet.range.boundaries.api.Boundaries;
 
 import java.io.InputStream;
@@ -44,6 +47,11 @@ public interface Engine {
                 // Post Methods
                 void addRequestPermission(String sheetName, String userName, PermissionType permissionType);
                 void setResponseToRequest(String sheetName, String userName, PermissionType permissionType, Status status,Status response);
+
+        // Dynamic Copies:
+
+                // Post Methods
+                SheetDto updateDynamicSheetCell(String userName, String sheetName, String cellName, String cellValue);
 
 // Cells:
 

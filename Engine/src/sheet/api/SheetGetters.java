@@ -29,5 +29,7 @@ public interface SheetGetters {
     boolean isRangeInBoundaries(Boundaries boundaries);
     boolean isColumnNumericInRange(int column, int startRow, int endRow);
 
+    Sheet copy();
+
     Collection<Coordinate> rangeUses(RangeGetters range);
 }
