@@ -69,8 +69,6 @@ public class SheetServlet extends HttpServlet {
                     sheetName = engine.addNewSheet(userName, part.getInputStream());
                 }
 
-            // TODO: Change from beginner. done be itay 25/10
-            //sheet name should never be null
             SheetDto sheetDTO = engine.getSheetDTO(userName, sheetName);
 
             response.setContentType("text/plain");

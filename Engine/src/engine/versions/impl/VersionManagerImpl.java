@@ -46,7 +46,7 @@ public class VersionManagerImpl implements VersionManager, Serializable {
     @Override
     public void init(Sheet sheet) {
         this.versions.clear();
-        Sheet firstVersion = copySheet(sheet);
+        Sheet firstVersion = sheet.copy();
         firstVersion.setVersion(FIRST_VERSION);
         this.versions.add(firstVersion);
     }
@@ -59,7 +59,7 @@ public class VersionManagerImpl implements VersionManager, Serializable {
             throw new IllegalArgumentException("No version found, please use the init function to make the first version");
         }
 
-        Sheet newVersion = copySheet(lastVersion);
+        Sheet newVersion = lastVersion.copy();
         newVersion.setVersion(newVersion.getVersion() + 1);
         this.versions.add(newVersion);
     }
@@ -68,35 +68,4 @@ public class VersionManagerImpl implements VersionManager, Serializable {
     public void deleteLastVersion() {
         this.versions.removeLast();
     }
-
-    private Sheet copySheet(Sheet sheet) {
-
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(baos);
-            oos.writeObject(sheet);
-            oos.close();
-
-            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()));
-            return (SheetImpl) ois.readObject();
-        } catch (Exception e) {
-            // deal with the runtime error that was discovered as part of invocation
-            throw new RuntimeException(e);
-        }
-    }
-
-//    @Override
-//    public void increaseVersion(Sheet sheet) {
-//        sheet.setVersion(sheet.getVersion() + 1);
-//    }
-//
-//    @Override
-//    public void decreaseVersion(Sheet sheet) {
-//        sheet.setVersion(sheet.getVersion() - 1);
-//    }
-//
-//    @Override
-//    public void clearVersions() {
-//        this.versions.clear();
-//    }
 }
