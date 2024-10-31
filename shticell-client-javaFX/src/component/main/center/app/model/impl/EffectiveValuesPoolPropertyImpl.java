@@ -21,7 +21,12 @@ import java.util.Map;
         return effectiveValuesMap.get(coordinateString);
     }
 
-    @Override
+        @Override
+        public Map<String, StringProperty> getEffectiveValuePropertyMap() {
+            return Map.copyOf(effectiveValuesMap);
+        }
+
+        @Override
     public boolean setEffectiveValuePropertyAt(String coordinateString, String value) {
         if (effectiveValuesMap.containsKey(coordinateString)) {
             effectiveValuesMap.get(coordinateString).set(value);

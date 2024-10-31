@@ -12,7 +12,9 @@ import dto.*;
 import dto.deserializer.CellDtoDeserializer;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -83,6 +85,7 @@ public class AppController {
     private boolean OperationView;
     private ScheduledExecutorService executorServiceForSheet;
     private boolean isThreadsActive;
+    private ObservableList<String> numericCoordinateObservableList;
 
 
     // Constructor
@@ -96,6 +99,7 @@ public class AppController {
         this.progressComponentController = new ProgressController();
         this.loadingStage = new Stage();
         this.sheetToVersionDesignManager = new HashMap<>();
+        this.numericCoordinateObservableList = FXCollections.observableArrayList();
         OperationView = false;
     }
 
@@ -370,11 +374,28 @@ public class AppController {
         this.currentSheet = sheetDto;//this what server bring
         rangesComponentController.uploadRanges(currentSheet.ranges());
         setEffectiveValuesPoolProperty(currentSheet, this.effectiveValuesPool);
+        setNumericCoordinateList();
         setSheet(currentSheet);
         mostUpdatedVersionNumber = sheetDto.version();
         tempMostUpdatedVersionNumber = mostUpdatedVersionNumber;
 //        setVersionSplitMenuButton();
         setDesignVersions();
+    }
+
+    private void setNumericCoordinateList() {
+        effectiveValuesPool.getEffectiveValuePropertyMap().forEach((coordinateString,valueProperty) -> {
+            if(isParsableAsInt(valueProperty.get())){} {
+                numericCoordinateObservableList.add(coordinateString);
+            }
+        });
+    }
+    private boolean isParsableAsInt(String value) {
+        try {
+            Integer.parseInt(value); // Attempt to parse the string
+            return true;             // Parsing succeeded, return true
+        } catch (NumberFormatException e) {
+            return false;            // Parsing failed, return false
+        }
     }
 
     private void setDisableBoolean(boolean isEditor) {
@@ -492,6 +513,7 @@ public class AppController {
         showRanges.set(numberOfVersion == tempMostUpdatedVersionNumber && isEditor);
         showHeaders.set(numberOfVersion == tempMostUpdatedVersionNumber && isEditor);
         setEffectiveValuesPoolProperty(currentSheet, effectiveValuesPool);
+        setNumericCoordinateList();
         resetSheetToVersionDesign(numberOfVersion);
     }
 
@@ -719,6 +741,15 @@ public class AppController {
         }
 
         lastVersionNumberBeforeUpdate = tempMostUpdatedVersionNumber;
+    }
+
+    public ObservableList<String> getNumericCoordinateObservableList() {
+       return  this.numericCoordinateObservableList;
+    }
+
+    public void updateDynamicSheetRunLater(SheetDto sheetDto) {
+        currentSheet = sheetDto;
+        setEffectiveValuesPoolProperty(currentSheet, effectiveValuesPool);
     }
 
 
