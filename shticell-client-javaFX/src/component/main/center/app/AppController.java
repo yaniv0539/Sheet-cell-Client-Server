@@ -3,6 +3,7 @@ package component.main.center.app;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import component.main.MainController;
+import component.main.center.app.analysis.DynamicAnalysisController;
 import component.main.center.app.commands.CommandsController;
 import component.main.center.app.header.HeaderController;
 import component.main.center.app.ranges.RangesController;
@@ -56,6 +57,9 @@ public class AppController {
     @FXML private CommandsController commandsComponentController;
     @FXML private ScrollPane rangesComponent;
     @FXML private RangesController rangesComponentController;
+    @FXML private ScrollPane dynamicComponent;
+    @FXML private DynamicAnalysisController dynamicComponentController;
+
     private ScrollPane sheetComponent;
 
     private MainController mainController;
@@ -106,10 +110,11 @@ public class AppController {
 
     @FXML
     public void initialize() {
-        if (headerComponentController != null && commandsComponentController != null && rangesComponentController != null) {
+        if (headerComponentController != null && commandsComponentController != null && rangesComponentController != null && dynamicComponentController != null) {
             headerComponentController.setMainController(this);
             commandsComponentController.setMainController(this);
             rangesComponentController.setMainController(this);
+            dynamicComponentController.setMainController(this);
             //versionDesignManager.setMainController(this);
 
             headerComponentController.init();
@@ -377,6 +382,7 @@ public class AppController {
         rangesComponentController.uploadRanges(currentSheet.ranges());
         setEffectiveValuesPoolProperty(currentSheet, this.effectiveValuesPool);
         setNumericCoordinateList();
+
         setSheet(currentSheet);
         mostUpdatedVersionNumber = sheetDto.version();
         tempMostUpdatedVersionNumber = mostUpdatedVersionNumber;

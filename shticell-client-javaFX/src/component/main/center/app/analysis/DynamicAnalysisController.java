@@ -57,6 +57,7 @@ public class DynamicAnalysisController {
         ComboBox<String> comboBox = new ComboBox<>();
         comboBox.setPrefWidth(65.0);
         comboBox.setPromptText("Cell");
+        setItems(comboBox);
 
 
         Spinner<Double> spinnerStep = new Spinner<>(0, 100, 0);
