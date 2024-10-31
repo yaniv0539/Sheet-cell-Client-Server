@@ -50,7 +50,7 @@ public class AppController {
 
     @FXML private Button buttonBackToDashboard;
     @FXML private BorderPane appBorderPane;
-    @FXML private ScrollPane headerComponent;
+    @FXML private GridPane headerComponent;
     @FXML private HeaderController headerComponentController;
     @FXML private ScrollPane commandsComponent;
     @FXML private CommandsController commandsComponentController;
@@ -712,7 +712,6 @@ public class AppController {
             mostUpdatedVersionNumber = tempMostUpdatedVersionNumber;
         }
 
-        // TODO: Ask Aviad
         if (currentSheet.ranges().size() != sheetDto.ranges().size()) {
             currentSheet.ranges().clear();
             currentSheet.ranges().addAll(sheetDto.ranges());
