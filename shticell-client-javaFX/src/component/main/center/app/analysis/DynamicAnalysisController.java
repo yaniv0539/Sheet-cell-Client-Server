@@ -127,7 +127,7 @@ public class DynamicAnalysisController {
     }
 
     private void deleteAllRows() {
-        for (int row = 1; row < mainGridPane.getRowConstraints().size(); row++) {
+        for (int row = mainGridPane.getRowConstraints().size() - 1; row >= 1; row--) {
             removeRow(row);
         }
         addRow();
