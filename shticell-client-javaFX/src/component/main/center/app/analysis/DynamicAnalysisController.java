@@ -45,9 +45,11 @@ public class DynamicAnalysisController {
         buttonResetAll.setOnAction(e -> resetAllRows());
         buttonDeleteAll.setOnAction(e -> deleteAllRows());
     }
+
     public void init() {
         addRow();
     }
+
     public void setMainController(AppController mainAppController) {
         this.mainAppController = mainAppController;
     }
@@ -60,18 +62,18 @@ public class DynamicAnalysisController {
         setItems(comboBox);
 
 
-        Spinner<Double> spinnerStep = new Spinner<>(0, 100, 0);
+        Spinner<Double> spinnerStep = new Spinner<>(0.0, 100.0, 0.0);
         spinnerStep.setPrefWidth(60.0);
 
         Spinner<Integer> spinnerMin = new Spinner<>(0, 100, 0);
         spinnerMin.setPrefWidth(60.0);
 
-        Slider slider = new Slider(0, 100, 50); // Default to middle
+        Slider slider = new Slider(0, 100, 0); // Default to middle
         slider.setShowTickLabels(true);
         slider.setShowTickMarks(true);
         slider.setSnapToTicks(true);
 
-        Spinner<Integer> spinnerMax = new Spinner<>(0, 100, 100);
+        Spinner<Integer> spinnerMax = new Spinner<>(0, 100, 0);
         spinnerMax.setPrefWidth(60.0);
 
         Button resetButton = new Button("Reset");
@@ -87,10 +89,13 @@ public class DynamicAnalysisController {
 
         //here we have all the componnents
         comboBox.setOnAction(e -> resetRow(comboBox, spinnerStep, spinnerMin, slider, spinnerMax));
-        slider.valueProperty().addListener((observable, oldValue, newValue) -> {
-            String coord = comboBox.getValue();
-            performActionOnSliderMove(coord,String.valueOf(newValue.doubleValue()));
-        });
+
+        //TODO:shoudnt be in comment, this is the http requst for the sheet.
+//        slider.valueProperty().addListener((observable, oldValue, newValue) -> {
+//            String coord = comboBox.getValue();
+//            performActionOnSliderMove(coord,String.valueOf(newValue.doubleValue()));
+//        });
+
         //init disable property.
         initDisableBind(spinnerStep, comboBox, spinnerMin, spinnerMax, resetButton, deleteButton);
         initSliderValuesBinds(slider, spinnerMin, spinnerMax, spinnerStep);
@@ -143,10 +148,28 @@ public class DynamicAnalysisController {
     }
 
     private static void initSliderValuesBinds(Slider slider, Spinner<Integer> spinnerMin, Spinner<Integer> spinnerMax, Spinner<Double> spinnerStep) {
-        slider.minProperty().bind(spinnerMin.valueProperty());
-        slider.maxProperty().bind(spinnerMax.valueProperty());
-        // Bind the slider's block increment to the step value of the spinner
-        slider.blockIncrementProperty().bind(spinnerStep.valueProperty());
+//        slider.minProperty().bind(spinnerMin.valueProperty());
+//        slider.maxProperty().bind(spinnerMax.valueProperty());
+//        // Bind the slider's block increment to the step value of the spinner
+//        slider.blockIncrementProperty().bind(spinnerStep.valueProperty());
+
+        //lisenters
+        spinnerStep.valueProperty().addListener((observable, oldValue, newValue) -> {
+           slider.blockIncrementProperty().setValue(newValue);
+        });
+
+        spinnerMax.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if(newValue > slider.getMin()) {
+                slider.maxProperty().setValue(newValue);
+            }
+
+        });
+        spinnerMin.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if(newValue < slider.getMax()) {
+                slider.minProperty().setValue(newValue);
+            }
+        });
+
     }
 
     private static void initDisableBind(Spinner<Double> spinnerStep, ComboBox<String> comboBox, Spinner<Integer> spinnerMin, Spinner<Integer> spinnerMax, Button resetButton, Button deleteButton) {
@@ -163,11 +186,13 @@ public class DynamicAnalysisController {
         if (coordinate != null) {
            // Double value = mainAppController.getIntValueAt(coordinate);
             Double value = 50.0;
-            comboBox.getSelectionModel().clearSelection();
+
             spinnerStep.getValueFactory().setValue(1.0); // Reset step
-            spinnerMin.getValueFactory().setValue(value.intValue() * (-2) + value.intValue());   // Reset min
-            spinnerMax.getValueFactory().setValue(value.intValue() * (-2) + value.intValue()); // Reset max
-            slider.setValue(value);                        // Reset slider to middle}
+            spinnerMin.getValueFactory().setValue((int)value.intValue() * (-2) + value.intValue());   // Reset min
+            spinnerMax.getValueFactory().setValue((int)value.intValue() * (-2) + value.intValue()); // Reset max
+
+
+            //slider.valueProperty().setValue(value);                      // Reset slider to middle
         }
     }
 
