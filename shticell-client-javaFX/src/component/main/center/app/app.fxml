@@ -48,6 +48,6 @@
       </ScrollPane>
    </top>
    <right>
-      <fx:include source="analysis/dynamicAnalysis.fxml" />
+      <fx:include fx:id="dynamicComponent" source="analysis/dynamicAnalysis.fxml" />
    </right>
 </BorderPane>

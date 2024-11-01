@@ -1,6 +1,12 @@
 package component.main.center.app.analysis;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import component.main.center.app.AppController;
+import dto.CellDto;
+import dto.SheetDto;
+import dto.deserializer.CellDtoDeserializer;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -8,8 +14,14 @@ import javafx.scene.control.Slider;
 import javafx.scene.control.Spinner;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
+import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.Objects;
+import java.util.Set;
 
 public class DynamicAnalysisController {
 
@@ -32,8 +44,12 @@ public class DynamicAnalysisController {
         buttonAdd.setOnAction(e -> addRow());
         buttonResetAll.setOnAction(e -> resetAllRows());
         buttonDeleteAll.setOnAction(e -> deleteAllRows());
+    }
+
+    public void init() {
         addRow();
     }
+
     public void setMainController(AppController mainAppController) {
         this.mainAppController = mainAppController;
     }
@@ -43,19 +59,21 @@ public class DynamicAnalysisController {
         ComboBox<String> comboBox = new ComboBox<>();
         comboBox.setPrefWidth(65.0);
         comboBox.setPromptText("Cell");
+        setItems(comboBox);
 
-        Spinner<Double> spinnerStep = new Spinner<>(0, 100, 0);
+
+        Spinner<Double> spinnerStep = new Spinner<>(0.0, 100.0, 0.0);
         spinnerStep.setPrefWidth(60.0);
 
         Spinner<Integer> spinnerMin = new Spinner<>(0, 100, 0);
         spinnerMin.setPrefWidth(60.0);
 
-        Slider slider = new Slider(0, 100, 50); // Default to middle
+        Slider slider = new Slider(0, 100, 0); // Default to middle
         slider.setShowTickLabels(true);
         slider.setShowTickMarks(true);
         slider.setSnapToTicks(true);
 
-        Spinner<Integer> spinnerMax = new Spinner<>(0, 100, 100);
+        Spinner<Integer> spinnerMax = new Spinner<>(0, 100, 0);
         spinnerMax.setPrefWidth(60.0);
 
         Button resetButton = new Button("Reset");
@@ -70,7 +88,14 @@ public class DynamicAnalysisController {
 
 
         //here we have all the componnents
-        
+        comboBox.setOnAction(e -> resetRow(comboBox, spinnerStep, spinnerMin, slider, spinnerMax));
+
+        //TODO:shoudnt be in comment, this is the http requst for the sheet.
+//        slider.valueProperty().addListener((observable, oldValue, newValue) -> {
+//            String coord = comboBox.getValue();
+//            performActionOnSliderMove(coord,String.valueOf(newValue.doubleValue()));
+//        });
+
         //init disable property.
         initDisableBind(spinnerStep, comboBox, spinnerMin, spinnerMax, resetButton, deleteButton);
         initSliderValuesBinds(slider, spinnerMin, spinnerMax, spinnerStep);
@@ -93,11 +118,58 @@ public class DynamicAnalysisController {
         rowIndex++; // Move to the next row for future additions
     }
 
+    private void performActionOnSliderMove(String coord, String value) {
+
+        mainAppController.updateCellToDynamicSheet(coord,value, new Callback(){
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> mainAppController.showAlertPopup(new Exception(),"something went wrong.."));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                String jsonResponse = response.body().string();
+
+                if(response.code() != 200) {
+                    Platform.runLater(() -> mainAppController.showAlertPopup(new Exception(),"something went wrong.."));
+                }
+                else {
+                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class,new CellDtoDeserializer()).create();
+                    SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
+                    Platform.runLater(() -> mainAppController.updateDynamicSheetRunLater(sheetDto));
+                }
+
+            }
+        });
+    }
+
+    private void setItems(ComboBox<String> comboBox) {
+        comboBox.setItems(mainAppController.getNumericCoordinateObservableList());
+    }
+
     private static void initSliderValuesBinds(Slider slider, Spinner<Integer> spinnerMin, Spinner<Integer> spinnerMax, Spinner<Double> spinnerStep) {
-        slider.minProperty().bind(spinnerMin.valueProperty());
-        slider.maxProperty().bind(spinnerMax.valueProperty());
-        // Bind the slider's block increment to the step value of the spinner
-        slider.blockIncrementProperty().bind(spinnerStep.valueProperty());
+//        slider.minProperty().bind(spinnerMin.valueProperty());
+//        slider.maxProperty().bind(spinnerMax.valueProperty());
+//        // Bind the slider's block increment to the step value of the spinner
+//        slider.blockIncrementProperty().bind(spinnerStep.valueProperty());
+
+        //lisenters
+        spinnerStep.valueProperty().addListener((observable, oldValue, newValue) -> {
+           slider.blockIncrementProperty().setValue(newValue);
+        });
+
+        spinnerMax.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if(newValue > slider.getMin()) {
+                slider.maxProperty().setValue(newValue);
+            }
+
+        });
+        spinnerMin.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if(newValue < slider.getMax()) {
+                slider.minProperty().setValue(newValue);
+            }
+        });
+
     }
 
     private static void initDisableBind(Spinner<Double> spinnerStep, ComboBox<String> comboBox, Spinner<Integer> spinnerMin, Spinner<Integer> spinnerMax, Button resetButton, Button deleteButton) {
@@ -111,12 +183,17 @@ public class DynamicAnalysisController {
 
     private void resetRow(ComboBox<String> comboBox, Spinner<Double> spinnerStep, Spinner<Integer> spinnerMin, Slider slider, Spinner<Integer> spinnerMax) {
         String coordinate = comboBox.getSelectionModel().selectedItemProperty().get();
-//        int value = mainAppController.getIntValueAt(coordinate);
-        comboBox.getSelectionModel().clearSelection();
-        spinnerStep.getValueFactory().setValue(1.0); // Reset step
-//        spinnerMin.getValueFactory().setValue(mainAppController.getIntValueAt(coordinate) * (-2));   // Reset min
-//        spinnerMax.getValueFactory().setValue(mainAppController.getIntValueAt(coordinate) * (-2)); // Reset max
-//        slider.setValue(mainAppController.getIntValueAt(coordinate));                        // Reset slider to middle
+        if (coordinate != null) {
+           // Double value = mainAppController.getIntValueAt(coordinate);
+            Double value = 50.0;
+
+            spinnerStep.getValueFactory().setValue(1.0); // Reset step
+            spinnerMin.getValueFactory().setValue((int)value.intValue() * (-2) + value.intValue());   // Reset min
+            spinnerMax.getValueFactory().setValue((int)value.intValue() * (-2) + value.intValue()); // Reset max
+
+
+            //slider.valueProperty().setValue(value);                      // Reset slider to middle
+        }
     }
 
     private void removeRow(int targetRowIndex) {
@@ -139,6 +216,8 @@ public class DynamicAnalysisController {
         }
 
         mainGridPane.getRowConstraints().removeLast();
+
+
 
         rowIndex--;
     }

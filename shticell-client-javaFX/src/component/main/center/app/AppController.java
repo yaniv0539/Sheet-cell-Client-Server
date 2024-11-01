@@ -3,6 +3,7 @@ package component.main.center.app;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import component.main.MainController;
+import component.main.center.app.analysis.DynamicAnalysisController;
 import component.main.center.app.commands.CommandsController;
 import component.main.center.app.header.HeaderController;
 import component.main.center.app.ranges.RangesController;
@@ -11,7 +12,9 @@ import dto.*;
 import dto.deserializer.CellDtoDeserializer;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -54,6 +57,9 @@ public class AppController {
     @FXML private CommandsController commandsComponentController;
     @FXML private ScrollPane rangesComponent;
     @FXML private RangesController rangesComponentController;
+    @FXML private ScrollPane dynamicComponent;
+    @FXML private DynamicAnalysisController dynamicComponentController;
+
     private ScrollPane sheetComponent;
 
     private MainController mainController;
@@ -81,6 +87,7 @@ public class AppController {
     private boolean OperationView;
     private ScheduledExecutorService executorServiceForSheet;
     private boolean isThreadsActive;
+    private ObservableList<String> numericCoordinateObservableList;
 
 
     // Constructor
@@ -94,6 +101,7 @@ public class AppController {
         this.progressComponentController = new ProgressController();
         this.loadingStage = new Stage();
         this.sheetToVersionDesignManager = new HashMap<>();
+        this.numericCoordinateObservableList = FXCollections.observableArrayList();
         OperationView = false;
     }
 
@@ -102,10 +110,11 @@ public class AppController {
 
     @FXML
     public void initialize() {
-        if (headerComponentController != null && commandsComponentController != null && rangesComponentController != null) {
+        if (headerComponentController != null && commandsComponentController != null && rangesComponentController != null && dynamicComponentController != null) {
             headerComponentController.setMainController(this);
             commandsComponentController.setMainController(this);
             rangesComponentController.setMainController(this);
+            dynamicComponentController.setMainController(this);
             //versionDesignManager.setMainController(this);
 
             headerComponentController.init();
@@ -372,11 +381,29 @@ public class AppController {
         this.currentSheet = sheetDto;//this what server bring
         rangesComponentController.uploadRanges(currentSheet.ranges());
         setEffectiveValuesPoolProperty(currentSheet, this.effectiveValuesPool);
+        setNumericCoordinateList();
+
         setSheet(currentSheet);
         mostUpdatedVersionNumber = sheetDto.version();
         tempMostUpdatedVersionNumber = mostUpdatedVersionNumber;
 //        setVersionSplitMenuButton();
         setDesignVersions();
+    }
+
+    private void setNumericCoordinateList() {
+        effectiveValuesPool.getEffectiveValuePropertyMap().forEach((coordinateString,valueProperty) -> {
+            if(isParsableAsInt(valueProperty.get())){} {
+                numericCoordinateObservableList.add(coordinateString);
+            }
+        });
+    }
+    private boolean isParsableAsInt(String value) {
+        try {
+            Integer.parseInt(value); // Attempt to parse the string
+            return true;             // Parsing succeeded, return true
+        } catch (NumberFormatException e) {
+            return false;            // Parsing failed, return false
+        }
     }
 
     private void setDisableBoolean(boolean isEditor) {
@@ -494,6 +521,7 @@ public class AppController {
         showRanges.set(numberOfVersion == tempMostUpdatedVersionNumber && isEditor);
         showHeaders.set(numberOfVersion == tempMostUpdatedVersionNumber && isEditor);
         setEffectiveValuesPoolProperty(currentSheet, effectiveValuesPool);
+        setNumericCoordinateList();
         resetSheetToVersionDesign(numberOfVersion);
     }
 
@@ -721,6 +749,15 @@ public class AppController {
         }
 
         lastVersionNumberBeforeUpdate = tempMostUpdatedVersionNumber;
+    }
+
+    public ObservableList<String> getNumericCoordinateObservableList() {
+       return  this.numericCoordinateObservableList;
+    }
+
+    public void updateDynamicSheetRunLater(SheetDto sheetDto) {
+        currentSheet = sheetDto;
+        setEffectiveValuesPoolProperty(currentSheet, effectiveValuesPool);
     }
 
 
