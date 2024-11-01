@@ -140,17 +140,16 @@ public class EngineImpl implements Engine, Serializable {
         Sheet sheet;
 
         if (!this.userToDynamicSheetMap.containsKey(userName)) {
-            sheet = this.userToDynamicSheetMap.put(userName, getVersionManager(sheetName).getVersion(sheetVersion).copy());
-        } else {
-            sheet = this.userToDynamicSheetMap.get(userName);
-
-            if (!sheet.getName().equals(sheetName)) {
-                sheet = this.userToDynamicSheetMap.put(userName, getVersionManager(sheetName).getVersion(sheetVersion).copy());
-            }
+            this.userToDynamicSheetMap.put(userName, getVersionManager(sheetName).getVersion(sheetVersion).copy());
+        } else if (!this.userToDynamicSheetMap.get(userName).getName().equals(sheetName)) {
+            this.userToDynamicSheetMap.put(userName, getVersionManager(sheetName).getVersion(sheetVersion).copy());
         }
 
-        assert sheet != null;
+        sheet = this.userToDynamicSheetMap.get(userName);
+
         sheet.setCell(CoordinateFactory.toCoordinate(cellName.toUpperCase()), cellValue);
+        Cell cell = sheet.getActiveCells().get(CoordinateFactory.toCoordinate(cellName.toUpperCase()));
+        cell.setUpdateBy(userName);
 
         return new SheetDto(sheet);
     }

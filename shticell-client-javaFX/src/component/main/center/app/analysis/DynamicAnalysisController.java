@@ -8,10 +8,7 @@ import dto.SheetDto;
 import dto.deserializer.CellDtoDeserializer;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Slider;
-import javafx.scene.control.Spinner;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 import okhttp3.Call;
@@ -62,19 +59,22 @@ public class DynamicAnalysisController {
         setItems(comboBox);
 
 
-        Spinner<Double> spinnerStep = new Spinner<>(0.0, 100.0, 0.0);
+        Spinner<Double> spinnerStep = new Spinner<>(0.0, 100.0, 1.0);
         spinnerStep.setPrefWidth(60.0);
+        spinnerStep.setEditable(true);
 
         Spinner<Integer> spinnerMin = new Spinner<>(0, 100, 0);
         spinnerMin.setPrefWidth(60.0);
+        spinnerMin.setEditable(true);
 
         Slider slider = new Slider(0, 100, 0); // Default to middle
         slider.setShowTickLabels(true);
         slider.setShowTickMarks(true);
         slider.setSnapToTicks(true);
 
-        Spinner<Integer> spinnerMax = new Spinner<>(0, 100, 0);
+        Spinner<Integer> spinnerMax = new Spinner<>(0, 100, 100);
         spinnerMax.setPrefWidth(60.0);
+        spinnerMax.setEditable(true);
 
         Button resetButton = new Button("Reset");
         resetButton.setStyle("-fx-text-fill: blue;");
@@ -91,10 +91,10 @@ public class DynamicAnalysisController {
         comboBox.setOnAction(e -> resetRow(comboBox, spinnerStep, spinnerMin, slider, spinnerMax));
 
         //TODO:shoudnt be in comment, this is the http requst for the sheet.
-//        slider.valueProperty().addListener((observable, oldValue, newValue) -> {
-//            String coord = comboBox.getValue();
-//            performActionOnSliderMove(coord,String.valueOf(newValue.doubleValue()));
-//        });
+        slider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            String coord = comboBox.getValue();
+            performActionOnSliderMove(coord, String.valueOf(newValue));
+        });
 
         //init disable property.
         initDisableBind(spinnerStep, comboBox, spinnerMin, spinnerMax, resetButton, deleteButton);
@@ -121,7 +121,7 @@ public class DynamicAnalysisController {
     //http request
     private void performActionOnSliderMove(String coord, String value) {
 
-        mainAppController.updateCellToDynamicSheet(coord,value, new Callback(){
+        mainAppController.updateCellToDynamicSheet(coord, value, new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 Platform.runLater(() -> mainAppController.showAlertPopup(new Exception(),"something went wrong.."));
@@ -129,6 +129,7 @@ public class DynamicAnalysisController {
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                assert response.body() != null;
                 String jsonResponse = response.body().string();
 
                 if(response.code() != 200) {
@@ -139,7 +140,6 @@ public class DynamicAnalysisController {
                     SheetDto sheetDto = gson.fromJson(jsonResponse, SheetDto.class);
                     Platform.runLater(() -> mainAppController.updateDynamicSheetRunLater(sheetDto));
                 }
-
             }
         });
     }
@@ -153,10 +153,14 @@ public class DynamicAnalysisController {
 //        slider.maxProperty().bind(spinnerMax.valueProperty());
 //        // Bind the slider's block increment to the step value of the spinner
 //        slider.blockIncrementProperty().bind(spinnerStep.valueProperty());
+//        slider.valueProperty().addListener((observable, oldValue, newValue) -> {
+//            slider.setMajorTickUnit(newValue.doubleValue());
+//            slider.setBlockIncrement(newValue.doubleValue());
+//        });
 
-        //lisenters
         spinnerStep.valueProperty().addListener((observable, oldValue, newValue) -> {
-           slider.blockIncrementProperty().setValue(newValue);
+            slider.setMajorTickUnit(newValue);
+            slider.setBlockIncrement(newValue);
         });
 
         spinnerMax.valueProperty().addListener((observable, oldValue, newValue) -> {
@@ -185,15 +189,13 @@ public class DynamicAnalysisController {
     private void resetRow(ComboBox<String> comboBox, Spinner<Double> spinnerStep, Spinner<Integer> spinnerMin, Slider slider, Spinner<Integer> spinnerMax) {
         String coordinate = comboBox.getSelectionModel().selectedItemProperty().get();
         if (coordinate != null) {
-           // Double value = mainAppController.getIntValueAt(coordinate);
-            Double value = 50.0;
+            Double value = mainAppController.getDoubleValueAt(coordinate);
 
             spinnerStep.getValueFactory().setValue(1.0); // Reset step
-            spinnerMin.getValueFactory().setValue((int)value.intValue() * (-2) + value.intValue());   // Reset min
-            spinnerMax.getValueFactory().setValue((int)value.intValue() * (-2) + value.intValue()); // Reset max
+            spinnerMin.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Integer.MIN_VALUE , Integer.MAX_VALUE, value.intValue() - 100));
+            spinnerMax.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Integer.MIN_VALUE , Integer.MAX_VALUE, value.intValue() + 100));
 
-
-            //slider.valueProperty().setValue(value);                      // Reset slider to middle
+            slider.valueProperty().setValue(value);                      // Reset slider to middle
         }
     }
 
@@ -234,6 +236,7 @@ public class DynamicAnalysisController {
             Spinner<Integer> spinnerMax = (Spinner<Integer>) getNodeByRowColumnIndex(i, 4);
             resetRow(comboBox, spinnerStep, spinnerMin, slider, spinnerMax);
         }
+        mainAppController.removeDynamicSheet();
     }
 
     private void deleteAllRows() {
@@ -241,6 +244,7 @@ public class DynamicAnalysisController {
             removeRow(row);
         }
         addRow();
+        mainAppController.setOperationView(false);
     }
 
     private javafx.scene.Node getNodeByRowColumnIndex(final int row, final int column) {

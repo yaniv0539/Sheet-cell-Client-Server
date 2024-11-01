@@ -67,6 +67,7 @@ public class AppController {
     private Stage loadingStage;
 
     private SheetDto currentSheet;
+    private SheetDto editableSheet;
 
     private FocusCellProperty cellInFocus;
     private EffectiveValuesPoolProperty effectiveValuesPool;
@@ -75,6 +76,7 @@ public class AppController {
     private SimpleBooleanProperty showRanges;
     private SimpleBooleanProperty showHeaders;
     private boolean isEditor;
+    private boolean isEditableSheet;
 
     private SheetController sheetComponentController;
     private ProgressController progressComponentController;
@@ -103,6 +105,7 @@ public class AppController {
         this.sheetToVersionDesignManager = new HashMap<>();
         this.numericCoordinateObservableList = FXCollections.observableArrayList();
         OperationView = false;
+        isEditableSheet = true;
     }
 
 
@@ -172,6 +175,10 @@ public class AppController {
 
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
+    }
+
+    public void setOperationView(boolean operationView) {
+        OperationView = operationView;
     }
 
     private void setSheet(SheetDto sheetDto) {
@@ -254,7 +261,6 @@ public class AppController {
     public void buttonBackToDashboardAction(ActionEvent actionEvent) {
         mainController.switchToDashboard();
     }
-
 
     // Http requests to shticell servlet
 
@@ -382,7 +388,7 @@ public class AppController {
         rangesComponentController.uploadRanges(currentSheet.ranges());
         setEffectiveValuesPoolProperty(currentSheet, this.effectiveValuesPool);
         setNumericCoordinateList();
-
+        dynamicComponentController.init();
         setSheet(currentSheet);
         mostUpdatedVersionNumber = sheetDto.version();
         tempMostUpdatedVersionNumber = mostUpdatedVersionNumber;
@@ -757,8 +763,25 @@ public class AppController {
     }
 
     public void updateDynamicSheetRunLater(SheetDto sheetDto) {
+        if (isEditableSheet) {
+            editableSheet = currentSheet;
+            isEditableSheet = false;
+        }
+
         currentSheet = sheetDto;
         setEffectiveValuesPoolProperty(currentSheet, effectiveValuesPool);
+    }
+
+    public Double getDoubleValueAt(String coordinate) {
+        if (editableSheet == null) {
+            editableSheet = currentSheet;
+        }
+        return Double.parseDouble(editableSheet.activeCells().get(coordinate).originalValue());
+    }
+
+    public void removeDynamicSheet() {
+        isEditableSheet = true;
+        currentSheet = editableSheet;
     }
 
 
