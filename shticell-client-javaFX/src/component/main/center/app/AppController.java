@@ -391,16 +391,17 @@ public class AppController {
     }
 
     private void setNumericCoordinateList() {
-        effectiveValuesPool.getEffectiveValuePropertyMap().forEach((coordinateString,valueProperty) -> {
-            if(isParsableAsInt(valueProperty.get())){} {
+        currentSheet.activeCells().forEach((coordinateString,cellDto) -> {
+
+            if(isParsableAsDouble(cellDto.originalValue())){
                 numericCoordinateObservableList.add(coordinateString);
             }
         });
     }
-    private boolean isParsableAsInt(String value) {
+    private boolean isParsableAsDouble(String value) {
         try {
-            Integer.parseInt(value); // Attempt to parse the string
-            return true;             // Parsing succeeded, return true
+            Double.parseDouble(value); // Attempt to parse the string
+            return true;               // Parsing succeeded, return true
         } catch (NumberFormatException e) {
             return false;            // Parsing failed, return false
         }
