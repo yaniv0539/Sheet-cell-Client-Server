@@ -93,7 +93,13 @@ public class DynamicAnalysisController {
         //TODO:shoudnt be in comment, this is the http requst for the sheet.
         slider.valueProperty().addListener((observable, oldValue, newValue) -> {
             String coord = comboBox.getValue();
-            performActionOnSliderMove(coord, String.valueOf(newValue));
+
+            Double staticSheetCellValue = mainAppController.getStaticSheetCellValue(coord);
+            Double stepValue = spinnerStep.getValue();
+            double mod = staticSheetCellValue - staticSheetCellValue.intValue();
+            if (Math.abs(staticSheetCellValue.intValue() % stepValue.intValue()) == Math.abs(newValue.intValue() % stepValue.intValue())) {
+                performActionOnSliderMove(coord, String.valueOf(newValue.intValue() + mod));
+            }
         });
 
         //init disable property.

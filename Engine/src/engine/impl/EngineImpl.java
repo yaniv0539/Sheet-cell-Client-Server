@@ -137,21 +137,23 @@ public class EngineImpl implements Engine, Serializable {
 
     @Override
     public SheetDto updateDynamicSheetCell(String userName, String sheetName, int sheetVersion, String cellName, String cellValue) {
-        Sheet sheet;
+        synchronized (this) {
+            Sheet sheet;
 
-        if (!this.userToDynamicSheetMap.containsKey(userName)) {
-            this.userToDynamicSheetMap.put(userName, getVersionManager(sheetName).getVersion(sheetVersion).copy());
-        } else if (!this.userToDynamicSheetMap.get(userName).getName().equals(sheetName)) {
-            this.userToDynamicSheetMap.put(userName, getVersionManager(sheetName).getVersion(sheetVersion).copy());
+            if (!this.userToDynamicSheetMap.containsKey(userName)) {
+                this.userToDynamicSheetMap.put(userName, getVersionManager(sheetName).getVersion(sheetVersion).copy());
+            } else if (!this.userToDynamicSheetMap.get(userName).getName().equals(sheetName) || this.userToDynamicSheetMap.get(userName).getVersion() != sheetVersion) {
+                this.userToDynamicSheetMap.put(userName, getVersionManager(sheetName).getVersion(sheetVersion).copy());
+            }
+
+            sheet = this.userToDynamicSheetMap.get(userName);
+
+            sheet.setCell(CoordinateFactory.toCoordinate(cellName.toUpperCase()), cellValue);
+            Cell cell = sheet.getActiveCells().get(CoordinateFactory.toCoordinate(cellName.toUpperCase()));
+            cell.setUpdateBy(userName);
+
+            return new SheetDto(sheet);
         }
-
-        sheet = this.userToDynamicSheetMap.get(userName);
-
-        sheet.setCell(CoordinateFactory.toCoordinate(cellName.toUpperCase()), cellValue);
-        Cell cell = sheet.getActiveCells().get(CoordinateFactory.toCoordinate(cellName.toUpperCase()));
-        cell.setUpdateBy(userName);
-
-        return new SheetDto(sheet);
     }
 
     @Override

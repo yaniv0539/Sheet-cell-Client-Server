@@ -380,11 +380,13 @@ public class AppController {
         commandsComponentController.getButtonFilter().setDisable(false);
     }
 
-    public void onFinishLoadingFile(SheetDto sheetDto,boolean isEditor) {
+    public void onFinishLoadingFile(SheetDto sheetDto, boolean isEditor) {
         //methode
         setDisableBoolean(isEditor);
 
-        this.currentSheet = sheetDto;//this what server bring
+        this.currentSheet = sheetDto; //this what server bring
+        this.editableSheet = this.currentSheet;
+
         rangesComponentController.uploadRanges(currentSheet.ranges());
         setEffectiveValuesPoolProperty(currentSheet, this.effectiveValuesPool);
         setNumericCoordinateList();
@@ -404,6 +406,7 @@ public class AppController {
             }
         });
     }
+
     private boolean isParsableAsDouble(String value) {
         try {
             Double.parseDouble(value); // Attempt to parse the string
@@ -522,6 +525,8 @@ public class AppController {
 
     public void getViewSheetVersionRunLater(SheetDto sheetDto) {
         currentSheet = sheetDto;
+        editableSheet = currentSheet;
+
         int numberOfVersion = currentSheet.version();
 
         showCommands.set(numberOfVersion == tempMostUpdatedVersionNumber && isEditor);
@@ -532,9 +537,10 @@ public class AppController {
         resetSheetToVersionDesign(numberOfVersion);
     }
 
-    public void updateCellRunLater(SheetDto sheetDto){
+    public void updateCellRunLater(SheetDto sheetDto) {
         if (sheetDto.version() != currentSheet.version()) {
             currentSheet = sheetDto;
+            editableSheet = currentSheet;
             mostUpdatedVersionNumber = sheetDto.version();
             setEffectiveValuesPoolProperty(currentSheet, effectiveValuesPool);
 //            sheetToVersionDesignManager.get(currentSheet.name()).addVersion();
@@ -763,11 +769,7 @@ public class AppController {
     }
 
     public void updateDynamicSheetRunLater(SheetDto sheetDto) {
-        if (isEditableSheet) {
-            editableSheet = currentSheet;
-            isEditableSheet = false;
-        }
-
+        isEditableSheet = false;
         currentSheet = sheetDto;
         setEffectiveValuesPoolProperty(currentSheet, effectiveValuesPool);
     }
@@ -782,6 +784,10 @@ public class AppController {
     public void removeDynamicSheet() {
         isEditableSheet = true;
         currentSheet = editableSheet;
+    }
+
+    public Double getStaticSheetCellValue(String coord) {
+        return Double.parseDouble(editableSheet.activeCells().get(coord).originalValue());
     }
 
 
