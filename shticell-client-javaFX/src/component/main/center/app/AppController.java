@@ -11,6 +11,7 @@ import component.main.center.app.sheet.SheetController;
 import dto.*;
 import dto.deserializer.CellDtoDeserializer;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -75,8 +76,8 @@ public class AppController {
     private SimpleBooleanProperty showCommands;
     private SimpleBooleanProperty showRanges;
     private SimpleBooleanProperty showHeaders;
+    private BooleanProperty isEditableSheet;
     private boolean isEditor;
-    private boolean isEditableSheet;
 
     private SheetController sheetComponentController;
     private ProgressController progressComponentController;
@@ -98,6 +99,7 @@ public class AppController {
         this.showHeaders = new SimpleBooleanProperty(false);
         this.showRanges = new SimpleBooleanProperty(false);
         this.showCommands = new SimpleBooleanProperty(false);
+        this.isEditableSheet = new SimpleBooleanProperty(true);
         this.cellInFocus = new FocusCellPropertyImpl();
         this.effectiveValuesPool = new EffectiveValuesPoolPropertyImpl();
         this.progressComponentController = new ProgressController();
@@ -105,7 +107,7 @@ public class AppController {
         this.sheetToVersionDesignManager = new HashMap<>();
         this.numericCoordinateObservableList = FXCollections.observableArrayList();
         OperationView = false;
-        isEditableSheet = true;
+        isEditableSheet.set(true);
     }
 
 
@@ -130,6 +132,12 @@ public class AppController {
             cellInFocus.getInfluenceOn().addListener((ListChangeListener<CoordinateDto>) change -> sheetComponentController.changeColorInfluenceCoordinate(change));
 
             initPullThread();
+
+            isEditableSheet.addListener((observable, oldValue, newValue) -> {
+                showRanges.set(newValue);
+                showHeaders.set(newValue);
+                showCommands.set(newValue);
+            });
         }
     }
 
@@ -177,8 +185,8 @@ public class AppController {
         this.mainController = mainController;
     }
 
-    public void setOperationView(boolean operationView) {
-        OperationView = operationView;
+    public void setIsEditableSheet(boolean isEditableSheet) {
+        this.isEditableSheet.set(isEditableSheet);
     }
 
     private void setSheet(SheetDto sheetDto) {
@@ -769,7 +777,7 @@ public class AppController {
     }
 
     public void updateDynamicSheetRunLater(SheetDto sheetDto) {
-        isEditableSheet = false;
+        isEditableSheet.set(false);
         currentSheet = sheetDto;
         setEffectiveValuesPoolProperty(currentSheet, effectiveValuesPool);
     }
@@ -782,7 +790,7 @@ public class AppController {
     }
 
     public void removeDynamicSheet() {
-        isEditableSheet = true;
+        isEditableSheet.set(true);
         currentSheet = editableSheet;
     }
 
