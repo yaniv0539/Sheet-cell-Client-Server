@@ -1,6 +1,8 @@
 package dto;
 
+import sheet.api.Sheet;
 import sheet.api.SheetGetters;
+import sheet.impl.SheetImpl;
 
 import java.util.*;
 
@@ -20,9 +22,6 @@ public record SheetDto(
                 createActiveCells(sheet),
                 createRanges(sheet)
         );
-
-        // TODO: Ask Itay how he thinks we can fix it.
-//        activeCells().values().forEach(CellDto::setInfluenceOn);
     }
 
     private static Map<String, CellDto> createActiveCells(SheetGetters sheet) {

@@ -264,7 +264,7 @@ public class SheetController {
 
     public void changeCellBackgroundColor(Color color) {
         Background background = new Background(new BackgroundFill(color, CornerRadii.EMPTY, null));
-        Coordinate coordinate = CoordinateFactory.toCoordinate(mainController.getCellInFocus().getCoordinate().get());
+        Coordinate coordinate = CoordinateFactory.toCoordinate(mainController.getCellInFocusProperty().getCoordinate().get());
         previousBackgrounds.put(coordinate.toString(), background);
         if(color != null) {
 
@@ -274,7 +274,7 @@ public class SheetController {
 
     public void changeCellTextColor(Color color) {
         if (color != null)
-            Objects.requireNonNull(cellsTextFieldMap.get(CoordinateFactory.toCoordinate(mainController.getCellInFocus().getCoordinate().get()).toString())).setStyle("-fx-text-fill: " + toHexString(color) + ";");
+            Objects.requireNonNull(cellsTextFieldMap.get(CoordinateFactory.toCoordinate(mainController.getCellInFocusProperty().getCoordinate().get()).toString())).setStyle("-fx-text-fill: " + toHexString(color) + ";");
     }
 
 

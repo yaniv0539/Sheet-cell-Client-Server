@@ -66,8 +66,6 @@ public class CommandsController {
 
     private IntegerProperty heightProperty;
     private IntegerProperty widthProperty;
-    private BooleanProperty isSortPopupClosed = new SimpleBooleanProperty(false);
-    private BooleanProperty isFilterPopupClosed = new SimpleBooleanProperty(false);
 
     private boolean startFilter = true;
     private boolean startSort = true;
@@ -88,11 +86,10 @@ public class CommandsController {
 
     }
 
-    public void init() {
-        BooleanProperty showCommandsProperty = this.mainController.showCommandsProperty();
+    public void init(BooleanProperty showCommandsProperty, BooleanProperty showLogicalOperationsProperty) {
         buttonResetToDefault.disableProperty().bind(showCommandsProperty.not());
-        buttonSort.setDisable(true);
-        buttonFilter.setDisable(true);
+        buttonSort.disableProperty().bind(showLogicalOperationsProperty.not());
+        buttonFilter.disableProperty().bind(showLogicalOperationsProperty.not());
         spinnerWidth.disableProperty().bind(showCommandsProperty.not());
         spinnerHeight.disableProperty().bind(showCommandsProperty.not());
         comboBoxAlignment.disableProperty().bind(showCommandsProperty.not());
@@ -143,54 +140,6 @@ public class CommandsController {
         return mainController;
     }
 
-    public Button getButtonResetToDefault() {
-        return buttonResetToDefault;
-    }
-
-    public ColorPicker getColorPickerBackgroundColor() {
-        return colorPickerBackgroundColor;
-    }
-
-    public ColorPicker getColorPickerTextColor() {
-        return colorPickerTextColor;
-    }
-
-    public ComboBox<Pos> getComboBoxAlignment() {
-        return comboBoxAlignment;
-    }
-
-    public Spinner<Integer> getSpinnerHeight() {
-        return spinnerHeight;
-    }
-
-    public Spinner<Integer> getSpinnerWidth() {
-        return spinnerWidth;
-    }
-
-    public int getHeightProperty() {
-        return heightProperty.get();
-    }
-
-    public IntegerProperty heightPropertyProperty() {
-        return heightProperty;
-    }
-
-    public int getWidthProperty() {
-        return widthProperty.get();
-    }
-
-    public IntegerProperty widthPropertyProperty() {
-        return widthProperty;
-    }
-
-    public Button getButtonFilter() {
-        return buttonFilter;
-    }
-
-    public Button getButtonSort() {
-        return buttonSort;
-    }
-
 
     @FXML
     void alignmentAction(ActionEvent event) {
@@ -221,7 +170,6 @@ public class CommandsController {
             startFilter = false;
         } else {
             mainController.resetOperationView();
-            buttonSort.setDisable(false);
             resetButtonFilter();
         }
     }
@@ -233,7 +181,6 @@ public class CommandsController {
             startSort = false;
         } else {
             mainController.resetOperationView();
-            buttonFilter.setDisable(false);
             resetButtonSort();
         }
     }
@@ -279,7 +226,6 @@ public class CommandsController {
     }
 
     public void filterCommandsControllerRunLater() {
-        buttonSort.setDisable(true);
         buttonFilter.setText("Reset Filter");
         filterStage.close();
     }
@@ -292,7 +238,6 @@ public class CommandsController {
     }
 
     public void sortCommandsControllerRunLater() {
-        buttonFilter.setDisable(true);
         buttonSort.setText("Reset Sort");
         sortStage.close();
     }

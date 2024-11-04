@@ -7,7 +7,10 @@ import dto.CellDto;
 import dto.SheetDto;
 import dto.deserializer.CellDtoDeserializer;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -20,47 +23,50 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.Objects;
-import java.util.Set;
 
 public class DynamicAnalysisController {
 
-    @FXML
-    private GridPane mainGridPane;
-    @FXML
-    private Button buttonAdd;
-
-    @FXML
-    private Button buttonResetAll;
-    @FXML
-    private Button buttonDeleteAll;
+    @FXML private GridPane mainGridPane;
+    @FXML private Button buttonAdd;
+    @FXML private Button buttonResetAll;
+    @FXML private Button buttonDeleteAll;
 
     AppController mainAppController;
 
     private int rowIndex = 1;  // Start after the header row
 
-    IntegerProperty numberOfRows;
-    IntegerProperty numberOfEnableRows;
+    BooleanProperty showDynamicSheetOperationsProperty;
+    IntegerProperty numberOfRowsProperty;
+    IntegerProperty numberOfEnableRowsProperty;
 
     @FXML
     public void initialize() {
         buttonAdd.setOnAction(e -> addRow());
         buttonResetAll.setOnAction(e -> resetAllRows());
         buttonDeleteAll.setOnAction(e -> deleteAllRows());
-        numberOfRows = new SimpleIntegerProperty(0);
-        numberOfEnableRows = new SimpleIntegerProperty(0);
 
-        numberOfRows.addListener((observable, oldValue, newValue) -> {
+        numberOfRowsProperty = new SimpleIntegerProperty(0);
+        numberOfEnableRowsProperty = new SimpleIntegerProperty(0);
+        showDynamicSheetOperationsProperty = new SimpleBooleanProperty(true);
+
+        numberOfRowsProperty.addListener((observable, oldValue, newValue) -> {
             if (newValue.intValue() == 0) {
                 addRow();
             }
         });
 
-        numberOfEnableRows.addListener((observable, oldValue, newValue) ->
-                this.mainAppController.setIsEditableSheet(newValue.intValue() == 0));
-
+        numberOfEnableRowsProperty.addListener((observable, oldValue, newValue) -> {
+            if (oldValue.intValue() == 0) {
+                mainAppController.activateDynamicSheet();
+                mainAppController.waitForDynamicSheetActivation();
+            } else if (newValue.intValue() == 0) {
+                this.mainAppController.removeDynamicSheet();
+            }
+        });
     }
 
-    public void init() {
+    public void init(BooleanProperty showDynamicSheetOperationsProperty) {
+        this.showDynamicSheetOperationsProperty = showDynamicSheetOperationsProperty;
         addRow();
     }
 
@@ -75,7 +81,7 @@ public class DynamicAnalysisController {
         comboBox.setPromptText("Cell");
         setItems(comboBox);
 
-        numberOfRows.set(numberOfRows.get() + 1);
+        numberOfRowsProperty.set(numberOfRowsProperty.get() + 1);
 
         Spinner<Double> spinnerStep = new Spinner<>(0.0, 100.0, 1.0);
         spinnerStep.setPrefWidth(60.0);
@@ -102,35 +108,24 @@ public class DynamicAnalysisController {
         deleteButton.setStyle("-fx-text-fill: red;");
 
         final int finalRowIndex = rowIndex;
-        deleteButton.setOnAction(e -> removeRow(finalRowIndex));
 
-
-        //here we have all the componnents
-        comboBox.setOnAction(e -> {
+        deleteButton.setOnAction(e -> {
             resetRow(comboBox, spinnerStep, spinnerMin, slider, spinnerMax);
-            numberOfEnableRows.set(numberOfEnableRows.get() + 1);
+            removeRow(finalRowIndex);
         });
 
-        //TODO:shoudnt be in comment, this is the http requst for the sheet.
-        slider.valueProperty().addListener((observable, oldValue, newValue) -> {
-            String coord = comboBox.getValue();
-
-            Double staticSheetCellValue = mainAppController.getStaticSheetCellValue(coord);
-            Double stepValue = spinnerStep.getValue();
-            double mod = staticSheetCellValue - staticSheetCellValue.intValue();
-            if (Math.abs(staticSheetCellValue.intValue() % stepValue.intValue()) == Math.abs(newValue.intValue() % stepValue.intValue())) {
-                if (mod == 0.0) {
-                    performActionOnSliderMove(coord, String.valueOf(newValue.intValue()));
-                } else {
-                    performActionOnSliderMove(coord, String.valueOf(newValue.intValue() + mod));
-                }
+        comboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (oldValue == null) {
+                numberOfEnableRowsProperty.set(numberOfEnableRowsProperty.get() + 1);
             }
+            resetRow(comboBox, spinnerStep, spinnerMin, slider, spinnerMax);
         });
+
+        slider.valueProperty().addListener((observable, oldValue, newValue) -> sliderOnValueChange(newValue, comboBox.getValue(), spinnerStep));
 
         //init disable property.
         initDisableBind(spinnerStep, comboBox, spinnerMin, spinnerMax, resetButton, deleteButton);
         initSliderValuesBinds(slider, spinnerMin, spinnerMax, spinnerStep);
-
 
         // Add RowConstraints to ensure the row is properly added
         RowConstraints rowConstraints = new RowConstraints();
@@ -149,10 +144,22 @@ public class DynamicAnalysisController {
         rowIndex++; // Move to the next row for future additions
     }
 
-    //http request
-    private void performActionOnSliderMove(String coord, String value) {
+    private void sliderOnValueChange(Number newValue, String coordinate, Spinner<Double> spinnerStep) {
+        Double staticSheetCellValue = mainAppController.getStaticSheetCellValue(coordinate);
+        Double stepValue = spinnerStep.getValue();
+        double mod = staticSheetCellValue - staticSheetCellValue.intValue();
+        if (Math.abs(staticSheetCellValue.intValue() % stepValue.intValue()) == Math.abs(newValue.intValue() % stepValue.intValue())) {
+            if (mod == 0.0) {
+                updateCellToDynamicSheet(coordinate, String.valueOf(newValue.intValue()));
+            } else {
+                updateCellToDynamicSheet(coordinate, String.valueOf(newValue.intValue() + mod));
+            }
+        }
+    }
 
-        mainAppController.updateCellToDynamicSheet(coord, value, new Callback() {
+    //http request
+    private void updateCellToDynamicSheet(String coordinate, String value) {
+        mainAppController.updateCellToDynamicSheet(coordinate, value, new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 Platform.runLater(() -> mainAppController.showAlertPopup(new Exception(),"something went wrong.."));
@@ -180,15 +187,6 @@ public class DynamicAnalysisController {
     }
 
     private static void initSliderValuesBinds(Slider slider, Spinner<Integer> spinnerMin, Spinner<Integer> spinnerMax, Spinner<Double> spinnerStep) {
-//        slider.minProperty().bind(spinnerMin.valueProperty());
-//        slider.maxProperty().bind(spinnerMax.valueProperty());
-//        // Bind the slider's block increment to the step value of the spinner
-//        slider.blockIncrementProperty().bind(spinnerStep.valueProperty());
-//        slider.valueProperty().addListener((observable, oldValue, newValue) -> {
-//            slider.setMajorTickUnit(newValue.doubleValue());
-//            slider.setBlockIncrement(newValue.doubleValue());
-//        });
-
         spinnerStep.valueProperty().addListener((observable, oldValue, newValue) -> {
             slider.setMajorTickUnit(newValue);
             slider.setBlockIncrement(newValue);
@@ -200,40 +198,65 @@ public class DynamicAnalysisController {
             }
 
         });
+
         spinnerMin.valueProperty().addListener((observable, oldValue, newValue) -> {
             if(newValue < slider.getMax()) {
                 slider.minProperty().setValue(newValue);
             }
         });
-
     }
 
-    private static void initDisableBind(Spinner<Double> spinnerStep, ComboBox<String> comboBox, Spinner<Integer> spinnerMin, Spinner<Integer> spinnerMax, Button resetButton, Button deleteButton) {
-        spinnerStep.disableProperty().bind(comboBox.getSelectionModel().selectedItemProperty().isNull());
-        spinnerMin.disableProperty().bind(comboBox.getSelectionModel().selectedItemProperty().isNull());
-        spinnerMax.disableProperty().bind(comboBox.getSelectionModel().selectedItemProperty().isNull());
-        resetButton.disableProperty().bind(comboBox.getSelectionModel().selectedItemProperty().isNull());
-        deleteButton.disableProperty().bind(comboBox.getSelectionModel().selectedItemProperty().isNull());
-    }
+    private void initDisableBind(Spinner<Double> spinnerStep, ComboBox<String> comboBox, Spinner<Integer> spinnerMin, Spinner<Integer> spinnerMax, Button resetButton, Button deleteButton) {
+        comboBox.disableProperty().bind(showDynamicSheetOperationsProperty.not());
 
+        spinnerStep.disableProperty().bind(
+                Bindings.or(
+                        showDynamicSheetOperationsProperty.not(),
+                        comboBox.getSelectionModel().selectedItemProperty().isNull()
+                )
+        );
+        spinnerMin.disableProperty().bind(
+                Bindings.or(
+                        showDynamicSheetOperationsProperty.not(),
+                        comboBox.getSelectionModel().selectedItemProperty().isNull()
+                )
+        );
+        spinnerMax.disableProperty().bind(
+                Bindings.or(
+                        showDynamicSheetOperationsProperty.not(),
+                        comboBox.getSelectionModel().selectedItemProperty().isNull()
+                )
+        );
+        resetButton.disableProperty().bind(
+                Bindings.or(
+                        showDynamicSheetOperationsProperty.not(),
+                        comboBox.getSelectionModel().selectedItemProperty().isNull()
+                )
+        );
+        deleteButton.disableProperty().bind(
+                Bindings.or(
+                        showDynamicSheetOperationsProperty.not(),
+                        comboBox.getSelectionModel().selectedItemProperty().isNull()
+                )
+        );
+    }
 
     private void resetRow(ComboBox<String> comboBox, Spinner<Double> spinnerStep, Spinner<Integer> spinnerMin, Slider slider, Spinner<Integer> spinnerMax) {
         String coordinate = comboBox.getSelectionModel().selectedItemProperty().get();
         if (coordinate != null) {
-            Double value = mainAppController.getDoubleValueAt(coordinate);
+            Double value = mainAppController.getStaticSheetCellValue(coordinate);
 
             spinnerStep.getValueFactory().setValue(1.0); // Reset step
             spinnerMin.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Integer.MIN_VALUE , Integer.MAX_VALUE, value.intValue() - 100));
             spinnerMax.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Integer.MIN_VALUE , Integer.MAX_VALUE, value.intValue() + 100));
 
-            slider.valueProperty().setValue(value);                      // Reset slider to middle
+            slider.valueProperty().setValue(value); // Reset slider to middle
         }
     }
 
     private void removeRow(int targetRowIndex) {
         mainGridPane.getChildren().removeIf(node -> {
             Integer rowIndex = GridPane.getRowIndex(node);
-
             return rowIndex != null && rowIndex == targetRowIndex;
         });
 
@@ -252,10 +275,9 @@ public class DynamicAnalysisController {
         mainGridPane.getRowConstraints().removeLast();
         rowIndex--;
 
-        numberOfRows.set(numberOfRows.get() - 1);
-        numberOfEnableRows.set(numberOfEnableRows.get() - 1);
+        numberOfRowsProperty.set(numberOfRowsProperty.get() - 1);
+        numberOfEnableRowsProperty.set(numberOfEnableRowsProperty.get() - 1);
     }
-
 
     private void resetAllRows() {
         // Loop through each row and reset values
@@ -273,9 +295,6 @@ public class DynamicAnalysisController {
         for (int row = mainGridPane.getRowConstraints().size() - 1; row >= 1; row--) {
             removeRow(row);
         }
-        numberOfRows.set(0);
-        numberOfEnableRows.set(0);
-        mainAppController.removeDynamicSheet();
     }
 
     private javafx.scene.Node getNodeByRowColumnIndex(final int row, final int column) {
