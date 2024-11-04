@@ -85,7 +85,7 @@ public class HeaderController {
 
         public void init(BooleanProperty showHeadersProperty, FocusCellProperty cellInFocusProperty) {
                 buttonUpdateCell.disableProperty().bind(showHeadersProperty.not());
-                splitMenuButtonSelectVersion.setDisable(true);
+                splitMenuButtonSelectVersion.setDisable(false);
                 textFieldOrignalValue.disableProperty().bind(showHeadersProperty.not());
                 textFieldCellId.disableProperty().bind(showHeadersProperty.not());
                 textFieldLastUpdateInVersion.disableProperty().bind(showHeadersProperty.not());

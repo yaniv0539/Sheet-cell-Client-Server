@@ -153,8 +153,8 @@ public class AppController {
             });
 
             isEditorProperty.addListener((observable, oldValue, newValue) -> {
-                showRangesProperty.set(newValue);
-                showHeadersProperty.set(newValue);
+                showRangesProperty.set(newValue && !isDynamicSheetActiveProperty.get());
+                showHeadersProperty.set(newValue && !isDynamicSheetActiveProperty.get());
             });
 
             initLoadingStage();
@@ -512,7 +512,6 @@ public class AppController {
             currentSheet = sheetDto;
             mostUpdatedVersionNumber = sheetDto.version();
             setEffectiveValuesPoolProperty(currentSheet, effectiveValuesPool);
-//            sheetToVersionDesignManager.get(currentSheet.name()).addVersion();
         }
     }
 
