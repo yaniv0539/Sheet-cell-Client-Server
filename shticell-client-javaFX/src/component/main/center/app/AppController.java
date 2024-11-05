@@ -100,8 +100,8 @@ public class AppController {
     // Constructor
 
     public AppController() {
-        this.showHeadersProperty = new SimpleBooleanProperty(true);
-        this.showRangesProperty = new SimpleBooleanProperty(true);
+        this.showHeadersProperty = new SimpleBooleanProperty(false);
+        this.showRangesProperty = new SimpleBooleanProperty(false);
         this.showCommandsProperty = new SimpleBooleanProperty(false);
         this.showLogicalOperationsProperty = new SimpleBooleanProperty(true);
         this.showDynamicSheetOperationsProperty = new SimpleBooleanProperty(true);
@@ -384,6 +384,7 @@ public class AppController {
     }
 
     public void onFinishLoadingFile(SheetDto sheetDto, boolean isEditor) {
+        isEditorProperty.set(!isEditor);
         isEditorProperty.set(isEditor);
 
         this.currentSheet = sheetDto; //this what server bring
@@ -641,7 +642,7 @@ public class AppController {
     public void focusChanged(boolean newValue, String coordinateString) {
 
         if (newValue) {
-            showCommandsProperty.set(currentSheet.version() == mostUpdatedVersionNumber);
+            showCommandsProperty.set(currentSheet.version() == mostUpdatedVersionNumber && !isLogicalOperationsActiveProperty.get());
             CellDto cell = currentSheet.activeCells().get(coordinateString);
             cellInFocusProperty.setCoordinate(coordinateString);
 

@@ -167,8 +167,8 @@ public class DynamicAnalysisController {
 
     private void updateCellToDynamicSheet(int targetRowIndex, Number newValue) {
         String coordinate = cellComboBoxList.get(targetRowIndex).getSelectionModel().selectedItemProperty().get();
-        Double staticSheetCellValue = mainAppController.getStaticSheetCellValue(coordinate);
         Double stepValue = stepSpinnerList.get(targetRowIndex).getValue();
+        Double staticSheetCellValue = mainAppController.getStaticSheetCellValue(coordinate);
         double mod = staticSheetCellValue - staticSheetCellValue.intValue();
         if (Math.abs(staticSheetCellValue.intValue() % stepValue.intValue()) == Math.abs(newValue.intValue() % stepValue.intValue())) {
             if (mod == 0.0) {
@@ -267,7 +267,7 @@ public class DynamicAnalysisController {
         String coordinate = cellComboBoxList.get(targetRowIndex).getSelectionModel().selectedItemProperty().get();
         if (coordinate != null) {
             Double value = mainAppController.getStaticSheetCellValue(coordinate);
-            updateCellToDynamicSheet(targetRowIndex, value);
+            updateCellToDynamicSheet(coordinate, String.valueOf(value));
 
             stepSpinnerList.get(targetRowIndex).getValueFactory().setValue(1.0); // Reset step
             minSpinnerList.get(targetRowIndex).setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Integer.MIN_VALUE , Integer.MAX_VALUE, value.intValue() - 100));
@@ -321,6 +321,7 @@ public class DynamicAnalysisController {
 
             // Update delete button action to match new row index
             int currentIndex = i; // Capture current index for lambda
+            resetButtonList.get(i).setOnAction(e -> resetRow(currentIndex));
             deleteButtonList.get(i).setOnAction(e -> removeRow(currentIndex));
         }
 
