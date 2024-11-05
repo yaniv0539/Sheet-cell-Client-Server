@@ -384,7 +384,6 @@ public class AppController {
     }
 
     public void onFinishLoadingFile(SheetDto sheetDto, boolean isEditor) {
-        isEditorProperty.set(!isEditor);
         isEditorProperty.set(isEditor);
 
         this.currentSheet = sheetDto; //this what server bring
