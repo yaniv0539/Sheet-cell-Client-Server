@@ -4,6 +4,7 @@ import component.main.center.app.AppController;
 import component.main.center.app.commands.operations.filter.FilterController;
 import component.main.center.app.commands.operations.sort.SortController;
 import dto.*;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -66,12 +67,9 @@ public class CommandsController {
 
     private IntegerProperty heightProperty;
     private IntegerProperty widthProperty;
-    private BooleanProperty isSortPopupClosed = new SimpleBooleanProperty(false);
-    private BooleanProperty isFilterPopupClosed = new SimpleBooleanProperty(false);
 
-    private boolean startFilter = true;
-    private boolean startSort = true;
-
+    private BooleanProperty isFilterActiveProperty;
+    private BooleanProperty isSortActiveProperty;
 
     // Constructor
 
@@ -85,14 +83,14 @@ public class CommandsController {
 
     @FXML
     private void initialize() {
-
+        isFilterActiveProperty = new SimpleBooleanProperty(false);
+        isSortActiveProperty = new SimpleBooleanProperty(false);
     }
 
-    public void init() {
-        BooleanProperty showCommandsProperty = this.mainController.showCommandsProperty();
+    public void init(BooleanProperty showCommandsProperty, BooleanProperty showLogicalOperationsProperty) {
         buttonResetToDefault.disableProperty().bind(showCommandsProperty.not());
-        buttonSort.setDisable(true);
-        buttonFilter.setDisable(true);
+        buttonSort.disableProperty().bind(Bindings.or(showLogicalOperationsProperty.not(), isFilterActiveProperty));
+        buttonFilter.disableProperty().bind(Bindings.or(showLogicalOperationsProperty.not(), isSortActiveProperty));
         spinnerWidth.disableProperty().bind(showCommandsProperty.not());
         spinnerHeight.disableProperty().bind(showCommandsProperty.not());
         comboBoxAlignment.disableProperty().bind(showCommandsProperty.not());
@@ -143,54 +141,6 @@ public class CommandsController {
         return mainController;
     }
 
-    public Button getButtonResetToDefault() {
-        return buttonResetToDefault;
-    }
-
-    public ColorPicker getColorPickerBackgroundColor() {
-        return colorPickerBackgroundColor;
-    }
-
-    public ColorPicker getColorPickerTextColor() {
-        return colorPickerTextColor;
-    }
-
-    public ComboBox<Pos> getComboBoxAlignment() {
-        return comboBoxAlignment;
-    }
-
-    public Spinner<Integer> getSpinnerHeight() {
-        return spinnerHeight;
-    }
-
-    public Spinner<Integer> getSpinnerWidth() {
-        return spinnerWidth;
-    }
-
-    public int getHeightProperty() {
-        return heightProperty.get();
-    }
-
-    public IntegerProperty heightPropertyProperty() {
-        return heightProperty;
-    }
-
-    public int getWidthProperty() {
-        return widthProperty.get();
-    }
-
-    public IntegerProperty widthPropertyProperty() {
-        return widthProperty;
-    }
-
-    public Button getButtonFilter() {
-        return buttonFilter;
-    }
-
-    public Button getButtonSort() {
-        return buttonSort;
-    }
-
 
     @FXML
     void alignmentAction(ActionEvent event) {
@@ -216,24 +166,22 @@ public class CommandsController {
 
     @FXML
     void filterAction(ActionEvent event) throws IOException {
-        if (startFilter) {
+        if (!isFilterActiveProperty.get()) {
             activateFilterPopup(FILTER_POPUP_FXML_INCLUDE_RESOURCE, "Filter");
-            startFilter = false;
+            isFilterActiveProperty.set(true);
         } else {
             mainController.resetOperationView();
-            buttonSort.setDisable(false);
             resetButtonFilter();
         }
     }
 
     @FXML
     void sortAction(ActionEvent event) throws IOException {
-        if (startSort) {
+        if (!isSortActiveProperty.get()) {
             activateSortPopup(SORT_POPUP_FXML_INCLUDE_RESOURCE, "Sort");
-            startSort = false;
+            isSortActiveProperty.set(true);
         } else {
             mainController.resetOperationView();
-            buttonFilter.setDisable(false);
             resetButtonSort();
         }
     }
@@ -279,7 +227,6 @@ public class CommandsController {
     }
 
     public void filterCommandsControllerRunLater() {
-        buttonSort.setDisable(true);
         buttonFilter.setText("Reset Filter");
         filterStage.close();
     }
@@ -292,7 +239,6 @@ public class CommandsController {
     }
 
     public void sortCommandsControllerRunLater() {
-        buttonFilter.setDisable(true);
         buttonSort.setText("Reset Sort");
         sortStage.close();
     }
@@ -321,12 +267,12 @@ public class CommandsController {
 
     public void resetButtonSort() {
         buttonSort.setText("Sort");
-        startSort = true;
+        isSortActiveProperty.set(false);
     }
 
     public void resetButtonFilter(){
         buttonFilter.setText("Filter");
-        startFilter = true;
+        isFilterActiveProperty.set(false);
     }
 
 
@@ -346,7 +292,7 @@ public class CommandsController {
         this.filterStage = new Stage();
         filterStage.initModality(Modality.APPLICATION_MODAL);
         filterStage.setTitle(title);
-        filterStage.setOnCloseRequest((WindowEvent event) -> startFilter = true);
+        filterStage.setOnCloseRequest((WindowEvent event) -> isFilterActiveProperty.set(false));
 
         Scene popupScene = new Scene(popupRoot, 770, 220);
         filterStage.setResizable(true);
@@ -370,7 +316,7 @@ public class CommandsController {
         this.sortStage = new Stage();
         sortStage.initModality(Modality.APPLICATION_MODAL);
         sortStage.setTitle(title);
-        sortStage.setOnCloseRequest((WindowEvent event) -> startSort = true);
+        sortStage.setOnCloseRequest((WindowEvent event) -> isSortActiveProperty.set(false));
 
         Scene popupScene = new Scene(popupRoot, 770, 200);
         sortStage.setResizable(true);

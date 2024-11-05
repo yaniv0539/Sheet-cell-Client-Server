@@ -3,12 +3,14 @@ package component.main.center.app.header;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import component.main.center.app.AppController;
+import component.main.center.app.model.api.FocusCellProperty;
 import dto.CellDto;
 import dto.SheetDto;
 import dto.deserializer.CellDtoDeserializer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
@@ -81,19 +83,17 @@ public class HeaderController {
 
         // Initializers
 
-        public void init() {
-                SimpleBooleanProperty showHeadersProperty = this.mainController.showHeadersProperty();
-
+        public void init(BooleanProperty showHeadersProperty, FocusCellProperty cellInFocusProperty) {
                 buttonUpdateCell.disableProperty().bind(showHeadersProperty.not());
-                splitMenuButtonSelectVersion.setDisable(true);
+                splitMenuButtonSelectVersion.setDisable(false);
                 textFieldOrignalValue.disableProperty().bind(showHeadersProperty.not());
                 textFieldCellId.disableProperty().bind(showHeadersProperty.not());
                 textFieldLastUpdateInVersion.disableProperty().bind(showHeadersProperty.not());
                 textFieldUpdatedBy.disableProperty().bind(showHeadersProperty.not());
-                textFieldCellId.textProperty().bind(this.mainController.getCellInFocus().getCoordinate());
-                textFieldOrignalValue.textProperty().bindBidirectional(this.mainController.getCellInFocus().getOriginalValue());
-                textFieldLastUpdateInVersion.textProperty().bind(this.mainController.getCellInFocus().getLastUpdateVersion());
-                textFieldUpdatedBy.textProperty().bind(this.mainController.getCellInFocus().getUpdateBy()); //return string
+                textFieldCellId.textProperty().bind(cellInFocusProperty.getCoordinate());
+                textFieldOrignalValue.textProperty().bindBidirectional(cellInFocusProperty.getOriginalValue());
+                textFieldLastUpdateInVersion.textProperty().bind(cellInFocusProperty.getLastUpdateVersion());
+                textFieldUpdatedBy.textProperty().bind(cellInFocusProperty.getUpdateBy());
         }
 
         // Getters

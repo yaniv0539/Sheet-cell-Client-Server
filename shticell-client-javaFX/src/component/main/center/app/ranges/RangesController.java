@@ -74,10 +74,7 @@ public class RangesController {
         this.mainController = mainController;
     }
 
-    public void init() {
-        BooleanProperty showRangesProperty = this.mainController.showRangesProperty();
-        Map<Integer, TableCell<RangeGetters, String>> cellMap = new HashMap<>();
-
+    public void init(BooleanProperty showRangesProperty) {
         buttonAddRange.disableProperty().bind(showRangesProperty.not());
         buttonDeleteRange.disableProperty().bind(showRangesProperty.not());
         tableViewActiveRanges.disableProperty().bind(showRangesProperty.not());
@@ -85,24 +82,18 @@ public class RangesController {
         tableActiveRanges.setCellValueFactory(new PropertyValueFactory<>("name"));
 
         tableViewActiveRanges.focusedProperty().addListener((observable, oldValue, newValue) -> {
-            TableView.TableViewSelectionModel<RangeDto> selectionModel = tableViewActiveRanges.getSelectionModel();
-            RangeDto selectedItem = selectionModel.getSelectedItem();
-
             if (lastClickedItem != null && !newValue) {
                 this.mainController.resetRangeOnSheet(lastClickedItem);
-                //selectionModel.clearSelection();
             }
         });
 
         tableViewActiveRanges.setOnMouseClicked(event -> {
             if (event.getClickCount() == 1 && !event.isConsumed()) {
-                // Find the clicked row
                 TableView.TableViewSelectionModel<RangeDto> selectionModel = tableViewActiveRanges.getSelectionModel();
                 RangeDto selectedItem = selectionModel.getSelectedItem();
 
                 if (selectedItem != null) {
                     if (lastClickedItem != null) {
-                        //return all the cells in the range to the previuos background
                         this.mainController.resetRangeOnSheet(lastClickedItem);
                     }
                     this.mainController.paintRangeOnSheet(selectedItem, Color.rgb(251, 238, 166));

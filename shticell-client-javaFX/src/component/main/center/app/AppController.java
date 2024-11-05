@@ -28,7 +28,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import component.main.center.app.model.api.EffectiveValuesPoolProperty;
-import component.main.center.app.model.api.EffectiveValuesPoolPropertyReadOnly;
 import component.main.center.app.model.api.FocusCellProperty;
 import component.main.center.app.model.impl.EffectiveValuesPoolPropertyImpl;
 import component.main.center.app.model.impl.FocusCellPropertyImpl;
@@ -41,6 +40,7 @@ import sheet.coordinate.impl.CoordinateFactory;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -70,14 +70,17 @@ public class AppController {
     private SheetDto currentSheet;
     private SheetDto editableSheet;
 
-    private FocusCellProperty cellInFocus;
+    private FocusCellProperty cellInFocusProperty;
     private EffectiveValuesPoolProperty effectiveValuesPool;
 
-    private SimpleBooleanProperty showCommands;
-    private SimpleBooleanProperty showRanges;
-    private SimpleBooleanProperty showHeaders;
-    private BooleanProperty isEditableSheet;
-    private boolean isEditor;
+    private BooleanProperty showHeadersProperty;
+    private BooleanProperty showCommandsProperty;
+    private BooleanProperty showRangesProperty;
+    private BooleanProperty showLogicalOperationsProperty;
+    private BooleanProperty showDynamicSheetOperationsProperty;
+    private BooleanProperty isDynamicSheetActiveProperty;
+    private BooleanProperty isLogicalOperationsActiveProperty;
+    private BooleanProperty isEditorProperty;
 
     private SheetController sheetComponentController;
     private ProgressController progressComponentController;
@@ -87,27 +90,32 @@ public class AppController {
     private int mostUpdatedVersionNumber;
     private int tempMostUpdatedVersionNumber;
     private int lastVersionNumberBeforeUpdate;
-    private boolean OperationView;
     private ScheduledExecutorService executorServiceForSheet;
     private boolean isThreadsActive;
     private ObservableList<String> numericCoordinateObservableList;
+
+    private CountDownLatch latch = new CountDownLatch(1);
 
 
     // Constructor
 
     public AppController() {
-        this.showHeaders = new SimpleBooleanProperty(false);
-        this.showRanges = new SimpleBooleanProperty(false);
-        this.showCommands = new SimpleBooleanProperty(false);
-        this.isEditableSheet = new SimpleBooleanProperty(true);
-        this.cellInFocus = new FocusCellPropertyImpl();
+        this.showHeadersProperty = new SimpleBooleanProperty(false);
+        this.showRangesProperty = new SimpleBooleanProperty(false);
+        this.showCommandsProperty = new SimpleBooleanProperty(false);
+        this.showLogicalOperationsProperty = new SimpleBooleanProperty(true);
+        this.showDynamicSheetOperationsProperty = new SimpleBooleanProperty(true);
+        this.isDynamicSheetActiveProperty = new SimpleBooleanProperty(false);
+        this.isLogicalOperationsActiveProperty = new SimpleBooleanProperty(false);
+        this.isEditorProperty = new SimpleBooleanProperty(false);
+
+        this.cellInFocusProperty = new FocusCellPropertyImpl();
         this.effectiveValuesPool = new EffectiveValuesPoolPropertyImpl();
         this.progressComponentController = new ProgressController();
+
         this.loadingStage = new Stage();
         this.sheetToVersionDesignManager = new HashMap<>();
         this.numericCoordinateObservableList = FXCollections.observableArrayList();
-        OperationView = false;
-        isEditableSheet.set(true);
     }
 
 
@@ -120,29 +128,41 @@ public class AppController {
             commandsComponentController.setMainController(this);
             rangesComponentController.setMainController(this);
             dynamicComponentController.setMainController(this);
-            //versionDesignManager.setMainController(this);
 
-            headerComponentController.init();
-            commandsComponentController.init();
-            rangesComponentController.init();
-            initLoadingStage();
+            headerComponentController.init(showHeadersProperty, cellInFocusProperty);
+            commandsComponentController.init(showCommandsProperty, showLogicalOperationsProperty);
+            rangesComponentController.init(showRangesProperty);
+            dynamicComponentController.init(showDynamicSheetOperationsProperty);
 
-            //cell in focus init.
-            cellInFocus.getDependOn().addListener((ListChangeListener<CoordinateDto>) change -> sheetComponentController.changeColorDependedCoordinate(change));
-            cellInFocus.getInfluenceOn().addListener((ListChangeListener<CoordinateDto>) change -> sheetComponentController.changeColorInfluenceCoordinate(change));
+            // Cell in focus init.
+            cellInFocusProperty.getDependOn().addListener((ListChangeListener<CoordinateDto>) change -> sheetComponentController.changeColorDependedCoordinate(change));
+            cellInFocusProperty.getInfluenceOn().addListener((ListChangeListener<CoordinateDto>) change -> sheetComponentController.changeColorInfluenceCoordinate(change));
 
-            initPullThread();
-
-            isEditableSheet.addListener((observable, oldValue, newValue) -> {
-                showRanges.set(newValue);
-                showHeaders.set(newValue);
-                showCommands.set(newValue);
+            isDynamicSheetActiveProperty.addListener((observable, oldValue, newValue) -> {
+                showRangesProperty.set(!newValue && isEditorProperty.get());
+                showHeadersProperty.set(!newValue && isEditorProperty.get());
+                showCommandsProperty.set(!newValue && !cellInFocusProperty.getCoordinate().get().isEmpty());
+                showLogicalOperationsProperty.set(!newValue);
             });
+
+            isLogicalOperationsActiveProperty.addListener((observable, oldValue, newValue) -> {
+                showRangesProperty.set(!newValue && isEditorProperty.get());
+                showHeadersProperty.set(!newValue && isEditorProperty.get());
+                showCommandsProperty.set(!newValue && !cellInFocusProperty.getCoordinate().get().isEmpty());
+                showDynamicSheetOperationsProperty.set(!newValue);
+            });
+
+            isEditorProperty.addListener((observable, oldValue, newValue) -> {
+                showRangesProperty.set(newValue && !isDynamicSheetActiveProperty.get());
+                showHeadersProperty.set(newValue && !isDynamicSheetActiveProperty.get());
+            });
+
+            initLoadingStage();
+            initPullThread();
         }
     }
 
     private void initLoadingStage() {
-
         loadingStage.initStyle(StageStyle.UNDECORATED);
         loadingStage.initModality(Modality.APPLICATION_MODAL);
         loadingStage.setScene(new Scene(progressComponentController.getProgressVbox()));
@@ -154,39 +174,18 @@ public class AppController {
 
     // Getters
 
-    public SimpleBooleanProperty showCommandsProperty() {
-        return showCommands;
-    }
-
-    public SimpleBooleanProperty showRangesProperty() {
-        return showRanges;
-    }
-
-    public SimpleBooleanProperty showHeadersProperty() {
-        return showHeaders;
-    }
-
-    public FocusCellProperty getCellInFocus() {
-        return cellInFocus;
-    }
-
-    public EffectiveValuesPoolPropertyReadOnly getEffectiveValuesPool() {
-        return effectiveValuesPool;
+    public FocusCellProperty getCellInFocusProperty() {
+        return cellInFocusProperty;
     }
 
     public Color getBackground(TextField tf) {
         return sheetComponentController.getTextFieldBackgroundColor(tf.getBackground());
     }
 
-
     // Setters
 
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
-    }
-
-    public void setIsEditableSheet(boolean isEditableSheet) {
-        this.isEditableSheet.set(isEditableSheet);
     }
 
     private void setSheet(SheetDto sheetDto) {
@@ -314,7 +313,7 @@ public class AppController {
     }
 
     public void updateCell(Callback callback) {
-        this.mainController.postCell(this.currentSheet.name(), String.valueOf(this.currentSheet.version()), cellInFocus.getCoordinate().get(), cellInFocus.getOriginalValue().get(), callback);
+        this.mainController.postCell(this.currentSheet.name(), String.valueOf(this.currentSheet.version()), cellInFocusProperty.getCoordinate().get(), cellInFocusProperty.getOriginalValue().get(), callback);
     }
 
     public void updateCellToDynamicSheet(String cellName, String cellValue, Callback callback) {
@@ -325,7 +324,6 @@ public class AppController {
     // Run later functions
 
     public void getFilteredSheetRunLater(FilterDesignDto responseDto) {
-        OperationView = true;
         commandsComponentController.filterCommandsControllerRunLater();
 
         SheetDto filteredSheet = responseDto.filteredSheet();
@@ -381,28 +379,24 @@ public class AppController {
 
         //design
         appBorderPane.setCenter(sheetComponent);
-        showHeaders.set(false);
-        showRanges.set(false);
-        showCommands.set(false);
+        isLogicalOperationsActiveProperty.set(true);
         headerComponentController.getSplitMenuButtonSelectVersion().setDisable(true);
-        commandsComponentController.getButtonFilter().setDisable(false);
     }
 
     public void onFinishLoadingFile(SheetDto sheetDto, boolean isEditor) {
-        //methode
-        setDisableBoolean(isEditor);
+        isEditorProperty.set(!isEditor);
+        isEditorProperty.set(isEditor);
 
         this.currentSheet = sheetDto; //this what server bring
-        this.editableSheet = this.currentSheet;
 
         rangesComponentController.uploadRanges(currentSheet.ranges());
         setEffectiveValuesPoolProperty(currentSheet, this.effectiveValuesPool);
         setNumericCoordinateList();
-        dynamicComponentController.init();
         setSheet(currentSheet);
+
         mostUpdatedVersionNumber = sheetDto.version();
         tempMostUpdatedVersionNumber = mostUpdatedVersionNumber;
-//        setVersionSplitMenuButton();
+
         setDesignVersions();
     }
 
@@ -424,27 +418,6 @@ public class AppController {
         }
     }
 
-    private void setDisableBoolean(boolean isEditor) {
-
-        this.isEditor = isEditor;
-        showHeaders.set(isEditor); //depandes if writer
-        showRanges.set(isEditor);//depandes if writer
-        headerComponentController.getSplitMenuButtonSelectVersion().setDisable(false);
-        commandsComponentController.getButtonFilter().setDisable(false);
-        commandsComponentController.getButtonSort().setDisable(false);
-        commandsComponentController.resetButtonFilter();
-        commandsComponentController.resetButtonSort();
-    }
-
-//    private void setVersionSplitMenuButton() {
-//        headerComponentController.clearVersionButton();
-//        //itay added: if the sheet we want to view is in a version bigger then one.
-//        for(int i = 1 ; i <= mostUpdatedVersionNumber; i++) {
-//            headerComponentController.addMenuOptionToVersionSelection(String.valueOf(i));
-//        }
-//    }
-
-    //itay added
     private void setDesignVersions() {
 
         if (sheetToVersionDesignManager.get(currentSheet.name()) == null) {
@@ -464,7 +437,6 @@ public class AppController {
     }
 
     public void getSortedSheetRunLater(SortDesignDto sortDesignDto) {
-        OperationView = true;
         commandsComponentController.sortCommandsControllerRunLater();
 
         SheetDto sortedSheet = sortDesignDto.sheetDto();
@@ -523,35 +495,24 @@ public class AppController {
 
         //finish design
         appBorderPane.setCenter(sheetComponent);
-
-        showHeaders.set(false);
-        showRanges.set(false);
-        showCommands.set(false);
+        isLogicalOperationsActiveProperty.set(true);
         headerComponentController.getSplitMenuButtonSelectVersion().setDisable(true);
-        commandsComponentController.getButtonSort().setDisable(false);
     }
 
     public void getViewSheetVersionRunLater(SheetDto sheetDto) {
         currentSheet = sheetDto;
-        editableSheet = currentSheet;
 
-        int numberOfVersion = currentSheet.version();
-
-        showCommands.set(numberOfVersion == tempMostUpdatedVersionNumber && isEditor);
-        showRanges.set(numberOfVersion == tempMostUpdatedVersionNumber && isEditor);
-        showHeaders.set(numberOfVersion == tempMostUpdatedVersionNumber && isEditor);
+        isEditorProperty.set(currentSheet.version() == tempMostUpdatedVersionNumber);
         setEffectiveValuesPoolProperty(currentSheet, effectiveValuesPool);
         setNumericCoordinateList();
-        resetSheetToVersionDesign(numberOfVersion);
+        resetSheetToVersionDesign(currentSheet.version());
     }
 
     public void updateCellRunLater(SheetDto sheetDto) {
         if (sheetDto.version() != currentSheet.version()) {
             currentSheet = sheetDto;
-            editableSheet = currentSheet;
             mostUpdatedVersionNumber = sheetDto.version();
             setEffectiveValuesPoolProperty(currentSheet, effectiveValuesPool);
-//            sheetToVersionDesignManager.get(currentSheet.name()).addVersion();
         }
     }
 
@@ -582,7 +543,7 @@ public class AppController {
         int column =
                 CoordinateFactory.parseColumnToInt(
                         CoordinateFactory.extractColumn(
-                                cellInFocus
+                                cellInFocusProperty
                                         .getCoordinate()
                                         .get()));
         sheetComponentController.changeColumnWidth(column, prefWidth);
@@ -593,7 +554,7 @@ public class AppController {
     public void changeSheetRowHeight(int prefHeight) {
         int row =
                 CoordinateFactory.extractRow(
-                        cellInFocus
+                        cellInFocusProperty
                                 .getCoordinate()
                                 .get());
         sheetComponentController.changeRowHeight(row, prefHeight);
@@ -607,7 +568,7 @@ public class AppController {
         //itay change for saving on edit version the design
 
         sheetToVersionDesignManager.get(currentSheet.name()).getVersionDesign(currentSheet.version() + 1).getCellDesignsVersion()
-                .computeIfPresent(sheetComponentController.getIndexDesign(new CoordinateDto(cellInFocus.getCoordinate().get()))
+                .computeIfPresent(sheetComponentController.getIndexDesign(new CoordinateDto(cellInFocusProperty.getCoordinate().get()))
                         , (k, textFieldDesign) -> new TextFieldDesign(color, textFieldDesign.getTextStyle(), textFieldDesign.getTextAlignment()));
     }
 
@@ -616,7 +577,7 @@ public class AppController {
         //itay change for saving on edit version the design
 
         sheetToVersionDesignManager.get(currentSheet.name()).getVersionDesign(currentSheet.version() + 1).getCellDesignsVersion()
-                .computeIfPresent(sheetComponentController.getIndexDesign(new CoordinateDto(cellInFocus.getCoordinate().get()))
+                .computeIfPresent(sheetComponentController.getIndexDesign(new CoordinateDto(cellInFocusProperty.getCoordinate().get()))
                         , (k, textFieldDesign) -> new TextFieldDesign(textFieldDesign.getBackgroundColor(), "-fx-text-fill: " + sheetComponentController.toHexString(color) + ";", textFieldDesign.getTextAlignment()));
     }
 
@@ -643,12 +604,7 @@ public class AppController {
     }
 
     public void resetOperationView() {
-
-        OperationView = false;
-        int numberOfVersion = currentSheet.version();
-        showCommands.set(numberOfVersion == mostUpdatedVersionNumber);
-        showRanges.set(numberOfVersion == mostUpdatedVersionNumber);
-        showHeaders.set(numberOfVersion == mostUpdatedVersionNumber);
+        isLogicalOperationsActiveProperty.set(false);
         headerComponentController.getSplitMenuButtonSelectVersion().setDisable(false);
         appBorderPane.setCenter(sheetComponent);
     }
@@ -685,33 +641,31 @@ public class AppController {
 
     public void focusChanged(boolean newValue, String coordinateString) {
 
-        if (newValue && !OperationView )
-        {
-            showCommands.set(currentSheet.version() == mostUpdatedVersionNumber);
+        if (newValue) {
+            showCommandsProperty.set(currentSheet.version() == mostUpdatedVersionNumber && !isLogicalOperationsActiveProperty.get());
             CellDto cell = currentSheet.activeCells().get(coordinateString);
-            cellInFocus.setCoordinate(coordinateString);
+            cellInFocusProperty.setCoordinate(coordinateString);
 
             if (cell != null) {
-                cellInFocus.setOriginalValue(cell.originalValue());
-                cellInFocus.setLastUpdateVersion(String.valueOf(cell.version()));
-                cellInFocus.setUpdateBy(cell.updateBy());
-                cellInFocus.setDependOn(cell.influenceFrom().stream()
+                cellInFocusProperty.setOriginalValue(cell.originalValue());
+                cellInFocusProperty.setLastUpdateVersion(String.valueOf(cell.version()));
+                cellInFocusProperty.setUpdateBy(cell.updateBy());
+                cellInFocusProperty.setDependOn(cell.influenceFrom().stream()
                         .map(CellDto::coordinate)
                         .collect(Collectors.toSet()));
-                cellInFocus.setInfluenceOn(cell.influenceOn().stream()
+                cellInFocusProperty.setInfluenceOn(cell.influenceOn().stream()
                         .map(CellDto::coordinate)
                         .collect(Collectors.toSet()));
             } else {
-                cellInFocus.setOriginalValue("");
-                cellInFocus.setLastUpdateVersion("");
-                cellInFocus.setUpdateBy("");
-                cellInFocus.setDependOn(new HashSet<>());
-                cellInFocus.setInfluenceOn(new HashSet<>());
+                cellInFocusProperty.setOriginalValue("");
+                cellInFocusProperty.setLastUpdateVersion("");
+                cellInFocusProperty.setUpdateBy("");
+                cellInFocusProperty.setDependOn(new HashSet<>());
+                cellInFocusProperty.setInfluenceOn(new HashSet<>());
             }
-        }
-        else{
-            cellInFocus.setDependOn(new HashSet<>());
-            cellInFocus.setInfluenceOn(new HashSet<>());
+        } else{
+            cellInFocusProperty.setDependOn(new HashSet<>());
+            cellInFocusProperty.setInfluenceOn(new HashSet<>());
         }
     }
 
@@ -719,7 +673,7 @@ public class AppController {
         int column =
                 CoordinateFactory.parseColumnToInt(
                         CoordinateFactory.extractColumn(
-                                cellInFocus
+                                cellInFocusProperty
                                         .getCoordinate()
                                         .get()));
         sheetComponentController.changeColumnAlignment(column, pos);
@@ -777,25 +731,58 @@ public class AppController {
     }
 
     public void updateDynamicSheetRunLater(SheetDto sheetDto) {
-        isEditableSheet.set(false);
         currentSheet = sheetDto;
         setEffectiveValuesPoolProperty(currentSheet, effectiveValuesPool);
     }
 
-    public Double getDoubleValueAt(String coordinate) {
-        if (editableSheet == null) {
-            editableSheet = currentSheet;
-        }
+    public void removeDynamicSheet() {
+        isDynamicSheetActiveProperty.set(false);
+        currentSheet = editableSheet;
+        setEffectiveValuesPoolProperty(currentSheet, effectiveValuesPool);
+    }
+
+    public Double getStaticSheetCellValue(String coordinate) {
         return Double.parseDouble(editableSheet.activeCells().get(coordinate).originalValue());
     }
 
-    public void removeDynamicSheet() {
-        isEditableSheet.set(true);
-        currentSheet = editableSheet;
+    public void activateDynamicSheet() {
+        getSheet(String.valueOf(currentSheet.version()), new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> {
+                    mainController.showAlertPopup(new Exception(), "show version");
+                    latch.countDown(); // Release latch in case of failure
+                });
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                assert response.body() != null;
+                String jsonResponse = response.body().string();
+
+                if (response.code() != 200) {
+                    Platform.runLater(() -> {
+                        mainController.showAlertPopup(new Exception(GSON_INSTANCE.fromJson(jsonResponse, String.class)),
+                                "show version: " + currentSheet.version());
+                        latch.countDown(); // Release latch in case of error
+                    });
+                } else {
+                    Gson gson = new GsonBuilder().registerTypeAdapter(CellDto.class, new CellDtoDeserializer()).create();
+                    editableSheet = gson.fromJson(jsonResponse, SheetDto.class);
+                    isDynamicSheetActiveProperty.set(true);
+                    latch.countDown(); // Release latch after successful completion
+                    Platform.runLater(() -> setEffectiveValuesPoolProperty(editableSheet, effectiveValuesPool));
+                }
+            }
+        });
     }
 
-    public Double getStaticSheetCellValue(String coord) {
-        return Double.parseDouble(editableSheet.activeCells().get(coord).originalValue());
+    public void waitForDynamicSheetActivation() {
+        try {
+            latch.await(); // Wait until latch is released
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); // Handle thread interruption properly
+        }
     }
 
 
