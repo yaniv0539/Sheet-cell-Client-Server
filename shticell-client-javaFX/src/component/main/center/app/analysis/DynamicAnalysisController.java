@@ -76,6 +76,8 @@ public class DynamicAnalysisController {
                 mainAppController.waitForDynamicSheetActivation();
             } else if (newValue.intValue() == 0) {
                 this.mainAppController.removeDynamicSheet();
+            } else if (newValue.intValue() < 0) {
+                numberOfEnableRowsProperty.set(0);
             }
         });
     }
@@ -122,7 +124,9 @@ public class DynamicAnalysisController {
         final int finalRowIndex = numberOfRowsProperty.get();
 
         resetButton.setOnAction(e -> resetRow(finalRowIndex));
-        deleteButton.setOnAction(e -> removeRow(finalRowIndex));
+        deleteButton.setOnAction(e -> {
+            numberOfEnableRowsProperty.set(numberOfEnableRowsProperty.get() - 1);
+            removeRow(finalRowIndex);});
 
         comboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
             if (oldValue == null) {
@@ -322,7 +326,10 @@ public class DynamicAnalysisController {
             // Update delete button action to match new row index
             int currentIndex = i; // Capture current index for lambda
             resetButtonList.get(i).setOnAction(e -> resetRow(currentIndex));
-            deleteButtonList.get(i).setOnAction(e -> removeRow(currentIndex));
+            deleteButtonList.get(i).setOnAction(e -> {
+                numberOfEnableRowsProperty.set(numberOfEnableRowsProperty.get() - 1);
+                removeRow(currentIndex);
+            });
         }
 
         // Step 5: Remove last row constraint if necessary
@@ -332,7 +339,6 @@ public class DynamicAnalysisController {
 
         // Step 6: Update properties
         numberOfRowsProperty.set(numberOfRowsProperty.get() - 1);
-        numberOfEnableRowsProperty.set(numberOfEnableRowsProperty.get() - 1);
     }
 
     private void resetAllRows() {
@@ -347,5 +353,6 @@ public class DynamicAnalysisController {
         for (int row = size - 1; row >= 0; row--) {
             removeRow(row);
         }
+        numberOfEnableRowsProperty.set(0);
     }
 }
